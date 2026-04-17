@@ -1,0 +1,15 @@
+# Work in progress — not deployed to Pages
+_wip/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+*.swp
+*~
+
+# Session files
+SESSION_SUMMARY.md

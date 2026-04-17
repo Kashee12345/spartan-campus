@@ -1,0 +1,2676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>StoryQuest — Comic Book Creator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;700;900&family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a14;color:#fff;font-family:'Nunito',sans-serif;overflow:hidden;height:100vh;width:100vw;user-select:none}
+canvas{display:block}
+
+/* === SCREENS === */
+.scr{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s,transform .5s;opacity:0;pointer-events:none;transform:scale(.95);z-index:10}
+.scr.active{opacity:1;pointer-events:auto;transform:scale(1)}
+
+/* === TITLE SCREEN === */
+#titleScreen{background:linear-gradient(135deg,#1a1040 0%,#0d0820 40%,#1a0a30 100%)}
+#titleScreen canvas{border-radius:16px;margin-bottom:24px;box-shadow:0 0 60px rgba(255,200,50,.15)}
+.title-text{font-family:'Bangers',cursive;font-size:clamp(36px,8vw,72px);background:linear-gradient(135deg,#ffdd44,#ff8833,#ff4466);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none;letter-spacing:3px;filter:drop-shadow(0 4px 12px rgba(255,100,50,.4));margin-bottom:4px}
+.title-sub{font-family:'Comic Neue',cursive;font-size:clamp(14px,3vw,22px);color:#bb99ff;margin-bottom:28px;opacity:.8}
+.btn{font-family:'Bangers',cursive;font-size:clamp(18px,4vw,28px);padding:14px 40px;border:none;border-radius:14px;cursor:pointer;letter-spacing:2px;transition:all .15s;position:relative;overflow:hidden}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.btn:active{transform:translateY(1px)}
+.btn-play{background:linear-gradient(135deg,#ff6644,#ff3366);color:#fff;box-shadow:0 6px 24px rgba(255,50,80,.4)}
+.btn-sec{background:linear-gradient(135deg,#3344aa,#5566dd);color:#fff;box-shadow:0 4px 16px rgba(50,80,200,.3);font-size:clamp(14px,3vw,20px);padding:10px 28px;margin:6px}
+.btn-gold{background:linear-gradient(135deg,#ffaa22,#ff7700);color:#fff;box-shadow:0 4px 16px rgba(255,150,0,.4)}
+
+/* === CHAPTER SELECT === */
+#chapScreen{background:linear-gradient(180deg,#0d0820,#1a1040)}
+.chap-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;max-width:700px;padding:20px}
+.chap-card{width:140px;height:180px;border-radius:14px;cursor:pointer;position:relative;overflow:hidden;transition:all .2s;border:3px solid transparent}
+.chap-card:hover{transform:translateY(-4px);border-color:#ffaa33}
+.chap-card.locked{opacity:.4;pointer-events:none;filter:grayscale(.8)}
+.chap-card.done{border-color:#44ff88}
+.chap-card canvas{width:100%;height:120px;border-radius:11px 11px 0 0}
+.chap-info{padding:6px 8px;text-align:center;font-size:12px;font-weight:700}
+.chap-stars{color:#ffcc00;font-size:14px}
+
+/* === STORY READING === */
+#storyScreen{background:linear-gradient(135deg,#1a1030,#0d0820)}
+#storyBox{max-width:640px;width:90%;background:linear-gradient(180deg,#fdf6e3,#f5eedc);color:#2a1a0a;border-radius:16px;padding:28px 32px;font-size:clamp(15px,3.2vw,19px);line-height:1.75;box-shadow:0 8px 40px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.5);position:relative;max-height:60vh;overflow-y:auto}
+#storyBox::before{content:'';position:absolute;top:0;left:24px;right:24px;height:3px;background:linear-gradient(90deg,transparent,#cc8844,transparent);border-radius:2px}
+#storyTitle{font-family:'Bangers',cursive;font-size:clamp(22px,5vw,34px);color:#cc4422;text-align:center;margin-bottom:12px;letter-spacing:2px}
+#storyText{font-family:'Comic Neue',cursive;color:#3a2a1a}
+.story-actions{margin-top:20px;display:flex;gap:12px;justify-content:center}
+
+/* === QUESTION === */
+#qScreen{background:rgba(10,10,20,.92);backdrop-filter:blur(8px)}
+#qBox{max-width:520px;width:90%;text-align:center}
+#qText{font-family:'Comic Neue',cursive;font-size:clamp(17px,3.5vw,24px);margin-bottom:24px;line-height:1.5;color:#eeddff}
+#qNum{font-family:'Bangers',cursive;font-size:16px;color:#ffaa33;margin-bottom:12px;letter-spacing:2px}
+.q-opts{display:flex;flex-direction:column;gap:10px;align-items:center}
+.q-opt{width:100%;max-width:420px;padding:14px 20px;border-radius:12px;border:2px solid #3344aa;background:rgba(30,20,60,.8);color:#ddd;font-family:'Comic Neue',cursive;font-size:clamp(14px,3vw,18px);cursor:pointer;transition:all .15s;text-align:left}
+.q-opt:hover{border-color:#6688ff;background:rgba(50,40,100,.8);transform:translateX(4px)}
+.q-opt.correct{border-color:#44ff88;background:rgba(20,80,40,.8);color:#aaffcc;animation:popIn .3s}
+.q-opt.wrong{border-color:#ff4444;background:rgba(80,20,20,.8);color:#ffaaaa;animation:shake .3s}
+
+/* === COMIC PANEL VIEW === */
+#comicScreen{background:linear-gradient(135deg,#1a1a2a,#0a0a14)}
+#comicWrap{position:relative;width:90%;max-width:800px}
+#comicCv{width:100%;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+.comic-nav{display:flex;justify-content:center;gap:12px;margin-top:16px}
+.panel-dots{display:flex;gap:8px;align-items:center;margin-top:10px;justify-content:center}
+.panel-dot{width:12px;height:12px;border-radius:50%;background:#333;transition:all .3s}
+.panel-dot.filled{background:#ffaa33;box-shadow:0 0 8px rgba(255,170,50,.5)}
+.panel-dot.current{background:#ff4466;box-shadow:0 0 12px rgba(255,68,102,.6);transform:scale(1.3)}
+
+/* === RESULTS === */
+#resultScreen{background:linear-gradient(135deg,#1a1040,#0d0820)}
+#resultBox{text-align:center;max-width:500px}
+.result-stars{font-size:48px;margin:16px 0}
+.result-msg{font-family:'Comic Neue',cursive;font-size:20px;color:#bb99ff;margin-bottom:20px}
+
+/* === SHOP === */
+#shopScreen{background:linear-gradient(180deg,#0d0820,#1a1040)}
+.shop-grid{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;max-width:600px;padding:20px}
+.shop-item{width:130px;padding:14px 10px;border-radius:12px;background:rgba(40,30,80,.6);border:2px solid #333;text-align:center;cursor:pointer;transition:all .15s}
+.shop-item:hover{border-color:#ffaa33;transform:translateY(-2px)}
+.shop-item.owned{border-color:#44ff88;opacity:.7}
+.shop-emoji{font-size:32px;margin-bottom:6px}
+.shop-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.shop-cost{font-size:12px;color:#ffcc00}
+
+/* === HUD === */
+#hud{position:fixed;top:0;left:0;right:0;height:48px;background:linear-gradient(180deg,rgba(10,10,20,.9),rgba(10,10,20,.6));display:flex;align-items:center;padding:0 16px;gap:16px;z-index:20;opacity:0;pointer-events:none;transition:opacity .3s;font-size:14px;font-weight:700}
+#hud.active{opacity:1;pointer-events:auto}
+.hud-item{display:flex;align-items:center;gap:4px}
+.hud-label{color:#888;font-size:11px}
+.hud-val{color:#ffcc00}
+
+/* === BANNER === */
+#banner{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-100px);padding:12px 32px;border-radius:12px;font-family:'Bangers',cursive;font-size:clamp(16px,4vw,24px);z-index:30;transition:transform .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none;letter-spacing:2px;white-space:nowrap}
+#banner.show{transform:translateX(-50%) translateY(0)}
+
+/* === ANIMATIONS === */
+@keyframes popIn{0%{transform:scale(.9)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes inkSplash{0%{transform:scale(0);opacity:1}100%{transform:scale(2);opacity:0}}
+.float-anim{animation:float 3s ease-in-out infinite}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#554;border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div class="scr active" id="titleScreen">
+ <canvas id="titleCv" width="320" height="200"></canvas>
+ <div class="title-text">StoryQuest</div>
+ <div class="title-sub">Comic Book Creator</div>
+ <button class="btn btn-play" onclick="goChapters()">START READING</button>
+ <div style="margin-top:12px;display:flex;gap:8px">
+  <button class="btn btn-sec" onclick="goShop()">SHOP</button>
+  <button class="btn btn-sec" id="mBtn" onclick="toggleMusic()">MUSIC</button>
+ </div>
+</div>
+
+<!-- CHAPTER SELECT -->
+<div class="scr" id="chapScreen">
+ <div class="title-text" style="font-size:clamp(24px,5vw,40px)">Choose a Story</div>
+ <div class="chap-grid" id="chapGrid"></div>
+ <button class="btn btn-sec" onclick="showScr('titleScreen')" style="margin-top:12px">BACK</button>
+</div>
+
+<!-- STORY READING -->
+<div class="scr" id="storyScreen">
+ <div id="storyBox">
+  <div id="storyTitle"></div>
+  <div id="storyText"></div>
+ </div>
+ <div class="story-actions">
+  <button class="btn btn-gold" onclick="startQuestions()">ANSWER QUESTIONS</button>
+ </div>
+</div>
+
+<!-- QUESTION -->
+<div class="scr" id="qScreen">
+ <div id="qBox">
+  <div id="qNum"></div>
+  <div id="qText"></div>
+  <div class="q-opts" id="qOpts"></div>
+ </div>
+</div>
+
+<!-- COMIC PANEL VIEW -->
+<div class="scr" id="comicScreen">
+ <div id="comicWrap">
+  <canvas id="comicCv" width="800" height="560"></canvas>
+  <div class="panel-dots" id="panelDots"></div>
+ </div>
+ <div class="comic-nav">
+  <button class="btn btn-sec" onclick="nextPanel()">NEXT</button>
+ </div>
+</div>
+
+<!-- COMIC REVIEW (full story replay) -->
+<div class="scr" id="reviewScreen" style="background:linear-gradient(135deg,#1a1030,#0d0820);overflow-y:auto">
+ <div style="text-align:center;padding:20px 10px 10px">
+  <div class="title-text" style="font-size:clamp(22px,5vw,38px)" id="reviewTitle">Your Comic Book</div>
+  <div style="font-family:'Comic Neue',cursive;color:#bb99ff;font-size:14px;margin-bottom:10px" id="reviewSub">Scroll down to see your whole story!</div>
+ </div>
+ <canvas id="reviewCv" style="display:block;margin:0 auto;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.5);max-width:95%"></canvas>
+ <div style="text-align:center;padding:16px">
+  <button class="btn btn-gold" onclick="goResults()">SEE YOUR SCORE</button>
+ </div>
+</div>
+
+<!-- RESULTS -->
+<div class="scr" id="resultScreen">
+ <div id="resultBox">
+  <div class="title-text" style="font-size:clamp(28px,6vw,48px)" id="resultTitle">Chapter Complete!</div>
+  <div class="result-stars" id="resultStars"></div>
+  <div class="result-msg" id="resultMsg"></div>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+   <button class="btn btn-gold" onclick="goChapters()">MORE STORIES</button>
+   <button class="btn btn-sec" onclick="showScr('reviewScreen')">VIEW COMIC</button>
+   <button class="btn btn-sec" onclick="replayChapter()">REPLAY</button>
+  </div>
+ </div>
+</div>
+
+<!-- SHOP -->
+<div class="scr" id="shopScreen">
+ <div class="title-text" style="font-size:clamp(24px,5vw,40px)">Comic Shop</div>
+ <div style="font-size:16px;color:#ffcc00;margin-bottom:8px" id="shopGold"></div>
+ <div class="shop-grid" id="shopGrid"></div>
+ <button class="btn btn-sec" onclick="showScr('titleScreen')" style="margin-top:12px">BACK</button>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+ <div class="hud-item"><span>CH</span> <span class="hud-val" id="hudCh">1</span></div>
+ <div class="hud-item"><span>Q</span> <span class="hud-val" id="hudQ">0/5</span></div>
+ <div class="hud-item"><span style="color:#ffcc00">INK</span> <span class="hud-val" id="hudInk">0</span></div>
+ <div class="hud-item" style="margin-left:auto"><span id="hudStreak" style="color:#ff6644"></span></div>
+</div>
+
+<!-- BANNER -->
+<div id="banner"></div>
+
+<script>
+/* ========== roundRect POLYFILL ========== */
+if(!CanvasRenderingContext2D.prototype.roundRect){
+ CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+  if(typeof r==='number')r=[r,r,r,r];
+  if(!Array.isArray(r))r=[0,0,0,0];
+  const[tl,tr,br,bl]=[r[0]||0,r[1]||r[0]||0,r[2]||r[0]||0,r[3]||r[0]||0];
+  this.moveTo(x+tl,y);this.lineTo(x+w-tr,y);this.quadraticCurveTo(x+w,y,x+w,y+tr);
+  this.lineTo(x+w,y+h-br);this.quadraticCurveTo(x+w,y+h,x+w-br,y+h);
+  this.lineTo(x+bl,y+h);this.quadraticCurveTo(x,y+h,x,y+h-bl);
+  this.lineTo(x,y+tl);this.quadraticCurveTo(x,y,x+tl,y);
+  this.closePath();return this;
+ };
+}
+
+/* ========== SAVE/LOAD ========== */
+const DF={ink:0,lvl:1,xp:0,chaps:{},streak:0,mxStreak:0,musicOn:true,items:{style:'classic'},achs:{},buys:0};
+let S=JSON.parse(JSON.stringify(DF));
+function save(){try{localStorage.setItem('sq3',JSON.stringify(S))}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem('sq3'));if(d){for(let k in DF)if(!(k in d))d[k]=JSON.parse(JSON.stringify(DF[k]));S=d}}catch(e){}}
+load();
+
+/* ========== STORIES DATA ========== */
+const STORIES=[
+{id:'robot',title:'The Brave Little Robot',theme:'sci-fi',
+ bgCol:['#0a1428','#1a2a4a'],panelBg:'#0d1a30',accent:'#44aaff',
+ text:`In the city of Sparkton, a small robot named Bolt lived in an old repair shop on Cherry Street. Bolt was only two feet tall — barely reaching the doorknob — with bright blue eyes that glowed in the dark and one slightly bent antenna that picked up radio stations from three cities away. His metal body was covered in scratches from years of bumping into things, but each scratch told a story.
+
+Every night, Bolt climbed onto the shop's roof and watched the bigger robots fly across the sky. Titan-class robots delivered packages to the skyscrapers. Constructor bots welded steel beams high above the streets, showering sparks like fireworks. Search-and-rescue bots zoomed between buildings with sirens blaring. They were all magnificent.
+
+"I wish I could help too," Bolt said to his friend Gina, a girl who visited the shop every day after school to do homework. Gina was the only person who talked to Bolt like he was a real friend, not just a machine. "But I'm too small. Nobody even notices me."
+
+"Being small isn't the same as being useless," Gina said, adjusting his bent antenna. "Someday you'll see."
+
+One Monday morning at exactly 5:47 AM, a terrible storm rolled in from the mountains. Lightning hit the main power station. Transformers exploded in showers of blue sparks. One by one, every light in Sparkton went out. The whole city — three million people — was plunged into total darkness.
+
+The big robots powered down immediately. Their charging stations were dead. Hospital backup generators would only last twelve hours. Traffic lights were out. Elevators were stuck. People were scared.
+
+Gina burst through the shop door, out of breath. "Bolt! I heard the engineers talking. There's a backup generator deep in the underground maintenance tunnels beneath City Hall. It was built fifty years ago for emergencies just like this. But the tunnels are only three feet wide — the big robots can't fit. You're the only one small enough."
+
+Bolt's circuits hummed with fear. The tunnels were dark, full of rusty pipes, dripping water, and who knew what else. But he looked at Gina's face and saw something he'd never seen before — she believed in him completely.
+
+"I'll try," he said. He turned on his chest light, downloaded the tunnel map to his screen, and squeezed through the access hatch.
+
+The tunnels were worse than he imagined. Pipes hissed steam. Water dripped from cracks in the ceiling. Twice he had to climb over collapsed beams. Once he had to wade through a flooded section where the water reached his chin. But he kept going, following the blue line on his map.
+
+After an hour and forty-three minutes, he found it — the backup generator, a massive machine covered in dust and cobwebs. The switch was stuck with rust. Bolt pushed with all his strength. Nothing. He tried again. The switch groaned but didn't move. On his third try, something inside him surged — every tiny motor, every small gear working together — and the switch flipped.
+
+The generator roared to life. Lights flickered on through the tunnels, then through the streets above. The whole city lit up block by block. Three million people cheered at once. It was so loud that Bolt could hear it underground.
+
+When Bolt climbed out of the tunnel, covered in dust and cobwebs but smiling, the big robots formed two lines and saluted him. Gina was crying happy tears. The mayor pinned a medal on his chest — a tiny golden lightning bolt. From that day on, Bolt became Sparkton's official Underground Hero, and every kid in the city wanted a small robot of their own.`,
+ panels:[
+  {scene:'city',desc:'Sparkton city at night — Bolt watches big robots fly overhead from the repair shop window'},
+  {scene:'storm',desc:'Lightning storm knocks out power — the city goes dark, sparks fly'},
+  {scene:'tunnel',desc:'Bolt squeezes into the dark underground tunnel, chest light glowing'},
+  {scene:'generator',desc:'Bolt finds the giant generator and reaches for the switch'},
+  {scene:'hero',desc:'Bolt emerges as a hero — city lights up, big robots salute, crowd cheers'}
+ ],
+ questions:[
+  {q:'Where does Bolt live?',opts:['An old repair shop','A flying station','A school','A power plant'],ans:0},
+  {q:'Why can\'t the big robots fix the power?',opts:['They are broken','Their charging stations are dead','They flew away','Bolt told them not to'],ans:1},
+  {q:'Who is Gina?',opts:['A robot','Bolt\'s friend, a girl','The mayor','A pilot'],ans:1},
+  {q:'What does Bolt use to see in the tunnels?',opts:['A flashlight Gina gave him','His antenna','His chest light','Glow sticks'],ans:2},
+  {q:'What is the main lesson of this story?',opts:['Big is always better','Being small can be a special strength','Robots are better than people','Storms are dangerous'],ans:1}
+ ]
+},
+{id:'garden',title:'Dragon\'s Secret Garden',theme:'fantasy',
+ bgCol:['#1a2a10','#0d1a08'],panelBg:'#142010',accent:'#88dd44',
+ text:`Behind the Misty Mountains, in a village carved into the side of a volcano, a young dragon named Fern had a secret. While the other young dragons spent their days in Fire Academy practicing flame-breathing contests and learning to scare knights, Fern would sneak away to a hidden valley behind the waterfall.
+
+There, in a place only she knew about, Fern had planted the most beautiful garden in the world. Sunflowers as tall as houses grew next to delicate roses in every color imaginable. Mushrooms glowed blue at night. Vines climbed the cliff walls and bloomed with flowers that smelled like birthday cake. And in one special corner, strange luminous plants grew that only sprouted near dragon fire — Fern had discovered that a gentle, careful flame could make seeds grow in minutes instead of months.
+
+"You're wasting your fire on weeds," said her brother Cinder, the top student at Fire Academy. "Dragons are meant to be fierce, not farmers."
+
+But Fern didn't care. She cataloged every plant, drew pictures of their leaves, and experimented with different types of soil. She was a scientist, an artist, and a gardener all at once.
+
+One autumn morning, a thick gray fog crept down from the mountain peaks and settled over the dragon village like a cold, wet blanket. Within hours, every dragon was coughing and sneezing. Their flames sputtered and went out — even Cinder's prize-winning fire breath faded to a tiny spark. Without fire, the dragons couldn't cook, couldn't stay warm, and couldn't light the forges that heated their volcano homes.
+
+Elder Drake, the oldest and wisest dragon, called an emergency meeting. His voice was barely a whisper. "This is the Gray Plague. It hasn't struck in four hundred years. The only cure is Moonpetal tea — brewed from a rare silver flower that grows in the Frozen Valley, three days' flight to the north."
+
+The room went silent. The Frozen Valley was the most dangerous place any dragon could go. Temperatures dropped to sixty degrees below zero. No fire-breathing dragon could survive there — their inner flame would go out in minutes, and a dragon without fire was as vulnerable as a baby bird.
+
+No one volunteered. Not the warriors, not the fire-champions, not even brave old Elder Drake.
+
+But Fern had been thinking. In her garden, she had been growing a remarkable plant for the past two years — Embervine. It was a thick, orange-glowing vine that absorbed heat from dragon fire and released it slowly for weeks, staying warm even in the coldest conditions. She had discovered it by accident when she left a cutting near a hot spring and found it still warm during the first snowfall.
+
+That night, while everyone else huddled in their cold caves, Fern wove the Embervine into scarves, a vest, and wing-covers. She packed dried berries, her journal, and a small pot for brewing tea. At dawn, she slipped away without telling anyone.
+
+The flight north was brutal. Wind whipped at her wings. Snow stung her eyes. But the Embervine kept her core temperature steady. On the second day, she flew over a frozen ocean dotted with icebergs that sparkled like diamonds. On the third morning, she arrived at the Frozen Valley — a vast canyon of blue ice where nothing moved and nothing grew.
+
+Except there, at the very bottom, glowing silver under a sheet of clear ice, were the Moonpetals. They were the most beautiful things Fern had ever seen — each petal was like a tiny mirror reflecting moonlight even in the daytime. She carefully broke through the ice with her claws, dug up twelve plants with their roots intact, and wrapped them in her scarf.
+
+The journey home took two more days. When Fern stumbled into the village, exhausted and frost-covered, the other dragons could barely believe it. Elder Drake brewed the petals into tea. One sip and a dragon's eyes would go wide — then a magnificent flame would burst from their mouth, bigger and brighter than before. Within an hour, every dragon's fire was roaring again. The village glowed with warmth and light.
+
+"How did you survive the cold?" they all demanded.
+
+Fern smiled and led them to her secret garden. When they saw the Embervine, the glowing flowers, the medicinal herbs, they were speechless. Cinder, her brother, was the first to speak. "I was wrong. Your garden saved us all."
+
+From that day on, every dragon in the village wanted to learn gardening. Fern opened a school — the first Dragon Botanical Academy — where young dragons learned that fire was not just for fighting, but for growing, healing, and creating beautiful things.`,
+ panels:[
+  {scene:'garden',desc:'Fern the dragon tending her secret garden — colorful flowers, glowing plants, butterflies'},
+  {scene:'sick',desc:'Gray fog over the dragon village — dragons coughing, fires going out'},
+  {scene:'embervine',desc:'Fern wraps herself in glowing orange Embervine scarves'},
+  {scene:'frozen',desc:'Fern flies through the Frozen Valley — ice crystals, silver Moonpetals glowing'},
+  {scene:'cure',desc:'Elder Drake serves tea — dragons\' fire roars back, everyone celebrates around Fern\'s garden'}
+ ],
+ questions:[
+  {q:'What makes Fern different from other dragons?',opts:['She can\'t fly','She loves growing flowers','She breathes ice','She is the biggest dragon'],ans:1},
+  {q:'Why can\'t the other dragons go to the Frozen Valley?',opts:['It\'s too far away','They are too big','It\'s too cold for fire-breathers','They are scared of knights'],ans:2},
+  {q:'What is Embervine?',opts:['A type of dragon','A plant that stays warm in the cold','A magic spell','A kind of mountain'],ans:1},
+  {q:'What do Moonpetals do?',opts:['They glow in the dark','They taste like candy','They cure any sickness','They make dragons stronger'],ans:2},
+  {q:'Why did the other dragons want to learn gardening?',opts:['Fern forced them to','They were bored','Fern\'s gardening knowledge saved them all','Elder Drake ordered it'],ans:2}
+ ]
+},
+{id:'cookies',title:'The Mystery of the Missing Cookies',theme:'mystery',
+ bgCol:['#2a1a10','#1a0d08'],panelBg:'#201410',accent:'#ff8844',
+ text:`Every Friday, Mrs. Chen baked three dozen cookies for the school bake sale. But this Friday, when she opened the kitchen at 7 AM, the cookies were gone. Only crumbs remained.
+
+Detective Maya, a third-grader with a magnifying glass and a notebook, took the case. She found three clues. First, there were muddy footprints leading from the back door to the counter. Second, a red mitten was stuck in the cookie jar. Third, the window lock was broken from the outside.
+
+Maya interviewed three suspects. Tommy said he was at soccer practice until 6 PM, then went straight home. Sarah said she was at the library all evening — the librarian confirmed it. Jake said he was walking his dog in the park, but he couldn't remember which park.
+
+Maya noticed Jake was wearing one red mitten. "Where's your other mitten, Jake?" she asked. Jake turned bright red. "I... I lost it somewhere."
+
+Maya checked Jake's shoes. Mud. The same kind of mud from the school garden near the back door. Jake finally admitted he snuck in through the window because he was hungry and didn't have lunch money. Mrs. Chen didn't get angry. Instead, she made Jake her assistant baker. Now he helps bake the cookies every Friday — and gets to eat two as payment.`,
+ panels:[
+  {scene:'kitchen',desc:'Mrs. Chen discovers empty cookie trays — crumbs everywhere, shocked expression'},
+  {scene:'clues',desc:'Detective Maya examines clues — magnifying glass on muddy footprints, red mitten, broken window'},
+  {scene:'interview',desc:'Maya interviews suspects at desks — Tommy in soccer gear, Sarah with books, Jake nervous'},
+  {scene:'caught',desc:'Maya points at Jake\'s one red mitten — Jake turns red, mud on his shoes'},
+  {scene:'baking',desc:'Jake and Mrs. Chen bake cookies together — happy ending, flour everywhere, Jake wearing an apron'}
+ ],
+ questions:[
+  {q:'How many cookies did Mrs. Chen bake?',opts:['One dozen','Two dozen','Three dozen','Four dozen'],ans:2},
+  {q:'Which clue was NOT found at the scene?',opts:['Muddy footprints','A red mitten','A broken window lock','A torn backpack'],ans:3},
+  {q:'Why was Sarah NOT the thief?',opts:['She doesn\'t like cookies','The librarian confirmed she was at the library','She was too short','She was sick that day'],ans:1},
+  {q:'What proved Jake was guilty?',opts:['He confessed right away','His missing red mitten and muddy shoes matched the clues','Tommy told on him','There was a video camera'],ans:1},
+  {q:'What happened to Jake in the end?',opts:['He was expelled','He had to pay for the cookies','He became Mrs. Chen\'s assistant baker','Nothing happened'],ans:2}
+ ]
+},
+{id:'space',title:'Space Pirate Penny',theme:'space',
+ bgCol:['#0a0820','#14102a'],panelBg:'#0d0a20',accent:'#cc66ff',
+ text:`Captain Penny was the youngest space pirate in the galaxy — only nine years old. Her ship, the Star Sparrow, was small but fast. While other pirates stole treasure, Penny had a different mission: she collected lost stories.
+
+Across the galaxy, ancient civilizations had left behind story crystals — glowing gems that held tales from millions of years ago. Penny's map showed one on Planet Zephyr, a world made entirely of clouds.
+
+Landing on clouds wasn't easy. Penny had to use her gravity boots to walk on the fluffy surface. Deep inside a cloud cave, she found the crystal glowing purple. But a Cloud Guardian appeared — a giant floating jellyfish made of lightning.
+
+"Why do you want this crystal?" it boomed.
+
+"Because stories should be shared, not locked away," Penny said bravely.
+
+The Guardian studied her for a long moment. "Many pirates have come for treasure. You are the first to come for stories." It gently placed the crystal in Penny's hands.
+
+Back on the Star Sparrow, Penny activated the crystal. A holographic story filled her ship — the tale of the Cloud People who built Zephyr thousands of years ago. Penny smiled and added it to her collection. Seventy-three stories found, thousands more to go.`,
+ panels:[
+  {scene:'ship',desc:'Penny\'s Star Sparrow zooms through a colorful nebula — stars and planets everywhere'},
+  {scene:'clouds',desc:'Penny walks on clouds with gravity boots — Planet Zephyr\'s swirling cloud landscape'},
+  {scene:'cave',desc:'Penny discovers the glowing purple crystal deep in a cloud cave'},
+  {scene:'guardian',desc:'The Cloud Guardian (giant lightning jellyfish) confronts Penny — dramatic face-off'},
+  {scene:'hologram',desc:'Penny watches the holographic story on her ship — Cloud People civilization, stars outside the window'}
+ ],
+ questions:[
+  {q:'What does Penny collect?',opts:['Gold and jewels','Lost story crystals','Cloud samples','Alien pets'],ans:1},
+  {q:'What is special about Planet Zephyr?',opts:['It\'s made of ice','It\'s made entirely of clouds','It has two suns','It\'s invisible'],ans:1},
+  {q:'How does Penny walk on clouds?',opts:['She floats naturally','She uses gravity boots','She rides a hoverboard','The Guardian carries her'],ans:1},
+  {q:'Why does the Guardian give Penny the crystal?',opts:['She fought and won','She\'s the first to come for stories, not treasure','She tricked it','She paid for it'],ans:1},
+  {q:'How many stories has Penny collected so far?',opts:['Seven','Thirty-seven','Seventy-three','One hundred'],ans:2}
+ ]
+},
+{id:'tree',title:'The Talking Tree',theme:'nature',
+ bgCol:['#0d1a0a','#1a2a10'],panelBg:'#101a0d',accent:'#66dd44',
+ text:`In Maplewood Park, there was an oak tree so old that nobody remembered when it was planted. Kids called it Old Whisper because on windy days, its leaves seemed to say words.
+
+One autumn afternoon, a girl named Lila sat under Old Whisper doing homework. She was stuck on a question about what animals need to survive. Suddenly, she heard a deep, gentle voice.
+
+"Water, food, shelter, and space," the tree said.
+
+Lila nearly dropped her pencil. "Did you just talk?"
+
+"I've been talking for three hundred years. You're the first one to actually listen."
+
+Old Whisper told Lila about the park's history. Deer used to drink from the stream before the road was built. Hawks nested in his branches until the streetlights scared them away. Squirrels still lived in his trunk, but their acorns were harder to find because people kept raking the leaves.
+
+"The park is changing," Old Whisper sighed. "The animals need help."
+
+Lila started a nature club at school. They built birdhouses, planted berry bushes, and convinced the city to turn off the streetlights near the big trees at night. By spring, the hawks came back. Lila visited Old Whisper every week to report the good news. And sometimes, when the wind was just right, she could hear him laughing.`,
+ panels:[
+  {scene:'oak',desc:'Massive Old Whisper oak tree in golden autumn — leaves swirling, Lila sitting underneath'},
+  {scene:'talking',desc:'Lila hears the tree talk — sound waves visible, her face amazed, leaves forming mouth shape'},
+  {scene:'history',desc:'Old Whisper\'s memories — split panel showing deer at stream, hawks in branches, squirrels'},
+  {scene:'club',desc:'Lila\'s nature club in action — kids building birdhouses, planting bushes, hanging signs'},
+  {scene:'spring',desc:'Spring returns — hawks nesting, flowers blooming, Lila hugging the tree, park alive with animals'}
+ ],
+ questions:[
+  {q:'Why is the tree called Old Whisper?',opts:['It\'s very quiet','Its leaves seem to say words on windy days','Someone named Whisper planted it','It\'s painted white'],ans:1},
+  {q:'How old is Old Whisper?',opts:['One hundred years','Two hundred years','Three hundred years','One thousand years'],ans:2},
+  {q:'What scared the hawks away?',opts:['Loud music','The streetlights','Cars on the road','Other birds'],ans:1},
+  {q:'What did Lila\'s nature club do?',opts:['Cut down old trees','Built birdhouses and planted berry bushes','Started a pet store','Wrote a book about the tree'],ans:1},
+  {q:'What happened by spring?',opts:['The tree fell down','The park was paved over','The hawks came back','Lila moved away'],ans:2}
+ ]
+},
+{id:'ocean',title:'Under the Sea Kingdom',theme:'ocean',
+ bgCol:['#081828','#0a2038'],panelBg:'#0d1a2a',accent:'#44ddcc',
+ text:`Deep in the Pacific Ocean, where sunlight barely reached, there was a kingdom of coral castles. Princess Coral, a young mermaid with turquoise scales, was worried. The Great Reef — her kingdom's home — was turning white.
+
+"The water is getting too warm," explained Dr. Finn, an old seahorse scientist. "When coral gets stressed, it loses its color and dies."
+
+Princess Coral decided to find the legendary Cool Current — an underwater river of cold water that her grandmother had told her about in bedtime stories. Everyone said it was just a myth.
+
+Coral swam for three days, past the Kelp Forest where sea otters played, through the Midnight Trench where strange glowing fish lit her way, and finally to the Ice Shelf where polar waters met the warm sea.
+
+There it was — a shimmering blue current flowing south. But it was blocked by a wall of trash that humans had dumped in the ocean. Bottles, bags, and nets formed a massive dam.
+
+Coral called every sea creature she'd met on her journey. The otters chewed through nets. The glowing fish melted plastic with their heat. Whales pushed the heavy debris aside. Together, they cleared the path.
+
+The Cool Current flowed again, rushing toward the Great Reef. Slowly, the coral began to regain its color. Princess Coral's kingdom was saved — not by magic, but by teamwork and courage.`,
+ panels:[
+  {scene:'reef',desc:'The Great Reef kingdom — coral castles, Princess Coral on her throne, but coral turning white'},
+  {scene:'journey',desc:'Coral swims through three environments — Kelp Forest, Midnight Trench, Ice Shelf (triptych)'},
+  {scene:'trash',desc:'The trash dam blocking the Cool Current — bottles, bags, nets in a massive wall'},
+  {scene:'teamwork',desc:'Sea creatures working together — otters chewing nets, glowing fish, whales pushing debris'},
+  {scene:'saved',desc:'The reef comes alive with color again — Coral celebrates with all the sea creatures, vibrant coral'}
+ ],
+ questions:[
+  {q:'Why is the Great Reef turning white?',opts:['It\'s being painted','The water is getting too warm','Fish are eating it','It\'s a new type of coral'],ans:1},
+  {q:'What is the Cool Current?',opts:['A type of fish','A coral species','An underwater river of cold water','A magic spell'],ans:2},
+  {q:'What blocked the Cool Current?',opts:['Rocks from an earthquake','A wall of human trash','Ice from the poles','A giant whale'],ans:1},
+  {q:'How did the sea creatures clear the trash?',opts:['They used magic','Each used their special abilities to work together','They asked humans for help','Princess Coral did it alone'],ans:1},
+  {q:'What saved the kingdom?',opts:['A magic potion','Teamwork and courage','The trash disappeared on its own','The mermaids moved away'],ans:1}
+ ]
+},
+{id:'inventor',title:'The Tiny Inventor',theme:'sci-fi',
+ bgCol:['#0a1428','#1a2a4a'],panelBg:'#0d1a30',accent:'#44ddff',
+ text:`In the floating city of Cogsworth, everything ran on steam and gears. Eleven-year-old Mika lived in the lowest level, where broken machines piled up like mountains. While the rich families above had gleaming robots and flying cars, the people down below fixed things with scraps.
+
+Mika was different from the other kids. She saw beauty in broken things. A cracked gear became a spinning toy. A leaky pipe became a water fountain for the stray cats. She kept a workshop inside an old refrigerator, filled with tools she'd made herself — a screwdriver from a fork, pliers from two spoons, and a tiny welder powered by a bicycle battery.
+
+One day, alarms screamed through every level. The Great Engine — a massive machine in the city center that kept Cogsworth floating — was failing. Its main gear had cracked. The rich engineers tried everything, but their replacement gears were too perfect. The Great Engine was old and quirky; it needed a gear with just the right amount of wobble.
+
+The mayor sent out a message: "Anyone who can fix the Great Engine will receive the Golden Wrench Award."
+
+Mika knew exactly what to do. She had found a gear last month in the scrap yard that had a tiny wobble. She'd almost thrown it away, but something told her to keep it. She raced to the city center, gear in hand. The engineers laughed at her scrap-metal tools, but Mika climbed inside the engine and fit the gear perfectly. The engine coughed, sputtered, and then roared to life louder than ever.
+
+The city cheered. Mika became the youngest person ever to receive the Golden Wrench. She used the prize money to build a workshop for all the kids on the lowest level. "One person's junk," Mika said at the ceremony, "is another person's flying city."`,
+ panels:[
+  {scene:'city',desc:'The floating city of Cogsworth — steam and gears, upper and lower levels visible'},
+  {scene:'tunnel',desc:'Mika in her refrigerator workshop, surrounded by scrap-metal tools and inventions'},
+  {scene:'storm',desc:'Alarms blast — the Great Engine falters, city tilts, people panicking'},
+  {scene:'generator',desc:'Mika climbs inside the massive Great Engine, fitting the wobbly gear into place'},
+  {scene:'hero',desc:'Mika receives the Golden Wrench — crowd cheers, city stable, her workshop sign in the background'}
+ ],
+ questions:[
+  {q:'Where does Mika live in Cogsworth?',opts:['The highest level','The middle level','The lowest level','Outside the city'],ans:2},
+  {q:'What is special about Mika\'s tools?',opts:['They are made from gold','They are made from scraps and junk','They are stolen','They are invisible'],ans:1},
+  {q:'Why couldn\'t the rich engineers fix the Great Engine?',opts:['They were too scared','Their gears were too perfect for the old engine','They didn\'t try','The engine was too small'],ans:1},
+  {q:'What did Mika use to fix the engine?',opts:['A brand new gear from a store','A gear with just the right wobble from the scrap yard','A magic wrench','The mayor\'s tools'],ans:1},
+  {q:'What is the main message of this story?',opts:['Rich people are always wrong','What others see as junk can be incredibly valuable','Old machines should be replaced','Children should not fix machines'],ans:1}
+ ]
+},
+{id:'compass',title:'The Compass That Pointed Home',theme:'fantasy',
+ bgCol:['#1a2a10','#0d1a08'],panelBg:'#142010',accent:'#ffaa33',
+ text:`Sage was a young fox who lived at the edge of the Whispering Woods. Her grandmother had given her a small brass compass that didn't point north. "It points to wherever you're needed most," Grandmother Fox explained.
+
+One morning, Sage woke up and the compass needle was spinning wildly. It finally stopped, pointing deep into the forest. Sage packed a small bag — berries, a rope, and her grandmother's scarf — and followed the needle.
+
+The compass led her through the Mushroom Meadow, where toadstools glowed purple and blue. Fireflies spelled out words in the air: "Hurry." Sage walked faster. She crossed the Singing River by hopping across stones that hummed different notes with each step — do, re, mi, fa, sol.
+
+The compass finally stopped at a cave covered in ivy. Inside, she found a baby owl with a broken wing, shivering in the cold. The owl was too young to fly, and its mother was nowhere to be found.
+
+Sage carefully wrapped the owl's wing with her grandmother's scarf and carried it in her bag. She followed the compass back through the Singing River and Mushroom Meadow. But the needle didn't point home — it pointed to the Great Oak, where the owl families lived.
+
+A mother owl swooped down, hooting with joy. She nuzzled her baby and looked at Sage with grateful golden eyes. The compass needle finally pointed home. As Sage walked back, she realized the compass didn't just point to where she was needed — it taught her that helping someone else always leads you right back to where you belong.`,
+ panels:[
+  {scene:'garden',desc:'Sage the fox at the edge of Whispering Woods, compass spinning wildly in her paw'},
+  {scene:'embervine',desc:'The glowing Mushroom Meadow — purple and blue toadstools, fireflies spelling HURRY'},
+  {scene:'frozen',desc:'Sage hops across the Singing River stones — musical notes floating from each step'},
+  {scene:'sick',desc:'Baby owl with broken wing in the ivy cave — Sage wraps it gently in grandmother\'s scarf'},
+  {scene:'cure',desc:'Mother owl reunited with baby at the Great Oak — Sage smiles, compass pointing home'}
+ ],
+ questions:[
+  {q:'What is special about Sage\'s compass?',opts:['It points north','It points to wherever you\'re needed most','It plays music','It glows in the dark'],ans:1},
+  {q:'What did the fireflies in Mushroom Meadow spell?',opts:['Hello','Danger','Hurry','Stop'],ans:2},
+  {q:'What was wrong with the baby owl?',opts:['It was hungry','It had a broken wing','It was lost in the dark','It couldn\'t hoot'],ans:1},
+  {q:'What did Sage use to wrap the owl\'s wing?',opts:['Leaves from the forest','Her rope','Her grandmother\'s scarf','Mushroom caps'],ans:2},
+  {q:'What lesson does the compass teach Sage?',opts:['Always walk north','Never go into caves','Helping others leads you right back to where you belong','Foxes are smarter than owls'],ans:2}
+ ]
+},
+{id:'submarine',title:'The Secret of Sunken City',theme:'ocean',
+ bgCol:['#081828','#0a2038'],panelBg:'#0d1a2a',accent:'#88ddff',
+ text:`Professor Gills was the smartest dolphin in the Western Pod. For twenty years, he studied a mystery — strange lights flickering at the bottom of the Mariana Valley, deeper than any dolphin had ever swum. His assistant was Kai, a twelve-year-old otter who could hold his breath for an incredible six minutes.
+
+"The legends say there's a sunken city down there," Professor Gills told Kai one morning. "A city built by ocean creatures thousands of years ago, before the waters rose."
+
+Kai's eyes went wide. "Can we go see it?"
+
+They built a tiny submarine from a giant clamshell, sealed with whale wax and powered by electric eels in a spinning wheel. As they descended, the water grew colder and darker. Bioluminescent jellyfish lit their way like lanterns.
+
+At two thousand feet, they found it — a city of coral towers and pearl-encrusted walls, perfectly preserved in the deep. Statues of sea creatures lined the streets. In the central plaza, a crystal sphere pulsed with warm light. It was a geothermal generator, still running after all these centuries, keeping the city lit.
+
+Professor Gills was amazed. "This technology is more advanced than anything we have today. These builders knew how to use the Earth's own heat for power."
+
+Kai touched the sphere and a holographic map appeared, showing tunnels connecting the Sunken City to reefs all around the world. "It's not just a city," Kai whispered. "It's the center of a whole civilization."
+
+They mapped everything carefully and returned to the surface. Their discovery changed how every ocean creature thought about their history. The deep ocean wasn't empty — it was full of secrets waiting to be found.`,
+ panels:[
+  {scene:'journey',desc:'Professor Gills the dolphin and Kai the otter prepare their clamshell submarine'},
+  {scene:'reef',desc:'The descent — bioluminescent jellyfish lighting the way as the sub drops into darkness'},
+  {scene:'trash',desc:'The Sunken City revealed — coral towers, pearl walls, statues lining the streets'},
+  {scene:'teamwork',desc:'Kai touches the crystal sphere — holographic tunnels map lights up the whole plaza'},
+  {scene:'saved',desc:'Back on the surface — Gills and Kai share their discovery, ocean creatures gather amazed'}
+ ],
+ questions:[
+  {q:'What is Professor Gills?',opts:['A shark','A dolphin','A whale','A turtle'],ans:1},
+  {q:'What is special about Kai the otter?',opts:['He can talk to fish','He can hold his breath for six minutes','He is the biggest otter','He can glow in the dark'],ans:1},
+  {q:'What powered the clamshell submarine?',opts:['A motor from a ship','Electric eels in a spinning wheel','Wind power','Whale song'],ans:1},
+  {q:'What was the crystal sphere in the Sunken City?',opts:['A magic gem','A geothermal generator that uses Earth\'s heat','A communication device','A decoration'],ans:1},
+  {q:'What did the holographic map show?',opts:['Treasure locations','Tunnels connecting to reefs around the world','A recipe for sea soup','A picture of the builders'],ans:1}
+ ]
+},
+{id:'weather',title:'The Cloud Painter',theme:'nature',
+ bgCol:['#0d1a0a','#1a2a10'],panelBg:'#101a0d',accent:'#88aaff',
+ text:`On top of Mount Breeze, above the clouds, lived an old woman named Nana Sky. Nobody knew how old she was — some said a hundred, some said a thousand. What everyone knew was this: Nana Sky painted the clouds.
+
+Every morning before dawn, she climbed to her studio — a flat rock overlooking the world — and mixed her paints. Gray for rain clouds, white for fair weather, pink and orange for sunsets, and dark purple for thunderstorms. She used a brush made from eagle feathers and a palette carved from a meteorite.
+
+A young boy named Marco hiked up the mountain one summer to see if the legend was true. He found Nana Sky sitting on her rock, painting a row of fluffy white clouds. "Are you really painting the sky?" he asked.
+
+"Not the sky, dear. The weather. Every brushstroke creates wind, rain, or sunshine for the people below."
+
+Marco watched her paint for a week. He learned that thin, wispy strokes made gentle breezes. Thick, swirling strokes created thunderstorms. And careful, layered strokes made the slow, steady rain that farmers needed for their crops.
+
+But on the seventh day, Nana Sky's hands began to shake. "I'm getting too old for this," she admitted. "The clouds are getting messier. See how the weather has been unpredictable lately?"
+
+Marco picked up a spare brush. His first cloud looked like a lumpy potato. His second looked like a squished hat. But by the end of the day, he painted a perfect rain cloud that sent a gentle shower over a dry village below.
+
+Nana Sky smiled. "Every painter starts with lumpy potatoes." She handed him the eagle-feather brush. "Take care of the sky, Marco. The people below are counting on you."
+
+Now Marco paints the clouds every morning, and if you look up on a clear day, you might see a cloud shaped like a lumpy potato. That's Marco practicing.`,
+ panels:[
+  {scene:'oak',desc:'Mount Breeze above the clouds — Nana Sky\'s studio on the flat rock, paint jars everywhere'},
+  {scene:'talking',desc:'Nana Sky painting clouds — brushstrokes becoming real clouds floating away'},
+  {scene:'history',desc:'Marco learns the different techniques — split panel: wispy for breeze, thick for storm, layered for rain'},
+  {scene:'spring',desc:'Nana Sky\'s hands shaking — messy clouds, unpredictable weather shown below'},
+  {scene:'club',desc:'Marco paints his first rain cloud — gentle shower falls on a dry village below, Nana smiles'}
+ ],
+ questions:[
+  {q:'Where does Nana Sky live?',opts:['In a valley','On top of Mount Breeze','Under the ocean','In a city'],ans:1},
+  {q:'What is Nana Sky\'s brush made from?',opts:['Tree branches','Eagle feathers','Cloud fluff','Silver wire'],ans:1},
+  {q:'What creates thunderstorms in the story?',opts:['Thin wispy brushstrokes','Careful layered strokes','Thick swirling strokes','Dots and dashes'],ans:2},
+  {q:'Why is the weather getting unpredictable?',opts:['Climate change','Nana Sky is getting too old and her hands shake','Someone stole her paints','The mountain is too high'],ans:1},
+  {q:'What does Marco\'s first cloud look like?',opts:['A perfect circle','A beautiful sunset','A lumpy potato','A star'],ans:2}
+ ]
+},
+{id:'detective',title:'The Case of the Vanishing Homework',theme:'mystery',
+ bgCol:['#2a1a10','#1a0d08'],panelBg:'#201410',accent:'#ffcc44',
+ text:`At Riverside Elementary, something strange was happening. Every Monday morning, at least five students walked into class with the same excuse: "My homework disappeared." Not lost, not eaten by a dog — literally vanished from their backpacks over the weekend.
+
+Ms. Torres, the third-grade teacher, was suspicious. "Homework doesn't just vanish," she told the class. But when she checked the backpacks herself, she found them completely empty — not even eraser shavings.
+
+That's when Zara decided to investigate. Zara was the kind of kid who noticed things other people missed. She noticed that Mr. Hendricks the janitor always whistled the same song at 3:15. She noticed that the cafeteria served pizza on days when it rained. And she noticed that every student who lost homework sat in the same row — the row closest to the window.
+
+Zara made a chart. Over three weeks, she recorded which students lost homework, where they sat, and what day they last saw their assignments. The pattern was clear: only students near the windows lost work, and it always disappeared between Friday afternoon and Monday morning.
+
+On Friday after school, Zara hid behind the bookshelf in the classroom with a flashlight, a notebook, and a bag of trail mix. She waited. At 6 PM, the building went quiet. At 8 PM, the hallway lights clicked off. At 9:47 PM, she heard it — a soft scratching sound at the window.
+
+Zara peeked over the bookshelf. A family of raccoons was climbing through a gap in the window screen. The mother raccoon walked straight to the row of desks by the window, stood on her hind legs, and unzipped a backpack with her clever little hands. She pulled out a folder of homework and carried it to the window, where her three babies were waiting.
+
+Zara followed them outside. Behind the school, near the dumpster, was the raccoons' den. And it was lined with homework papers. The raccoons weren't eating the homework — they were using it as bedding. The soft paper kept their babies warm.
+
+Zara took photos and showed Ms. Torres on Monday. The whole class laughed, but then they did something wonderful. They collected old newspapers and soft rags and built a cozy bed for the raccoon family in a wooden box near the playground. The janitor fixed the window screen. And the raccoons? They never took homework again. Though sometimes, on cold nights, Zara would leave a few blank sheets of paper near their box — just in case.
+
+Ms. Torres gave Zara an A+ and a new title: Official Classroom Detective.`,
+ panels:[
+  {scene:'kitchen',desc:'Ms. Torres examines empty backpacks — five confused students, homework mysteriously gone'},
+  {scene:'clues',desc:'Zara\'s investigation board — chart of missing homework, window-seat pattern circled in red'},
+  {scene:'interview',desc:'Zara hides behind the bookshelf after dark — flashlight, notebook, trail mix, watching the window'},
+  {scene:'caught',desc:'Raccoon family caught in the act — mama unzipping backpack, babies waiting at the window'},
+  {scene:'baking',desc:'The class builds a cozy raccoon bed — newspapers and rags, raccoon family moving in, Zara smiling'}
+ ],
+ questions:[
+  {q:'What was strange about the missing homework?',opts:['It was chewed up','It literally vanished from backpacks','It was turned in early','It changed color'],ans:1},
+  {q:'What pattern did Zara discover?',opts:['Only boys lost homework','Only math homework vanished','Only students near the windows lost work','Only homework with drawings disappeared'],ans:2},
+  {q:'What time did Zara hear the scratching at the window?',opts:['6:00 PM','8:00 PM','9:47 PM','Midnight'],ans:2},
+  {q:'Why were the raccoons taking the homework?',opts:['To eat it','To read the answers','To use as warm bedding for their babies','To build a dam'],ans:2},
+  {q:'How did the class solve the raccoon problem?',opts:['They called animal control','They built a cozy bed with old newspapers and rags','They locked all the windows forever','They gave the raccoons their own backpacks'],ans:1}
+ ]
+},
+{id:'starmap',title:'The Girl Who Mapped the Stars',theme:'space',
+ bgCol:['#0a0820','#14102a'],panelBg:'#0d0a20',accent:'#ffaa88',
+ text:`In the year 2847, humanity had explored most of the Milky Way galaxy. Giant space stations orbited a thousand planets. Cargo ships flew between star systems carrying everything from moon cheese to asteroid ice cream. But there was one region nobody dared to enter — the Quiet Zone.
+
+The Quiet Zone was a vast stretch of space where no signals came in or out. Ships that flew near its border reported their instruments going haywire — compasses spinning, maps glitching, engines sputtering. Three exploration ships had entered the Quiet Zone in the past century. None returned.
+
+Twelve-year-old Ava lived on Station Polaris, a school station orbiting Neptune. While other students studied standard navigation — following well-mapped trade routes between known stars — Ava was obsessed with the Quiet Zone. She spent every free hour in the observatory, charting the faint light that leaked from its edges.
+
+"There are stars in there," she told her teacher, Professor Vega. "Hundreds of them. They're just hidden behind some kind of interference field."
+
+Professor Vega shook his head. "Many brilliant navigators have tried to map the Quiet Zone, Ava. The interference makes it impossible."
+
+But Ava had noticed something nobody else had. The interference wasn't random — it pulsed in a pattern. Every 47 seconds, there was a tiny gap where the signal cleared for exactly 0.3 seconds. Too fast for normal sensors to catch, but Ava had built a custom receiver from spare parts that could capture data in those tiny windows.
+
+For six months, she recorded thousands of 0.3-second snapshots. She wrote a computer program that stitched them together like a jigsaw puzzle. Piece by piece, a map emerged — not just of a few stars, but of an enormous star cluster with over four hundred stars, many of them orbited by planets. It was the largest undiscovered region in the galaxy.
+
+But the most amazing discovery was at the center. One star pulsed with a rhythm that wasn't natural — it was mathematical. Prime numbers: 2, 3, 5, 7, 11, 13. Someone — or something — was sending a signal from inside the Quiet Zone.
+
+Ava presented her map to the Galactic Navigation Council. The room of adults went completely silent. Then the head of the Council stood up. "In two hundred years, no one has mapped a single star in the Quiet Zone. This twelve-year-old has mapped four hundred. And she may have found the first evidence of intelligent life beyond our own."
+
+The Council named the star cluster "Ava's Garden." They built a new class of ships equipped with Ava's pulse-capture technology to explore it. And Ava? She was offered a place on the first expedition — the youngest explorer in galactic history.
+
+On the morning they launched, Ava looked back at Station Polaris getting smaller and smaller. Ahead of her was an entire unknown region of space, full of stars no human had ever visited. She pulled out her notebook — the same one she'd used in the observatory — and opened to a fresh page.
+
+"Day one," she wrote. "We're going to find out who's sending that signal."`,
+ panels:[
+  {scene:'ship',desc:'Station Polaris orbiting Neptune — Ava at the observatory window, stars everywhere, the dark Quiet Zone visible'},
+  {scene:'clouds',desc:'Ava\'s custom receiver capturing 0.3-second snapshots — data streams, pulse pattern visualized'},
+  {scene:'cave',desc:'The map takes shape on Ava\'s screen — 400 stars emerging from the puzzle, gasps from classmates'},
+  {scene:'guardian',desc:'The mathematical signal at the center — prime numbers pulsing from a strange star, Ava\'s eyes wide'},
+  {scene:'hologram',desc:'Ava\'s ship launches toward Ava\'s Garden — the star cluster glowing ahead, notebook open on her lap'}
+ ],
+ questions:[
+  {q:'What is the Quiet Zone?',opts:['A library in space','A region where no signals come in or out','A sleeping area on ships','A type of engine'],ans:1},
+  {q:'How long was the gap in the interference pattern?',opts:['47 seconds','5 seconds','0.3 seconds','10 minutes'],ans:2},
+  {q:'How many stars did Ava map in the Quiet Zone?',opts:['About 50','About 100','About 400','About 1000'],ans:2},
+  {q:'What was special about the signal at the center?',opts:['It played music','It pulsed in prime numbers, suggesting intelligent life','It spelled out words','It was Ava\'s own signal bouncing back'],ans:1},
+  {q:'What was the star cluster named?',opts:['The Quiet Garden','Ava\'s Garden','Neptune\'s Cluster','Professor Vega\'s Discovery'],ans:1}
+ ]
+}
+];
+
+/* ========== SHOP ITEMS ========== */
+const SHOP=[
+ {id:'pop',name:'Pop Art Style',cost:30,em:'🎨',desc:'Bright colors and halftone dots'},
+ {id:'manga',name:'Manga Style',cost:30,em:'⚡',desc:'Speed lines and dramatic angles'},
+ {id:'watercolor',name:'Watercolor Style',cost:45,em:'🌊',desc:'Soft painted look'},
+ {id:'neon',name:'Neon Glow Style',cost:45,em:'💫',desc:'Glowing outlines on dark'},
+ {id:'hint',name:'Hint Power (x3)',cost:15,em:'💡',desc:'Highlights wrong answers'},
+ {id:'streak',name:'Streak Shield',cost:25,em:'🛡️',desc:'Protects streak once per chapter'},
+ {id:'xpBoost',name:'XP Boost',cost:35,em:'⭐',desc:'Double XP for one chapter'},
+ {id:'inkMag',name:'Ink Magnet',cost:20,em:'🧲',desc:'Earn 50% more ink'}
+];
+
+/* ========== GAME STATE ========== */
+let G={curChap:0,curQ:0,correct:0,panelIdx:0,panelResults:[],qActive:false,streak:0};
+
+/* ========== AUDIO ========== */
+let ax=null,mI=null;
+function iA(){if(ax)return;ax=new(window.AudioContext||window.webkitAudioContext)()}
+function pn(f,d,tp='square',v=.03){
+ if(!ax||!S.musicOn)return;
+ const o=ax.createOscillator(),g=ax.createGain();
+ o.type=tp;o.frequency.value=f;
+ g.gain.setValueAtTime(v,ax.currentTime);
+ g.gain.exponentialRampToValueAtTime(.001,ax.currentTime+d);
+ o.connect(g);g.connect(ax.destination);o.start();o.stop(ax.currentTime+d);
+}
+function sfx(n){
+ if(!ax||!S.musicOn)return;
+ switch(n){
+  case'correct':pn(523,.1,'sine',.05);setTimeout(()=>pn(659,.1,'sine',.05),80);setTimeout(()=>pn(784,.15,'sine',.06),160);break;
+  case'wrong':pn(200,.2,'sawtooth',.04);setTimeout(()=>pn(160,.3,'sawtooth',.03),100);break;
+  case'panel':pn(440,.08,'sine',.04);setTimeout(()=>pn(550,.08,'sine',.04),60);setTimeout(()=>pn(660,.12,'sine',.05),120);break;
+  case'click':pn(800,.05,'sine',.03);break;
+  case'complete':pn(523,.12,'triangle',.04);setTimeout(()=>pn(659,.12,'triangle',.04),100);setTimeout(()=>pn(784,.12,'triangle',.04),200);setTimeout(()=>pn(1047,.2,'triangle',.05),300);break;
+  case'buy':pn(440,.1,'sine',.04);setTimeout(()=>pn(660,.15,'sine',.05),100);break;
+ }
+}
+const MUS={
+ read:[262,294,330,349,392,349,330,294,262,247,220,247],
+ comic:[392,440,494,523,494,440,392,330,294,330,392,440]
+};
+function startM(tr){
+ stopM();if(!ax||!S.musicOn)return;
+ let i=0;const ns=MUS[tr];if(!ns)return;
+ mI=setInterval(()=>{pn(ns[i%ns.length],.18,'triangle',.015);i++},350);
+}
+function stopM(){clearInterval(mI);mI=null}
+function toggleMusic(){S.musicOn=!S.musicOn;document.getElementById('mBtn').textContent=S.musicOn?'MUSIC':'MUTED';if(!S.musicOn)stopM();save()}
+
+/* ========== SCREENS ========== */
+function showScr(id){
+ document.querySelectorAll('.scr').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+function showBnr(t,c){
+ c=c||'#44ddff';const b=document.getElementById('banner');
+ b.textContent=t;b.style.background='linear-gradient(135deg,'+c+','+c+'cc)';
+ b.style.color='#fff';b.style.textShadow='0 0 8px '+c;
+ b.classList.add('show');setTimeout(()=>b.classList.remove('show'),2200);
+}
+
+/* ========== CHAPTER SELECT ========== */
+function goChapters(){
+ iA();showScr('chapScreen');
+ const grid=document.getElementById('chapGrid');grid.innerHTML='';
+ STORIES.forEach((st,i)=>{
+  const cd=document.createElement('div');
+  cd.className='chap-card'+(i>0&&!S.chaps[STORIES[i-1].id]?' locked':'')+(S.chaps[st.id]?' done':'');
+  const cv=document.createElement('canvas');cv.width=140;cv.height=120;
+  drawChapThumb(cv,st,i);
+  cd.appendChild(cv);
+  const info=document.createElement('div');info.className='chap-info';
+  info.innerHTML=`<div style="font-size:11px;color:${st.accent}">${st.title}</div>`;
+  if(S.chaps[st.id]){
+   const stars=S.chaps[st.id].stars||0;
+   info.innerHTML+=`<div class="chap-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>`;
+  }
+  cd.appendChild(info);
+  cd.onclick=()=>{sfx('click');startChapter(i)};
+  grid.appendChild(cd);
+ });
+}
+
+function drawChapThumb(cv,st,idx){
+ const c=cv.getContext('2d');
+ // Background gradient
+ const bg=c.createLinearGradient(0,0,140,120);
+ bg.addColorStop(0,st.bgCol[0]);bg.addColorStop(1,st.bgCol[1]);
+ c.fillStyle=bg;c.fillRect(0,0,140,120);
+ // Theme-specific thumbnail art
+ const t=Date.now();
+ c.save();
+ switch(st.theme){
+  case'sci-fi':
+   // Stars
+   for(let i=0;i<20;i++){c.fillStyle=`rgba(255,255,255,${.3+Math.random()*.5})`;c.beginPath();c.arc(Math.random()*140,Math.random()*80,Math.random()*1.5+.5,0,Math.PI*2);c.fill();}
+   // Robot
+   c.fillStyle='#667788';c.beginPath();c.roundRect(55,40,30,35,4);c.fill();
+   c.fillStyle='#88aacc';c.beginPath();c.roundRect(58,44,24,20,3);c.fill();
+   c.fillStyle='#44aaff';c.beginPath();c.arc(65,52,3,0,Math.PI*2);c.arc(75,52,3,0,Math.PI*2);c.fill();
+   // Antenna
+   c.strokeStyle='#aaa';c.lineWidth=2;c.beginPath();c.moveTo(70,40);c.lineTo(70,30);c.stroke();
+   c.fillStyle='#44aaff';c.beginPath();c.arc(70,28,3,0,Math.PI*2);c.fill();
+   break;
+  case'fantasy':
+   // Trees
+   c.fillStyle='#2a4420';c.beginPath();c.arc(20,70,25,0,Math.PI*2);c.arc(120,65,30,0,Math.PI*2);c.fill();
+   c.fillStyle='#443322';c.fillRect(17,80,6,40);c.fillRect(117,80,6,40);
+   // Dragon
+   c.fillStyle='#55bb44';c.beginPath();c.ellipse(70,55,18,12,0,0,Math.PI*2);c.fill();
+   c.fillStyle='#44aa33';c.beginPath();c.arc(70,42,10,0,Math.PI*2);c.fill();
+   // Eyes
+   c.fillStyle='#ffcc00';c.beginPath();c.arc(66,40,2.5,0,Math.PI*2);c.arc(74,40,2.5,0,Math.PI*2);c.fill();
+   // Flower
+   c.fillStyle='#ff6688';c.beginPath();c.arc(85,75,5,0,Math.PI*2);c.fill();
+   c.fillStyle='#ffcc00';c.beginPath();c.arc(85,75,2,0,Math.PI*2);c.fill();
+   break;
+  case'mystery':
+   // Dark room
+   c.fillStyle='#3a2a18';c.fillRect(0,70,140,50);
+   // Cookie jar
+   c.fillStyle='#cc8844';c.beginPath();c.roundRect(50,45,40,35,8);c.fill();
+   c.fillStyle='#aa6633';c.beginPath();c.roundRect(55,40,30,10,5);c.fill();
+   // Crumbs
+   c.fillStyle='#ddaa66';
+   for(let i=0;i<8;i++){c.beginPath();c.arc(30+Math.random()*80,75+Math.random()*15,1+Math.random()*2,0,Math.PI*2);c.fill();}
+   // Magnifying glass
+   c.strokeStyle='#ccaa44';c.lineWidth=3;c.beginPath();c.arc(110,35,12,0,Math.PI*2);c.stroke();
+   c.strokeStyle='#886633';c.lineWidth=4;c.beginPath();c.moveTo(120,45);c.lineTo(130,60);c.stroke();
+   break;
+  case'space':
+   // Nebula
+   const ng=c.createRadialGradient(70,60,0,70,60,80);
+   ng.addColorStop(0,'rgba(200,100,255,.2)');ng.addColorStop(.5,'rgba(100,50,200,.1)');ng.addColorStop(1,'transparent');
+   c.fillStyle=ng;c.fillRect(0,0,140,120);
+   for(let i=0;i<30;i++){c.fillStyle=`rgba(255,255,255,${.3+Math.random()*.7})`;c.beginPath();c.arc(Math.random()*140,Math.random()*120,Math.random()*1.5+.3,0,Math.PI*2);c.fill();}
+   // Ship
+   c.fillStyle='#8866aa';c.beginPath();c.moveTo(70,30);c.lineTo(55,60);c.lineTo(85,60);c.closePath();c.fill();
+   c.fillStyle='#cc66ff';c.beginPath();c.moveTo(70,35);c.lineTo(62,55);c.lineTo(78,55);c.closePath();c.fill();
+   // Engine glow
+   c.fillStyle='rgba(255,150,50,.5)';c.beginPath();c.ellipse(70,63,6,4,0,0,Math.PI*2);c.fill();
+   break;
+  case'nature':
+   // Sky
+   c.fillStyle='#88bbdd';c.fillRect(0,0,140,60);
+   // Ground
+   c.fillStyle='#4a8830';c.fillRect(0,60,140,60);
+   // Big tree
+   c.fillStyle='#553322';c.fillRect(60,30,20,70);
+   c.fillStyle='#448822';c.beginPath();c.arc(70,25,30,0,Math.PI*2);c.fill();
+   c.fillStyle='#55aa33';c.beginPath();c.arc(65,20,20,0,Math.PI*2);c.fill();
+   // Girl
+   c.fillStyle='#ffcc88';c.beginPath();c.arc(40,70,6,0,Math.PI*2);c.fill();
+   c.fillStyle='#4466cc';c.fillRect(36,76,8,12);
+   break;
+  case'ocean':
+   // Deep water gradient
+   const wg=c.createLinearGradient(0,0,0,120);
+   wg.addColorStop(0,'#1a4466');wg.addColorStop(1,'#0a1828');
+   c.fillStyle=wg;c.fillRect(0,0,140,120);
+   // Coral
+   c.fillStyle='#ff6688';c.beginPath();c.arc(30,100,15,Math.PI,0);c.fill();
+   c.fillStyle='#ffaa44';c.beginPath();c.arc(80,95,12,Math.PI,0);c.fill();
+   c.fillStyle='#44ddcc';c.beginPath();c.arc(110,100,10,Math.PI,0);c.fill();
+   // Mermaid
+   c.fillStyle='#ffcc99';c.beginPath();c.arc(70,50,8,0,Math.PI*2);c.fill();
+   c.fillStyle='#44ccaa';c.beginPath();c.ellipse(70,65,6,14,0,0,Math.PI*2);c.fill();
+   // Bubbles
+   c.strokeStyle='rgba(255,255,255,.3)';c.lineWidth=1;
+   for(let i=0;i<5;i++){c.beginPath();c.arc(50+Math.random()*40,20+Math.random()*40,2+Math.random()*3,0,Math.PI*2);c.stroke();}
+   break;
+ }
+ c.restore();
+ // Comic panel overlay
+ c.strokeStyle='rgba(255,255,255,.15)';c.lineWidth=2;
+ c.beginPath();c.roundRect(2,2,136,116,6);c.stroke();
+ // Chapter number badge
+ c.fillStyle=st.accent;c.beginPath();c.arc(18,18,12,0,Math.PI*2);c.fill();
+ c.fillStyle='#fff';c.font='bold 14px Bangers';c.textAlign='center';c.textBaseline='middle';
+ c.fillText(String(idx+1),18,19);
+}
+
+/* ========== START CHAPTER ========== */
+function startChapter(i){
+ iA();G.curChap=i;G.curQ=0;G.correct=0;G.panelIdx=0;
+ G.panelResults=new Array(STORIES[i].panels.length).fill(null);
+ G.streak=0;
+ const st=STORIES[i];
+ document.getElementById('storyTitle').textContent=st.title;
+ document.getElementById('storyText').textContent=st.text;
+ document.getElementById('hud').classList.add('active');
+ document.getElementById('hudCh').textContent=i+1;
+ document.getElementById('hudQ').textContent='0/'+st.questions.length;
+ document.getElementById('hudInk').textContent=S.ink;
+ document.getElementById('hudStreak').textContent='';
+ showScr('storyScreen');
+ startM('read');
+}
+
+/* ========== QUESTIONS ========== */
+function startQuestions(){
+ stopM();
+ showNextQuestion();
+}
+
+function showNextQuestion(){
+ const st=STORIES[G.curChap];
+ if(G.curQ>=st.questions.length){
+  finishChapter();return;
+ }
+ const q=st.questions[G.curQ];
+ document.getElementById('qNum').textContent=`QUESTION ${G.curQ+1} of ${st.questions.length}`;
+ document.getElementById('qText').textContent=q.q;
+ const opts=document.getElementById('qOpts');opts.innerHTML='';
+ q.opts.forEach((o,i)=>{
+  const btn=document.createElement('button');btn.className='q-opt';
+  btn.textContent=String.fromCharCode(65+i)+'. '+o;
+  btn.onclick=()=>answerQ(i,btn);
+  opts.appendChild(btn);
+ });
+ showScr('qScreen');
+ document.getElementById('hudQ').textContent=(G.curQ+1)+'/'+st.questions.length;
+}
+
+function answerQ(idx,btn){
+ if(G.qActive)return;G.qActive=true;
+ const st=STORIES[G.curChap];
+ const q=st.questions[G.curQ];
+ const isCorrect=idx===q.ans;
+ if(isCorrect){
+  btn.classList.add('correct');sfx('correct');
+  G.correct++;G.streak++;S.streak++;
+  if(S.streak>S.mxStreak)S.mxStreak=S.streak;
+  const inkEarn=10+(G.streak>2?5:0)+(S.items.inkMag?5:0);
+  S.ink+=inkEarn;
+  document.getElementById('hudInk').textContent=S.ink;
+  if(G.streak>=3)document.getElementById('hudStreak').textContent=G.streak+'x STREAK!';
+  showBnr('CORRECT! +'+inkEarn+' ink','#44ff88');
+  G.panelResults[G.curQ]=true;
+ }else{
+  btn.classList.add('wrong');sfx('wrong');
+  G.streak=0;S.streak=0;
+  document.getElementById('hudStreak').textContent='';
+  showBnr('Not quite...','#ff4444');
+  // Show correct answer
+  const allBtns=document.querySelectorAll('.q-opt');
+  allBtns[q.ans].classList.add('correct');
+  G.panelResults[G.curQ]=false;
+ }
+ S.xp+=isCorrect?20:5;
+ if(S.xp>=S.lvl*60){S.lvl++;S.xp-=S.lvl*60;showBnr('LEVEL UP! Level '+S.lvl,'#ffcc00');}
+ save();
+ G.curQ++;
+ setTimeout(()=>{
+  G.qActive=false;
+  // Show the comic panel for this question
+  showComicPanel(G.curQ-1);
+ },1200);
+}
+
+/* ========== COMIC PANEL RENDERING ========== */
+function showComicPanel(panelIdx){
+ G.panelIdx=panelIdx;
+ stopM();startM('comic');
+ const st=STORIES[G.curChap];
+ const cv=document.getElementById('comicCv');
+ const w=Math.min(800,window.innerWidth*.9);
+ cv.width=w;cv.height=w*.7;
+ drawComicPanel(cv,st,panelIdx,G.panelResults[panelIdx]);
+ sfx('panel');
+ // Panel dots
+ const dots=document.getElementById('panelDots');dots.innerHTML='';
+ for(let i=0;i<=panelIdx;i++){
+  const d=document.createElement('div');
+  d.className='panel-dot'+(i===panelIdx?' current':'')+(G.panelResults[i]!==null?' filled':'');
+  dots.appendChild(d);
+ }
+ // Remaining unfilled
+ for(let i=panelIdx+1;i<st.panels.length;i++){
+  const d=document.createElement('div');d.className='panel-dot';
+  dots.appendChild(d);
+ }
+ showScr('comicScreen');
+ document.getElementById('hud').classList.add('active');
+}
+
+function nextPanel(){
+ sfx('click');
+ const st=STORIES[G.curChap];
+ if(G.curQ<st.questions.length){
+  showNextQuestion();
+ }else{
+  finishChapter();
+ }
+}
+
+/* ========== DRAW COMIC PANEL (THE BIG ONE) ========== */
+function drawComicPanel(cv,st,panelIdx,correct){
+ const c=cv.getContext('2d'),w=cv.width,h=cv.height,t=Date.now();
+ const panel=st.panels[panelIdx];
+ // Aged paper texture background
+ const paperG=c.createRadialGradient(w*.4,h*.4,0,w*.5,h*.5,w*.7);
+ paperG.addColorStop(0,'#fdf8e8');paperG.addColorStop(.6,'#f9f0d8');paperG.addColorStop(1,'#ede4c8');
+ c.fillStyle=paperG;c.fillRect(0,0,w,h);
+ // Paper fiber texture
+ for(let i=0;i<300;i++){
+  c.fillStyle=`rgba(180,160,120,${Math.random()*.05})`;
+  const fx=Math.random()*w,fy=Math.random()*h;
+  c.fillRect(fx,fy,Math.random()*4+1,Math.random()*2+.5);
+ }
+ // Subtle coffee stain ring
+ c.strokeStyle='rgba(160,120,60,.03)';c.lineWidth=8;
+ c.beginPath();c.arc(w*.75,h*.2,w*.08,0,Math.PI*2);c.stroke();
+ // Edge vignette
+ const vig=c.createRadialGradient(w*.5,h*.5,w*.3,w*.5,h*.5,w*.65);
+ vig.addColorStop(0,'transparent');vig.addColorStop(1,'rgba(120,100,60,.06)');
+ c.fillStyle=vig;c.fillRect(0,0,w,h);
+
+ // Panel border (thick comic border with double stroke)
+ const pad=20,pw=w-pad*2,ph=h-pad*2;
+ c.save();
+ c.shadowColor='rgba(0,0,0,.35)';c.shadowBlur=16;c.shadowOffsetX=5;c.shadowOffsetY=5;
+ c.fillStyle='#fff';c.beginPath();c.roundRect(pad,pad,pw,ph,6);c.fill();
+ c.shadowBlur=0;c.shadowOffsetX=0;c.shadowOffsetY=0;
+ c.restore();
+ // Inner panel clip
+ c.save();
+ c.beginPath();c.roundRect(pad+3,pad+3,pw-6,ph-6,5);c.clip();
+ const px=pad+3,py=pad+3,ppw=pw-6,pph=ph-6;
+
+ if(correct===true){
+  drawPanelScene(c,st,panel,px,py,ppw,pph,t);
+ }else if(correct===false){
+  drawSillyPanel(c,st,panel,px,py,ppw,pph,t);
+ }else{
+  // Mystery silhouette with dramatic lighting
+  const mG=c.createRadialGradient(px+ppw/2,py+pph/2,0,px+ppw/2,py+pph/2,ppw*.5);
+  mG.addColorStop(0,'#1a1a2a');mG.addColorStop(1,'#0a0a14');
+  c.fillStyle=mG;c.fillRect(px,py,ppw,pph);
+  // Animated sparkles
+  for(let i=0;i<8;i++){
+   const sx=px+ppw*.2+Math.sin(t/500+i)*ppw*.3,sy=py+pph*.2+Math.cos(t/400+i*1.3)*pph*.3;
+   c.fillStyle=`rgba(${st.accent?'255,170,50':'200,200,255'},${.1+Math.sin(t/200+i)*.1})`;
+   c.beginPath();c.arc(sx,sy,2,0,Math.PI*2);c.fill();
+  }
+  c.fillStyle='rgba(255,255,255,.06)';c.font='bold '+Math.floor(ppw*.18)+'px Bangers';c.textAlign='center';
+  c.fillText('?',px+ppw/2,py+pph/2+ppw*.06);
+  c.fillStyle='rgba(255,255,255,.03)';c.font='bold '+Math.floor(ppw*.06)+'px Comic Neue';
+  c.fillText('Answer to unlock',px+ppw/2,py+pph*.75);
+ }
+ c.restore();
+
+ // Double comic border
+ c.strokeStyle='#000';c.lineWidth=5;c.beginPath();c.roundRect(pad,pad,pw,ph,6);c.stroke();
+ c.strokeStyle='#222';c.lineWidth=1.5;c.beginPath();c.roundRect(pad-2,pad-2,pw+4,ph+4,8);c.stroke();
+
+ // Style overlays — halftone in corners
+ drawHalftone(c,pad+8,pad+8,70,70,.5);
+ drawHalftone(c,w-pad-78,h-pad-78,70,70,.35);
+ // Ink splatter decorations
+ const splatCols=[st.accent||'#ff4466','rgba(0,0,0,.06)'];
+ for(let i=0;i<3;i++){
+  c.fillStyle=splatCols[i%2];c.globalAlpha=.04;
+  const sx=pad+30+Math.sin(panelIdx*3+i)*pw*.3,sy=pad+20+Math.cos(panelIdx*2+i)*ph*.2;
+  c.beginPath();c.arc(sx,sy,4+Math.random()*8,0,Math.PI*2);c.fill();
+  for(let j=0;j<3;j++){c.beginPath();c.arc(sx+Math.random()*12-6,sy+Math.random()*12-6,1+Math.random()*2,0,Math.PI*2);c.fill();}
+ }
+ c.globalAlpha=1;
+
+ // Caption box — styled narration box
+ const capH=54;
+ // Caption box shadow
+ c.fillStyle='rgba(0,0,0,.1)';c.beginPath();c.roundRect(pad+22,h-pad-capH-6,pw-40,capH,8);c.fill();
+ // Caption box body
+ const capG=c.createLinearGradient(0,h-pad-capH-10,0,h-pad-10);
+ capG.addColorStop(0,'rgba(255,255,230,.95)');capG.addColorStop(1,'rgba(255,250,210,.95)');
+ c.fillStyle=capG;c.beginPath();c.roundRect(pad+20,h-pad-capH-10,pw-40,capH,8);c.fill();
+ // Double border on caption
+ c.strokeStyle='#222';c.lineWidth=2;c.beginPath();c.roundRect(pad+20,h-pad-capH-10,pw-40,capH,8);c.stroke();
+ c.strokeStyle='rgba(0,0,0,.15)';c.lineWidth=.5;c.beginPath();c.roundRect(pad+23,h-pad-capH-7,pw-46,capH-6,6);c.stroke();
+ // Caption text
+ c.fillStyle='#1a1a1a';c.font='bold '+Math.floor(Math.min(14,w*.022))+'px Comic Neue';c.textAlign='center';
+ wrapText(c,panel.desc,w/2,h-pad-capH+10,pw-85,16);
+
+ // Panel number badge with ring
+ c.save();c.shadowColor=st.accent||'#ff4466';c.shadowBlur=6;
+ c.fillStyle=st.accent||'#ff4466';c.beginPath();c.arc(pad+16,pad+16,15,0,Math.PI*2);c.fill();
+ c.shadowBlur=0;c.restore();
+ c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.arc(pad+16,pad+16,15,0,Math.PI*2);c.stroke();
+ c.fillStyle='#fff';c.font='bold 16px Bangers';c.textAlign='center';c.textBaseline='middle';
+ c.fillText(String(panelIdx+1),pad+16,pad+17);
+
+ // Correct/wrong stamp — much more dramatic
+ if(correct===true){
+  c.save();c.translate(w-pad-55,pad+40);c.rotate(.18);
+  // Outer ring
+  c.strokeStyle='rgba(0,200,80,.2)';c.lineWidth=6;c.beginPath();c.arc(0,0,34,0,Math.PI*2);c.stroke();
+  // Inner fill
+  c.fillStyle='rgba(0,200,80,.12)';c.beginPath();c.arc(0,0,30,0,Math.PI*2);c.fill();
+  c.strokeStyle='rgba(0,200,80,.7)';c.lineWidth=3;c.beginPath();c.arc(0,0,30,0,Math.PI*2);c.stroke();
+  // Star decorations
+  for(let i=0;i<5;i++){const a=Math.PI*2*i/5-.5;c.fillStyle='rgba(0,200,80,.3)';
+   c.beginPath();c.arc(Math.cos(a)*26,Math.sin(a)*26,3,0,Math.PI*2);c.fill();}
+  c.fillStyle='rgba(0,200,80,.8)';c.font='bold 13px Bangers';c.textAlign='center';
+  c.fillText('GREAT',0,5);c.restore();
+ }else if(correct===false){
+  c.save();c.translate(w-pad-55,pad+40);c.rotate(-.12);
+  c.strokeStyle='rgba(255,80,40,.2)';c.lineWidth=6;c.beginPath();c.arc(0,0,34,0,Math.PI*2);c.stroke();
+  c.fillStyle='rgba(255,80,40,.1)';c.beginPath();c.arc(0,0,30,0,Math.PI*2);c.fill();
+  c.strokeStyle='rgba(255,80,40,.6)';c.lineWidth=3;c.beginPath();c.arc(0,0,30,0,Math.PI*2);c.stroke();
+  // X marks
+  c.strokeStyle='rgba(255,80,40,.3)';c.lineWidth=2;c.beginPath();c.moveTo(-8,-8);c.lineTo(8,8);c.moveTo(8,-8);c.lineTo(-8,8);c.stroke();
+  c.fillStyle='rgba(255,80,40,.7)';c.font='bold 11px Bangers';c.textAlign='center';
+  c.fillText('OOPS',0,5);c.restore();
+ }
+}
+
+/* ========== HALFTONE DOTS ========== */
+function drawHalftone(c,x,y,w,h,alpha){
+ c.save();c.globalAlpha=alpha;
+ for(let dy=0;dy<h;dy+=6){
+  for(let dx=0;dx<w;dx+=6){
+   const dist=Math.sqrt(dx*dx+dy*dy)/Math.sqrt(w*w+h*h);
+   const r=Math.max(.5,2.5*(1-dist));
+   c.fillStyle=st_accent||'#ff4466';
+   c.beginPath();c.arc(x+dx,y+dy,r,0,Math.PI*2);c.fill();
+  }
+ }
+ c.globalAlpha=1;c.restore();
+}
+var st_accent='#ff4466';
+
+/* ========== DRAW CORRECT PANEL SCENE ========== */
+function drawPanelScene(c,st,panel,x,y,w,h,t){
+ st_accent=st.accent;
+ const cx=x+w/2,cy=y+h/2;
+ switch(st.theme){
+  case'sci-fi':drawSciFi(c,panel.scene,x,y,w,h,t);break;
+  case'fantasy':drawFantasy(c,panel.scene,x,y,w,h,t);break;
+  case'mystery':drawMystery(c,panel.scene,x,y,w,h,t);break;
+  case'space':drawSpace(c,panel.scene,x,y,w,h,t);break;
+  case'nature':drawNature(c,panel.scene,x,y,w,h,t);break;
+  case'ocean':drawOcean(c,panel.scene,x,y,w,h,t);break;
+ }
+ // Cinematic vignette overlay
+ const vig=c.createRadialGradient(cx,cy,Math.min(w,h)*.3,cx,cy,Math.max(w,h)*.7);
+ vig.addColorStop(0,'transparent');vig.addColorStop(1,'rgba(0,0,0,.15)');
+ c.fillStyle=vig;c.fillRect(x,y,w,h);
+ // Speed lines for drama
+ drawSpeedLines(c,x,y,w,h,.04);
+ // Film grain overlay
+ c.save();c.globalAlpha=.02;
+ for(let i=0;i<30;i++){
+  c.fillStyle=Math.random()>.5?'#fff':'#000';
+  c.fillRect(x+Math.random()*w,y+Math.random()*h,Math.random()*2+1,Math.random()*2+1);
+ }
+ c.globalAlpha=1;c.restore();
+}
+
+/* ========== SILLY PANEL (wrong answer) ========== */
+function drawSillyPanel(c,st,panel,x,y,w,h,t){
+ // Wacky gradient background
+ const bg=c.createRadialGradient(x+w*.5,y+h*.5,0,x+w*.5,y+h*.5,w*.6);
+ bg.addColorStop(0,st.bgCol[0]);bg.addColorStop(.7,st.bgCol[1]);bg.addColorStop(1,'#0a0a14');
+ c.fillStyle=bg;c.fillRect(x,y,w,h);
+ // Spinning stars background
+ for(let i=0;i<40;i++){
+  const sx=x+(i*67+t/20)%w,sy=y+(i*43+Math.sin(t/300+i)*10)%h;
+  c.fillStyle=`rgba(255,255,255,${.1+Math.random()*.25})`;
+  c.save();c.translate(sx,sy);c.rotate(t/500+i);
+  // Tiny star shape
+  c.beginPath();for(let j=0;j<5;j++){const a=Math.PI*2*j/5-Math.PI/2;
+   c.lineTo(Math.cos(a)*3,Math.sin(a)*3);c.lineTo(Math.cos(a+Math.PI/5)*1.2,Math.sin(a+Math.PI/5)*1.2);}
+  c.fill();c.restore();
+ }
+ // Big goofy "?!" background text
+ c.fillStyle='rgba(255,255,255,.05)';c.font='bold '+Math.floor(w*.3)+'px Bangers';c.textAlign='center';
+ c.save();c.translate(x+w*.35,y+h*.35);c.rotate(Math.sin(t/400)*.1);c.fillText('?',0,0);c.restore();
+ c.save();c.translate(x+w*.65,y+h*.4);c.rotate(Math.sin(t/350)*.1);c.fillText('!',0,0);c.restore();
+ // Silly character — confused cat in a top hat
+ const mx=x+w/2,my=y+h*.52;
+ // Cat shadow
+ c.fillStyle='rgba(0,0,0,.15)';c.beginPath();c.ellipse(mx,my+w*.14,w*.1,w*.02,0,0,Math.PI*2);c.fill();
+ // Cat body with stripes
+ const catG=c.createRadialGradient(mx,my,0,mx,my,w*.1);
+ catG.addColorStop(0,'#ffbb66');catG.addColorStop(1,'#ff9944');
+ c.fillStyle=catG;c.beginPath();c.ellipse(mx,my,w*.08,w*.1,0,0,Math.PI*2);c.fill();
+ // Tiger stripes
+ c.strokeStyle='rgba(200,100,20,.3)';c.lineWidth=2;
+ for(let i=0;i<3;i++){c.beginPath();c.moveTo(mx-w*.04,my-w*.04+i*w*.03);
+  c.bezierCurveTo(mx-w*.02,my-w*.05+i*w*.03,mx+w*.02,my-w*.03+i*w*.03,mx+w*.04,my-w*.04+i*w*.03);c.stroke();}
+ // Cat tail (curvy)
+ c.strokeStyle='#ff9944';c.lineWidth=w*.015;c.lineCap='round';
+ c.beginPath();c.moveTo(mx-w*.06,my+w*.06);
+ c.bezierCurveTo(mx-w*.15,my+w*.02,mx-w*.18,my-w*.06,mx-w*.12,my-w*.1);c.stroke();
+ c.strokeStyle='rgba(200,100,20,.3)';c.lineWidth=w*.008;
+ c.beginPath();c.moveTo(mx-w*.1,my+w*.04);c.lineTo(mx-w*.12,my+w*.02);c.stroke();
+ // Cat head
+ const headG=c.createRadialGradient(mx,my-w*.12,0,mx,my-w*.12,w*.08);
+ headG.addColorStop(0,'#ffcc77');headG.addColorStop(1,'#ffaa55');
+ c.fillStyle=headG;c.beginPath();c.arc(mx,my-w*.12,w*.075,0,Math.PI*2);c.fill();
+ // Ears with inner pink
+ c.fillStyle='#ff9933';
+ c.beginPath();c.moveTo(mx-w*.05,my-w*.17);c.lineTo(mx-w*.075,my-w*.26);c.lineTo(mx-w*.015,my-w*.17);c.fill();
+ c.beginPath();c.moveTo(mx+w*.05,my-w*.17);c.lineTo(mx+w*.075,my-w*.26);c.lineTo(mx+w*.015,my-w*.17);c.fill();
+ c.fillStyle='#ffbbaa';
+ c.beginPath();c.moveTo(mx-w*.04,my-w*.18);c.lineTo(mx-w*.06,my-w*.24);c.lineTo(mx-w*.02,my-w*.18);c.fill();
+ c.beginPath();c.moveTo(mx+w*.04,my-w*.18);c.lineTo(mx+w*.06,my-w*.24);c.lineTo(mx+w*.02,my-w*.18);c.fill();
+ // Spiral eyes (confused) — more elaborate
+ c.strokeStyle='#333';c.lineWidth=1.5;
+ for(let eye of[-1,1]){c.beginPath();
+  for(let a=0;a<Math.PI*5;a+=.2){const r=a*1.1;
+   c.lineTo(mx+eye*w*.032+Math.cos(a+t/500)*r*.25,my-w*.13+Math.sin(a+t/500)*r*.25);}
+  c.stroke();}
+ // Dizzy birds circling head
+ for(let i=0;i<3;i++){
+  const ba=t/400+i*Math.PI*2/3,br=w*.1;
+  const bx=mx+Math.cos(ba)*br,by=my-w*.2+Math.sin(ba)*br*.3;
+  c.fillStyle='#ffcc00';c.beginPath();c.arc(bx,by,w*.01,0,Math.PI*2);c.fill();
+  c.fillStyle='#ff9900';c.beginPath();c.moveTo(bx+w*.01,by);c.lineTo(bx+w*.018,by-w*.003);c.lineTo(bx+w*.018,by+w*.003);c.fill();
+ }
+ // Top hat (fancier)
+ c.fillStyle='#2a1a3a';c.beginPath();c.roundRect(mx-w*.055,my-w*.17,w*.11,w*.02,2);c.fill();
+ c.fillStyle='#332244';c.beginPath();c.roundRect(mx-w*.04,my-w*.3,w*.08,w*.13,3);c.fill();
+ c.fillStyle='#ff4466';c.beginPath();c.roundRect(mx-w*.04,my-w*.2,w*.08,w*.015,1);c.fill();
+ c.fillStyle='#ffcc00';c.beginPath();c.arc(mx,my-w*.3,w*.012,0,Math.PI*2);c.fill();
+ // Whiskers
+ c.strokeStyle='rgba(0,0,0,.2)';c.lineWidth=.8;
+ for(let side of[-1,1]){for(let i=0;i<3;i++){
+  c.beginPath();c.moveTo(mx+side*w*.04,my-w*.1+i*w*.015);
+  c.lineTo(mx+side*w*.1,my-w*.11+i*w*.02);c.stroke();}}
+ // Nose
+ c.fillStyle='#ff6688';c.beginPath();c.ellipse(mx,my-w*.1,w*.012,w*.008,0,0,Math.PI*2);c.fill();
+ // Paws waving
+ c.fillStyle='#ffaa55';
+ c.beginPath();c.arc(mx-w*.09,my+w*.02+Math.sin(t/200)*w*.01,w*.02,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(mx+w*.09,my+w*.02-Math.sin(t/200)*w*.01,w*.02,0,Math.PI*2);c.fill();
+ // Speech bubble (more polished)
+ c.save();c.shadowColor='rgba(0,0,0,.15)';c.shadowBlur=8;
+ c.fillStyle='#fff';c.beginPath();c.roundRect(mx+w*.1,my-w*.22,w*.24,w*.11,10);c.fill();
+ c.shadowBlur=0;c.restore();
+ c.strokeStyle='#444';c.lineWidth=1.5;c.beginPath();c.roundRect(mx+w*.1,my-w*.22,w*.24,w*.11,10);c.stroke();
+ // Bubble tail (triangle)
+ c.fillStyle='#fff';c.beginPath();c.moveTo(mx+w*.13,my-w*.12);c.lineTo(mx+w*.08,my-w*.07);c.lineTo(mx+w*.17,my-w*.12);c.fill();
+ c.strokeStyle='#444';c.lineWidth=1.5;c.beginPath();c.moveTo(mx+w*.13,my-w*.12);c.lineTo(mx+w*.08,my-w*.07);c.stroke();
+ c.beginPath();c.moveTo(mx+w*.08,my-w*.07);c.lineTo(mx+w*.17,my-w*.12);c.stroke();
+ // "Oops!" text with color
+ c.fillStyle='#ff4466';c.font='bold '+Math.floor(w*.04)+'px Bangers';c.textAlign='center';
+ c.fillText('Oops!',mx+w*.22,my-w*.15);
+ // Confetti scatter
+ const confCols=['#ff4466','#44ff88','#ffcc00','#44aaff','#ff88cc'];
+ for(let i=0;i<12;i++){
+  c.fillStyle=confCols[i%5];c.save();
+  c.translate(x+w*.1+((t/10+i*w/5)%w*.8),y+h*.1+((t/8+i*h/4)%h*.6));
+  c.rotate(t/200+i);c.fillRect(-3,-1,6,2);c.restore();}
+}
+
+/* ========== THEME RENDERERS ========== */
+function drawSciFi(c,scene,x,y,w,h,t){
+ // Dark city background with gradient
+ const bg=c.createLinearGradient(x,y,x,y+h);
+ bg.addColorStop(0,'#060e20');bg.addColorStop(.3,'#0a1428');bg.addColorStop(.7,'#1a2a4a');bg.addColorStop(1,'#0d1a30');
+ c.fillStyle=bg;c.fillRect(x,y,w,h);
+ // Nebula glow
+ const neb=c.createRadialGradient(x+w*.7,y+h*.2,0,x+w*.7,y+h*.2,w*.4);
+ neb.addColorStop(0,'rgba(40,80,160,.08)');neb.addColorStop(1,'transparent');
+ c.fillStyle=neb;c.fillRect(x,y,w,h);
+ // Stars with size variety
+ for(let i=0;i<55;i++){
+  const tw=Math.sin(t/300+i)*.5+.5;
+  const sz=i<5?tw*2.5+1:tw*1.5+.5;
+  c.fillStyle=i<5?`rgba(180,220,255,${.3+tw*.5})`:`rgba(255,255,255,${.15+tw*.45})`;
+  c.beginPath();c.arc(x+(i*37)%w,y+(i*53)%h,sz,0,Math.PI*2);c.fill();
+  // Cross sparkle on bright stars
+  if(i<5&&tw>.7){c.strokeStyle=`rgba(180,220,255,${tw*.3})`;c.lineWidth=.5;
+   c.beginPath();c.moveTo(x+(i*37)%w-sz*2,y+(i*53)%h);c.lineTo(x+(i*37)%w+sz*2,y+(i*53)%h);c.stroke();
+   c.beginPath();c.moveTo(x+(i*37)%w,y+(i*53)%h-sz*2);c.lineTo(x+(i*37)%w,y+(i*53)%h+sz*2);c.stroke();}
+ }
+ switch(scene){
+  case'city':
+   drawCityscape(c,x,y,w,h,t);
+   drawRobot(c,x+w*.3,y+h*.7,w*.06,t,'small');
+   // Flying robots
+   for(let i=0;i<3;i++){
+    const fx=x+((t/10+i*w/3)%w),fy=y+h*.2+Math.sin(t/300+i)*20;
+    drawRobot(c,fx,fy,w*.03,t,'flying');
+   }
+   break;
+  case'storm':
+   drawCityscape(c,x,y,w,h,t);
+   // Dark overlay
+   c.fillStyle='rgba(0,0,0,.4)';c.fillRect(x,y,w,h);
+   // Lightning
+   if(Math.sin(t/200)>.9){
+    c.strokeStyle='rgba(200,220,255,.8)';c.lineWidth=3;
+    c.beginPath();c.moveTo(x+w*.6,y);
+    let lx=x+w*.6,ly=y;
+    for(let i=0;i<6;i++){lx+=(Math.random()-.5)*30;ly+=h/7;c.lineTo(lx,ly);}
+    c.stroke();
+    c.fillStyle='rgba(200,220,255,.1)';c.fillRect(x,y,w,h);
+   }
+   // Sparks
+   for(let i=0;i<8;i++){
+    c.fillStyle=`rgba(255,200,50,${.3+Math.random()*.4})`;
+    c.beginPath();c.arc(x+w*.4+Math.random()*w*.3,y+h*.5+Math.random()*h*.3,2+Math.random()*3,0,Math.PI*2);c.fill();
+   }
+   break;
+  case'tunnel':
+   // Dark tunnel with pipes
+   c.fillStyle='#0a0a14';c.fillRect(x,y,w,h);
+   // Pipe rows
+   for(let i=0;i<6;i++){
+    c.fillStyle=i%2?'#2a2a3a':'#1a1a2a';
+    c.beginPath();c.roundRect(x,y+i*h/6,w,h/6-2,0);c.fill();
+    // Rivets
+    c.fillStyle='#444';
+    for(let j=0;j<10;j++){c.beginPath();c.arc(x+j*w/9,y+i*h/6+h/12,3,0,Math.PI*2);c.fill();}
+   }
+   // Chest light cone
+   const lx=x+w*.35,ly=y+h*.6;
+   const lg=c.createRadialGradient(lx,ly,0,lx,ly,w*.3);
+   lg.addColorStop(0,'rgba(68,170,255,.3)');lg.addColorStop(1,'transparent');
+   c.fillStyle=lg;c.fillRect(x,y,w,h);
+   drawRobot(c,lx,ly,w*.06,t,'walking');
+   break;
+  case'generator':
+   c.fillStyle='#0d0d1a';c.fillRect(x,y,w,h);
+   // Giant generator
+   const gx=x+w*.55,gy=y+h*.35;
+   c.fillStyle='#3a3a4a';c.beginPath();c.roundRect(gx-w*.15,gy-h*.2,w*.3,h*.5,10);c.fill();
+   c.fillStyle='#4a4a5a';c.beginPath();c.roundRect(gx-w*.12,gy-h*.15,w*.24,h*.35,6);c.fill();
+   // Dials and switches
+   for(let i=0;i<3;i++){
+    c.fillStyle='#666';c.beginPath();c.arc(gx-w*.06+i*w*.06,gy-h*.05,w*.02,0,Math.PI*2);c.fill();
+    c.fillStyle='#ff4444';c.beginPath();c.arc(gx-w*.06+i*w*.06,gy-h*.05,w*.01,0,Math.PI*2);c.fill();
+   }
+   // Big switch
+   c.fillStyle='#cc4444';c.beginPath();c.roundRect(gx+w*.02,gy+h*.05,w*.06,h*.12,4);c.fill();
+   c.fillStyle='#ff6644';c.beginPath();c.roundRect(gx+w*.03,gy+h*.06,w*.04,h*.05,2);c.fill();
+   drawRobot(c,x+w*.25,y+h*.7,w*.06,t,'reaching');
+   break;
+  case'hero':
+   drawCityscape(c,x,y,w,h,t);
+   // City lights ON - warm glow
+   c.fillStyle='rgba(255,200,100,.08)';c.fillRect(x,y,w,h);
+   // Window lights
+   for(let i=0;i<20;i++){
+    c.fillStyle=`rgba(255,220,100,${.3+Math.random()*.4})`;
+    c.fillRect(x+w*.1+(i%5)*w*.16+Math.random()*10,y+h*.3+Math.floor(i/5)*h*.08,4,5);
+   }
+   drawRobot(c,x+w*.5,y+h*.65,w*.08,t,'hero');
+   // Crowd silhouettes
+   for(let i=0;i<8;i++){
+    c.fillStyle='rgba(40,50,80,.7)';
+    c.beginPath();c.arc(x+w*.15+i*w*.09,y+h*.85,w*.025,0,Math.PI*2);c.fill();
+    c.fillRect(x+w*.15+i*w*.09-w*.012,y+h*.85,w*.024,h*.1);
+   }
+   // Confetti
+   for(let i=0;i<15;i++){
+    c.fillStyle=['#ff4466','#44ff88','#ffcc00','#44aaff','#ff88cc'][i%5];
+    c.save();c.translate(x+(i*67)%w,y+((t/5+i*43)%h));
+    c.rotate(t/200+i);c.fillRect(-3,-1,6,2);c.restore();
+   }
+   break;
+ }
+}
+
+function drawFantasy(c,scene,x,y,w,h,t){
+ // Lush green background with depth
+ const bg=c.createLinearGradient(x,y,x,y+h);
+ bg.addColorStop(0,'#2a5530');bg.addColorStop(.4,'#1a3a20');bg.addColorStop(.8,'#0d2010');bg.addColorStop(1,'#081808');
+ c.fillStyle=bg;c.fillRect(x,y,w,h);
+ // Magical floating particles (universal for fantasy)
+ for(let i=0;i<12;i++){
+  const px=x+(i*73+t/15)%w,py=y+h*.2+Math.sin(t/400+i*1.3)*h*.3;
+  c.fillStyle=`rgba(180,255,120,${.08+Math.sin(t/250+i)*.06})`;
+  c.beginPath();c.arc(px,py,1.5+Math.sin(t/200+i),0,Math.PI*2);c.fill();
+ }
+ switch(scene){
+  case'garden':
+   // Sky with gradient
+   const skyG=c.createLinearGradient(x,y,x,y+h*.45);
+   skyG.addColorStop(0,'#5599bb');skyG.addColorStop(.6,'#77bbcc');skyG.addColorStop(1,'#aaddbb');
+   c.fillStyle=skyG;c.fillRect(x,y,w,h*.45);
+   // Sun with rays
+   c.save();c.shadowColor='#ffcc44';c.shadowBlur=40;
+   c.fillStyle='#ffee88';c.beginPath();c.arc(x+w*.8,y+h*.13,w*.06,0,Math.PI*2);c.fill();
+   c.shadowBlur=0;c.restore();
+   // Sun rays
+   c.save();c.globalAlpha=.06;c.fillStyle='#ffee88';
+   for(let i=0;i<8;i++){const a=Math.PI*2*i/8+t/2000;
+    c.beginPath();c.moveTo(x+w*.8,y+h*.13);
+    c.lineTo(x+w*.8+Math.cos(a)*w*.25,y+h*.13+Math.sin(a)*w*.25);
+    c.lineTo(x+w*.8+Math.cos(a+.1)*w*.25,y+h*.13+Math.sin(a+.1)*w*.25);c.fill();}
+   c.globalAlpha=1;c.restore();
+   // Distant mountains
+   c.fillStyle='rgba(60,100,70,.4)';c.beginPath();c.moveTo(x,y+h*.4);
+   c.lineTo(x+w*.15,y+h*.25);c.lineTo(x+w*.3,y+h*.35);c.lineTo(x+w*.45,y+h*.22);
+   c.lineTo(x+w*.6,y+h*.32);c.lineTo(x+w*.8,y+h*.2);c.lineTo(x+w,y+h*.35);
+   c.lineTo(x+w,y+h*.45);c.lineTo(x,y+h*.45);c.fill();
+   // Rolling hills with layers
+   c.fillStyle='#4a8844';c.beginPath();c.moveTo(x,y+h*.48);
+   c.quadraticCurveTo(x+w*.25,y+h*.38,x+w*.5,y+h*.44);
+   c.quadraticCurveTo(x+w*.75,y+h*.36,x+w,y+h*.48);
+   c.lineTo(x+w,y+h);c.lineTo(x,y+h);c.fill();
+   c.fillStyle='#3a7744';c.beginPath();c.moveTo(x,y+h*.52);
+   c.quadraticCurveTo(x+w*.3,y+h*.44,x+w*.55,y+h*.5);
+   c.quadraticCurveTo(x+w*.8,y+h*.42,x+w,y+h*.52);
+   c.lineTo(x+w,y+h);c.lineTo(x,y+h);c.fill();
+   // Flowers (many!)
+   const flowerCols=['#ff6688','#ffcc44','#ff88aa','#ff4466','#ffaa33','#44aaff','#cc66ff'];
+   for(let i=0;i<25;i++){
+    const fx=x+w*.1+Math.random()*w*.8,fy=y+h*.5+Math.random()*h*.35;
+    const fc=flowerCols[i%flowerCols.length],fs=3+Math.random()*4;
+    // Stem
+    c.strokeStyle='#2a5520';c.lineWidth=1.5;c.beginPath();c.moveTo(fx,fy);c.lineTo(fx,fy+fs*3);c.stroke();
+    // Petals
+    for(let p=0;p<5;p++){
+     const pa=p*Math.PI*2/5;
+     c.fillStyle=fc;c.beginPath();c.ellipse(fx+Math.cos(pa)*fs*.6,fy+Math.sin(pa)*fs*.6,fs*.4,fs*.6,pa,0,Math.PI*2);c.fill();
+    }
+    c.fillStyle='#ffee44';c.beginPath();c.arc(fx,fy,fs*.3,0,Math.PI*2);c.fill();
+   }
+   // Glowing plants
+   for(let i=0;i<5;i++){
+    const gx=x+w*.15+i*w*.17,gy=y+h*.6+Math.random()*h*.15;
+    c.save();c.shadowColor='#88ff44';c.shadowBlur=12;
+    c.fillStyle='rgba(140,255,80,.4)';c.beginPath();c.arc(gx,gy,6+Math.random()*4,0,Math.PI*2);c.fill();
+    c.shadowBlur=0;c.restore();
+   }
+   // Fern dragon
+   drawDragonFern(c,x+w*.55,y+h*.45,w*.1,t);
+   // Butterflies
+   for(let i=0;i<4;i++){
+    const bx=x+w*.2+i*w*.2+Math.sin(t/300+i)*15,by=y+h*.3+Math.cos(t/400+i)*10;
+    c.fillStyle=['#ff88aa','#88ddff','#ffcc44','#cc88ff'][i];
+    const ww=Math.abs(Math.sin(t/100+i))*4+1;
+    c.beginPath();c.ellipse(bx-ww,by,ww,4,.3,0,Math.PI*2);c.fill();
+    c.beginPath();c.ellipse(bx+ww,by,ww,4,-.3,0,Math.PI*2);c.fill();
+    c.fillStyle='#333';c.beginPath();c.ellipse(bx,by,1,3,0,0,Math.PI*2);c.fill();
+   }
+   break;
+  case'sick':
+   // Gray foggy village
+   c.fillStyle='#3a4440';c.fillRect(x,y+h*.5,w,h*.5);
+   // Fog
+   for(let i=0;i<6;i++){
+    const fg=c.createRadialGradient(x+i*w/5,y+h*.4,0,x+i*w/5,y+h*.4,w*.2);
+    fg.addColorStop(0,'rgba(120,130,120,.3)');fg.addColorStop(1,'transparent');
+    c.fillStyle=fg;c.fillRect(x,y,w,h);
+   }
+   // Sick dragons (hunched over)
+   for(let i=0;i<3;i++){
+    const dx=x+w*.2+i*w*.25,dy=y+h*.6;
+    c.fillStyle='#778877';c.beginPath();c.ellipse(dx,dy,w*.04,w*.03,0,0,Math.PI*2);c.fill();
+    c.fillStyle='#889988';c.beginPath();c.arc(dx,dy-w*.04,w*.025,0,Math.PI*2);c.fill();
+    // X eyes (sick)
+    c.strokeStyle='#444';c.lineWidth=1.5;
+    c.beginPath();c.moveTo(dx-4,dy-w*.05);c.lineTo(dx-1,dy-w*.04);c.moveTo(dx-4,dy-w*.04);c.lineTo(dx-1,dy-w*.05);c.stroke();
+    c.beginPath();c.moveTo(dx+1,dy-w*.05);c.lineTo(dx+4,dy-w*.04);c.moveTo(dx+1,dy-w*.04);c.lineTo(dx+4,dy-w*.05);c.stroke();
+   }
+   break;
+  default:
+   // Generic fantasy scene
+   c.fillStyle='#2a5530';c.fillRect(x,y+h*.5,w,h*.5);
+   drawDragonFern(c,x+w*.5,y+h*.5,w*.1,t);
+ }
+}
+
+function drawMystery(c,scene,x,y,w,h,t){
+ switch(scene){
+  case'kitchen':
+   // Warm kitchen walls with gradient
+   const kWall=c.createLinearGradient(x,y,x,y+h*.65);
+   kWall.addColorStop(0,'#f8edd5');kWall.addColorStop(1,'#e8d8b8');
+   c.fillStyle=kWall;c.fillRect(x,y,w,h);
+   // Floor tiles
+   const floorG=c.createLinearGradient(x,y+h*.65,x,y+h);
+   floorG.addColorStop(0,'#9b8365');floorG.addColorStop(1,'#7a6545');
+   c.fillStyle=floorG;c.fillRect(x,y+h*.65,w,h*.35);
+   // Tile pattern
+   c.strokeStyle='rgba(0,0,0,.06)';c.lineWidth=.5;
+   for(let i=0;i<Math.ceil(w/30);i++){c.beginPath();c.moveTo(x+i*30,y+h*.65);c.lineTo(x+i*30,y+h);c.stroke();}
+   for(let i=0;i<5;i++){c.beginPath();c.moveTo(x,y+h*.65+i*h*.07);c.lineTo(x+w,y+h*.65+i*h*.07);c.stroke();}
+   // Counter with wood grain
+   const ctrG=c.createLinearGradient(x+w*.1,y+h*.4,x+w*.9,y+h*.68);
+   ctrG.addColorStop(0,'#d4b888');ctrG.addColorStop(.5,'#c4a878');ctrG.addColorStop(1,'#b49868');
+   c.fillStyle=ctrG;c.beginPath();c.roundRect(x+w*.1,y+h*.4,w*.8,h*.28,6);c.fill();
+   c.strokeStyle='#8b7355';c.lineWidth=2;c.beginPath();c.roundRect(x+w*.1,y+h*.4,w*.8,h*.28,6);c.stroke();
+   // Wood grain lines
+   c.strokeStyle='rgba(100,70,30,.08)';c.lineWidth=.5;
+   for(let i=0;i<5;i++){c.beginPath();c.moveTo(x+w*.12,y+h*.44+i*h*.05);c.bezierCurveTo(x+w*.3,y+h*.43+i*h*.05,x+w*.6,y+h*.45+i*h*.05,x+w*.88,y+h*.44+i*h*.05);c.stroke();}
+   // Overhead lamp
+   c.fillStyle='#aa8855';c.beginPath();c.roundRect(x+w*.45,y,w*.1,h*.08,0);c.fill();
+   c.fillStyle='#cc9966';c.beginPath();c.moveTo(x+w*.42,y+h*.08);c.lineTo(x+w*.58,y+h*.08);c.lineTo(x+w*.55,y+h*.15);c.lineTo(x+w*.45,y+h*.15);c.fill();
+   // Lamp light cone
+   const lampG=c.createRadialGradient(x+w*.5,y+h*.12,0,x+w*.5,y+h*.5,w*.35);
+   lampG.addColorStop(0,'rgba(255,230,180,.12)');lampG.addColorStop(1,'transparent');
+   c.fillStyle=lampG;c.fillRect(x,y,w,h);
+   // Empty trays
+   for(let i=0;i<3;i++){
+    c.fillStyle='#aaa';c.beginPath();c.roundRect(x+w*.15+i*w*.22,y+h*.45,w*.16,w*.08,4);c.fill();
+    c.fillStyle='#999';c.beginPath();c.roundRect(x+w*.16+i*w*.22,y+h*.46,w*.14,w*.06,3);c.fill();
+   }
+   // Crumbs
+   c.fillStyle='#ccaa66';
+   for(let i=0;i<15;i++){c.beginPath();c.arc(x+w*.15+Math.random()*w*.7,y+h*.52+Math.random()*h*.1,1.5+Math.random()*2,0,Math.PI*2);c.fill();}
+   // Mrs. Chen shocked
+   drawPerson(c,x+w*.7,y+h*.55,w*.04,'#ffcc88','#55aa55',t,'shocked');
+   break;
+  case'clues':
+   c.fillStyle='#e8d8b8';c.fillRect(x,y,w,h);
+   // Three clue panels
+   const clueW=w/3-10;
+   // Clue 1: muddy footprints
+   c.fillStyle='#f0e0c0';c.beginPath();c.roundRect(x+8,y+h*.15,clueW,h*.65,8);c.fill();
+   c.strokeStyle='#886644';c.lineWidth=2;c.stroke();
+   c.fillStyle='#6b5530';
+   for(let i=0;i<4;i++){c.beginPath();c.ellipse(x+30+i*8,y+h*.4+i*h*.08,5,8,i*.2,0,Math.PI*2);c.fill();}
+   // Clue 2: red mitten
+   c.fillStyle='#f0e0c0';c.beginPath();c.roundRect(x+clueW+16,y+h*.15,clueW,h*.65,8);c.fill();
+   c.strokeStyle='#886644';c.lineWidth=2;c.stroke();
+   c.fillStyle='#cc3333';c.beginPath();c.roundRect(x+clueW+40,y+h*.35,w*.08,w*.1,6);c.fill();
+   c.fillStyle='#dd4444';c.beginPath();c.arc(x+clueW+40+w*.02,y+h*.35,w*.025,0,Math.PI,true);c.arc(x+clueW+40+w*.06,y+h*.35,w*.025,0,Math.PI,true);c.fill();
+   // Clue 3: broken window
+   c.fillStyle='#f0e0c0';c.beginPath();c.roundRect(x+clueW*2+24,y+h*.15,clueW,h*.65,8);c.fill();
+   c.strokeStyle='#886644';c.lineWidth=2;c.stroke();
+   c.fillStyle='#88bbdd';c.beginPath();c.roundRect(x+clueW*2+45,y+h*.3,w*.08,w*.1,2);c.fill();
+   // Crack lines
+   c.strokeStyle='#446688';c.lineWidth=1.5;
+   c.beginPath();c.moveTo(x+clueW*2+55,y+h*.32);c.lineTo(x+clueW*2+65,y+h*.45);c.lineTo(x+clueW*2+50,y+h*.42);c.stroke();
+   // Maya with magnifying glass
+   drawPerson(c,x+w*.5,y+h*.85,w*.03,'#8b5e3c','#4466cc',t,'detective');
+   break;
+  default:
+   c.fillStyle='#e8d8b8';c.fillRect(x,y,w,h);
+   c.fillStyle='#6b5530';c.fillRect(x,y+h*.65,w,h*.35);
+ }
+}
+
+function drawSpace(c,scene,x,y,w,h,t){
+ c.fillStyle='#030210';c.fillRect(x,y,w,h);
+ // Multiple nebula layers
+ const nb1=c.createRadialGradient(x+w*.65,y+h*.35,0,x+w*.65,y+h*.35,w*.45);
+ nb1.addColorStop(0,'rgba(120,50,200,.12)');nb1.addColorStop(.5,'rgba(80,30,150,.06)');nb1.addColorStop(1,'transparent');
+ c.fillStyle=nb1;c.fillRect(x,y,w,h);
+ const nb2=c.createRadialGradient(x+w*.25,y+h*.6,0,x+w*.25,y+h*.6,w*.35);
+ nb2.addColorStop(0,'rgba(200,80,120,.06)');nb2.addColorStop(1,'transparent');
+ c.fillStyle=nb2;c.fillRect(x,y,w,h);
+ // Cosmic dust streaks
+ c.save();c.globalAlpha=.03;c.strokeStyle='#8866cc';c.lineWidth=w*.02;
+ c.beginPath();c.moveTo(x,y+h*.3);c.bezierCurveTo(x+w*.3,y+h*.25,x+w*.7,y+h*.5,x+w,y+h*.35);c.stroke();
+ c.globalAlpha=1;c.restore();
+ // Stars with color variety
+ for(let i=0;i<70;i++){
+  const tw=Math.sin(t/200+i*1.7)*.5+.5;
+  const sz=i<8?tw*2+1:tw*1.3+.3;
+  const cols=['255,255,255','255,240,200','200,220,255','255,220,180'];
+  c.fillStyle=`rgba(${cols[i%4]},${.15+tw*.5})`;
+  c.beginPath();c.arc(x+(i*43)%w,y+(i*67)%h,sz,0,Math.PI*2);c.fill();
+  // Twinkle cross on big stars
+  if(i<4&&tw>.6){c.strokeStyle=`rgba(${cols[i%4]},${tw*.2})`;c.lineWidth=.5;
+   c.beginPath();c.moveTo(x+(i*43)%w-sz*3,y+(i*67)%h);c.lineTo(x+(i*43)%w+sz*3,y+(i*67)%h);c.stroke();
+   c.beginPath();c.moveTo(x+(i*43)%w,y+(i*67)%h-sz*3);c.lineTo(x+(i*43)%w,y+(i*67)%h+sz*3);c.stroke();}
+ }
+ switch(scene){
+  case'ship':
+   drawSpaceship(c,x+w*.5,y+h*.45,w*.12,t);
+   // Planet in distance
+   const pg=c.createRadialGradient(x+w*.15,y+h*.25,0,x+w*.15,y+h*.25,w*.08);
+   pg.addColorStop(0,'#4488aa');pg.addColorStop(1,'#224466');
+   c.fillStyle=pg;c.beginPath();c.arc(x+w*.15,y+h*.25,w*.08,0,Math.PI*2);c.fill();
+   break;
+  case'clouds':
+   // Cloud planet surface
+   c.fillStyle='rgba(200,210,230,.15)';
+   for(let i=0;i<8;i++){
+    c.beginPath();c.ellipse(x+i*w/7,y+h*.5+Math.sin(i)*h*.1,w*.15,h*.12,0,0,Math.PI*2);c.fill();
+   }
+   // Penny walking
+   drawPerson(c,x+w*.5,y+h*.55,w*.035,'#ffcc88','#cc66ff',t,'walking');
+   // Gravity boot glow
+   c.save();c.shadowColor='#cc66ff';c.shadowBlur=10;
+   c.fillStyle='rgba(200,100,255,.3)';c.beginPath();c.ellipse(x+w*.5,y+h*.6,w*.02,4,0,0,Math.PI*2);c.fill();
+   c.shadowBlur=0;c.restore();
+   break;
+  case'cave':
+   c.fillStyle='rgba(100,110,130,.2)';c.fillRect(x,y+h*.3,w,h*.7);
+   // Crystal glow
+   c.save();c.shadowColor='#cc66ff';c.shadowBlur=30;
+   c.fillStyle='rgba(180,100,255,.5)';c.beginPath();c.arc(x+w*.65,y+h*.45,w*.04,0,Math.PI*2);c.fill();
+   c.shadowBlur=0;c.restore();
+   drawPerson(c,x+w*.4,y+h*.55,w*.035,'#ffcc88','#cc66ff',t,'reaching');
+   break;
+  case'guardian':
+   // Lightning jellyfish
+   const jx=x+w*.55,jy=y+h*.35;
+   c.save();c.shadowColor='#8888ff';c.shadowBlur=20;
+   const jg=c.createRadialGradient(jx,jy,0,jx,jy,w*.12);
+   jg.addColorStop(0,'rgba(150,150,255,.4)');jg.addColorStop(1,'rgba(80,80,200,.1)');
+   c.fillStyle=jg;c.beginPath();c.ellipse(jx,jy,w*.1,w*.07,0,0,Math.PI);c.fill();
+   // Tentacles
+   for(let i=0;i<6;i++){
+    c.strokeStyle=`rgba(140,140,255,${.3+Math.sin(t/200+i)*.2})`;c.lineWidth=2;
+    c.beginPath();c.moveTo(jx-w*.07+i*w*.028,jy);
+    c.quadraticCurveTo(jx-w*.08+i*w*.03,jy+h*.2+Math.sin(t/300+i)*10,jx-w*.06+i*w*.025,jy+h*.35);
+    c.stroke();
+   }
+   c.shadowBlur=0;c.restore();
+   drawPerson(c,x+w*.25,y+h*.65,w*.035,'#ffcc88','#cc66ff',t,'brave');
+   break;
+  case'hologram':
+   drawSpaceship(c,x+w*.5,y+h*.5,w*.15,t);
+   // Holographic projection
+   c.save();c.globalAlpha=.4+Math.sin(t/200)*.1;
+   const hg=c.createRadialGradient(x+w*.5,y+h*.3,0,x+w*.5,y+h*.3,w*.15);
+   hg.addColorStop(0,'rgba(100,200,255,.3)');hg.addColorStop(1,'transparent');
+   c.fillStyle=hg;c.fillRect(x,y,w,h);
+   // Holographic figures
+   c.strokeStyle='rgba(100,200,255,.4)';c.lineWidth=1;
+   for(let i=0;i<3;i++){
+    c.beginPath();c.arc(x+w*.4+i*w*.1,y+h*.3,w*.02,0,Math.PI*2);c.stroke();
+    c.beginPath();c.moveTo(x+w*.4+i*w*.1,y+h*.32);c.lineTo(x+w*.4+i*w*.1,y+h*.4);c.stroke();
+   }
+   c.globalAlpha=1;c.restore();
+   break;
+ }
+}
+
+function drawNature(c,scene,x,y,w,h,t){
+ // Sky
+ const sky=c.createLinearGradient(x,y,x,y+h*.5);
+ sky.addColorStop(0,'#6699cc');sky.addColorStop(1,'#aaccee');
+ c.fillStyle=sky;c.fillRect(x,y,w,h*.5);
+ // Ground
+ c.fillStyle='#4a8830';c.fillRect(x,y+h*.5,w,h*.5);
+ c.fillStyle='#5a9940';c.beginPath();
+ c.moveTo(x,y+h*.5);c.quadraticCurveTo(x+w*.5,y+h*.42,x+w,y+h*.5);
+ c.lineTo(x+w,y+h*.55);c.quadraticCurveTo(x+w*.5,y+h*.5,x,y+h*.55);c.fill();
+
+ switch(scene){
+  case'oak':
+  case'talking':
+  case'history':
+  case'spring':
+   // Massive oak tree
+   drawBigTree(c,x+w*.5,y+h*.5,w*.25,h*.45,t,scene==='spring'?'spring':'autumn');
+   if(scene==='talking'||scene==='oak'){
+    drawPerson(c,x+w*.3,y+h*.75,w*.03,'#ffcc88','#cc6688',t,'sitting');
+   }
+   if(scene==='talking'){
+    // Sound waves
+    for(let i=0;i<3;i++){
+     c.strokeStyle=`rgba(100,200,100,${.3-i*.08})`;c.lineWidth=2;
+     c.beginPath();c.arc(x+w*.5,y+h*.35,w*.1+i*15,-.5,1);c.stroke();
+    }
+   }
+   if(scene==='spring'){
+    // Animals
+    // Hawk
+    c.fillStyle='#664422';
+    c.beginPath();c.moveTo(x+w*.45,y+h*.2);c.lineTo(x+w*.42,y+h*.22);c.lineTo(x+w*.48,y+h*.22);c.fill();
+    c.beginPath();c.moveTo(x+w*.45,y+h*.21);c.lineTo(x+w*.38,y+h*.19);c.stroke();
+    c.beginPath();c.moveTo(x+w*.45,y+h*.21);c.lineTo(x+w*.52,y+h*.19);c.stroke();
+    // Flowers
+    for(let i=0;i<12;i++){
+     c.fillStyle=['#ff6688','#ffcc44','#ff88aa','#cc66ff'][i%4];
+     c.beginPath();c.arc(x+w*.1+Math.random()*w*.8,y+h*.7+Math.random()*h*.2,3,0,Math.PI*2);c.fill();
+    }
+    drawPerson(c,x+w*.3,y+h*.75,w*.03,'#ffcc88','#cc6688',t,'happy');
+   }
+   if(scene==='history'){
+    // Split panels showing memories
+    c.fillStyle='rgba(255,255,200,.15)';c.fillRect(x,y,w*.33,h*.4);
+    c.fillStyle='rgba(255,255,200,.15)';c.fillRect(x+w*.34,y,w*.33,h*.4);
+    c.fillStyle='rgba(255,255,200,.15)';c.fillRect(x+w*.68,y,w*.32,h*.4);
+    c.font='bold 10px Comic Neue';c.fillStyle='rgba(0,0,0,.5)';c.textAlign='center';
+    c.fillText('Deer at stream',x+w*.16,y+h*.35);
+    c.fillText('Hawks nesting',x+w*.5,y+h*.35);
+    c.fillText('Squirrels',x+w*.84,y+h*.35);
+   }
+   break;
+  case'club':
+   drawPerson(c,x+w*.25,y+h*.65,w*.025,'#ffcc88','#4466cc',t,'building');
+   drawPerson(c,x+w*.45,y+h*.68,w*.025,'#8b5e3c','#44aa44',t,'planting');
+   drawPerson(c,x+w*.65,y+h*.63,w*.025,'#ffcc88','#cc6688',t,'building');
+   // Birdhouse
+   c.fillStyle='#cc8844';c.beginPath();c.roundRect(x+w*.75,y+h*.4,w*.05,w*.06,2);c.fill();
+   c.fillStyle='#aa6633';c.beginPath();c.moveTo(x+w*.745,y+h*.4);c.lineTo(x+w*.775,y+h*.35);c.lineTo(x+w*.805,y+h*.4);c.fill();
+   c.fillStyle='#333';c.beginPath();c.arc(x+w*.775,y+h*.43,w*.008,0,Math.PI*2);c.fill();
+   break;
+ }
+}
+
+function drawOcean(c,scene,x,y,w,h,t){
+ // Deep ocean gradient with more depth
+ const bg=c.createLinearGradient(x,y,x,y+h);
+ bg.addColorStop(0,'#1a5577');bg.addColorStop(.3,'#144466');bg.addColorStop(.6,'#0d2a44');bg.addColorStop(1,'#061420');
+ c.fillStyle=bg;c.fillRect(x,y,w,h);
+ // Caustic light patterns on water surface
+ c.save();c.globalAlpha=.04;
+ for(let i=0;i<8;i++){
+  const cx2=x+w*.1+i*w*.12+Math.sin(t/500+i)*15;
+  const cg=c.createRadialGradient(cx2,y+h*.15,0,cx2,y+h*.15,w*.06);
+  cg.addColorStop(0,'#aaddff');cg.addColorStop(1,'transparent');
+  c.fillStyle=cg;c.fillRect(x,y,w,h*.3);
+ }
+ c.globalAlpha=1;c.restore();
+ // Volumetric light rays from surface (god rays)
+ for(let i=0;i<6;i++){
+  const rayX=x+w*.08+i*w*.18+Math.sin(t/800+i)*.01*w;
+  const rayW=w*.04+Math.sin(t/600+i)*w*.01;
+  c.save();c.globalAlpha=.04+Math.sin(t/500+i)*.02;
+  const rayG=c.createLinearGradient(rayX,y,rayX,y+h);
+  rayG.addColorStop(0,'rgba(150,220,255,.3)');rayG.addColorStop(.5,'rgba(100,180,230,.1)');rayG.addColorStop(1,'transparent');
+  c.fillStyle=rayG;
+  c.beginPath();c.moveTo(rayX,y);c.lineTo(rayX-rayW,y+h);c.lineTo(rayX+rayW*2,y+h);c.lineTo(rayX+rayW,y);c.fill();
+  c.globalAlpha=1;c.restore();
+ }
+ // Floating particles / plankton
+ for(let i=0;i<20;i++){
+  const px=x+((t/12+i*w/8)%w),py=y+h*.1+((i*73)%Math.floor(h*.8));
+  const ps=Math.sin(t/400+i)*.5+.5;
+  c.fillStyle=`rgba(180,230,255,${.05+ps*.08})`;
+  c.beginPath();c.arc(px,py,1+ps,0,Math.PI*2);c.fill();
+ }
+ // Bubbles with shine
+ for(let i=0;i<15;i++){
+  const bx=x+((t/8+i*w/6)%w),by=y+h-((t/10+i*h/5)%h);
+  const br=2+Math.random()*3.5;
+  c.strokeStyle=`rgba(180,230,255,${.15+Math.sin(t/300+i)*.1})`;c.lineWidth=.8;
+  c.beginPath();c.arc(bx,by,br,0,Math.PI*2);c.stroke();
+  // Bubble shine
+  c.fillStyle=`rgba(220,240,255,${.1+Math.sin(t/300+i)*.05})`;
+  c.beginPath();c.arc(bx-br*.3,by-br*.3,br*.25,0,Math.PI*2);c.fill();
+ }
+ // Sandy bottom hint
+ const sandG=c.createLinearGradient(x,y+h*.85,x,y+h);
+ sandG.addColorStop(0,'transparent');sandG.addColorStop(1,'rgba(120,100,60,.08)');
+ c.fillStyle=sandG;c.fillRect(x,y,w,h);
+
+ switch(scene){
+  case'reef':
+   // Coral in many colors
+   const corals=[
+    {x:x+w*.1,col:'#ff6688',h:w*.08},{x:x+w*.25,col:'#ffaa44',h:w*.06},
+    {x:x+w*.4,col:'#ff4466',h:w*.09},{x:x+w*.6,col:'#44ddcc',h:w*.07},
+    {x:x+w*.75,col:'#ff88aa',h:w*.08},{x:x+w*.9,col:'#ffcc44',h:w*.05}
+   ];
+   corals.forEach(cr=>{
+    c.fillStyle=cr.col;
+    for(let b=0;b<5;b++){
+     c.beginPath();c.arc(cr.x+b*6-12,y+h-cr.h+b*3,cr.h*.4,Math.PI,0);c.fill();
+    }
+   });
+   // Castle towers
+   c.fillStyle='rgba(255,150,180,.3)';
+   c.beginPath();c.roundRect(x+w*.35,y+h*.3,w*.12,h*.4,6);c.fill();
+   c.beginPath();c.roundRect(x+w*.5,y+h*.25,w*.1,h*.45,6);c.fill();
+   // Mermaid on throne
+   drawMermaid(c,x+w*.45,y+h*.45,w*.04,t);
+   break;
+  case'journey':
+   // Three environment panels
+   c.strokeStyle='rgba(255,255,255,.2)';c.lineWidth=2;
+   c.beginPath();c.moveTo(x+w/3,y);c.lineTo(x+w/3,y+h);c.stroke();
+   c.beginPath();c.moveTo(x+w*2/3,y);c.lineTo(x+w*2/3,y+h);c.stroke();
+   // Kelp forest
+   for(let i=0;i<6;i++){
+    c.strokeStyle='#338844';c.lineWidth=3;
+    c.beginPath();c.moveTo(x+20+i*15,y+h);
+    for(let j=0;j<8;j++){c.lineTo(x+20+i*15+Math.sin(t/300+i+j)*8,y+h-j*h/8);}
+    c.stroke();
+   }
+   // Midnight trench (middle)
+   c.fillStyle='rgba(0,0,20,.5)';c.fillRect(x+w/3,y,w/3,h);
+   // Glowing fish
+   for(let i=0;i<4;i++){
+    c.save();c.shadowColor=['#44ff88','#ff8844','#44aaff','#ff44aa'][i];c.shadowBlur=8;
+    c.fillStyle=c.shadowColor;c.beginPath();c.ellipse(x+w/3+w*.05+i*w*.06,y+h*.3+i*h*.12,6,3,0,0,Math.PI*2);c.fill();
+    c.shadowBlur=0;c.restore();
+   }
+   // Ice shelf (right)
+   c.fillStyle='rgba(200,230,255,.2)';c.fillRect(x+w*2/3,y,w/3,h);
+   c.fillStyle='rgba(230,245,255,.3)';
+   c.beginPath();c.moveTo(x+w*2/3,y);c.lineTo(x+w,y);c.lineTo(x+w,y+h*.3);c.lineTo(x+w*2/3,y+h*.4);c.fill();
+   drawMermaid(c,x+w*.5,y+h*.6,w*.03,t);
+   break;
+  case'trash':
+   // Trash wall
+   c.fillStyle='rgba(80,70,60,.5)';c.fillRect(x+w*.3,y+h*.2,w*.4,h*.6);
+   // Bottles, bags, nets
+   const trashCols=['#8899aa','#556644','#9988aa','#667788','#445566'];
+   for(let i=0;i<20;i++){
+    c.fillStyle=trashCols[i%5];
+    c.save();c.translate(x+w*.32+Math.random()*w*.36,y+h*.22+Math.random()*h*.56);
+    c.rotate(Math.random()*Math.PI);
+    c.beginPath();c.roundRect(-8,-4,16,8,3);c.fill();
+    c.restore();
+   }
+   // Net overlay
+   c.strokeStyle='rgba(100,100,80,.3)';c.lineWidth=1;
+   for(let i=0;i<10;i++){c.beginPath();c.moveTo(x+w*.3,y+h*.2+i*h*.06);c.lineTo(x+w*.7,y+h*.2+i*h*.06);c.stroke();}
+   for(let i=0;i<8;i++){c.beginPath();c.moveTo(x+w*.3+i*w*.05,y+h*.2);c.lineTo(x+w*.3+i*w*.05,y+h*.8);c.stroke();}
+   // Current trying to flow (blue arrows)
+   c.strokeStyle='rgba(100,200,255,.4)';c.lineWidth=3;
+   for(let i=0;i<3;i++){
+    const ay=y+h*.35+i*h*.15;
+    c.beginPath();c.moveTo(x+w*.1,ay);c.lineTo(x+w*.25,ay);c.stroke();
+    c.beginPath();c.moveTo(x+w*.25,ay);c.lineTo(x+w*.22,ay-5);c.moveTo(x+w*.25,ay);c.lineTo(x+w*.22,ay+5);c.stroke();
+   }
+   break;
+  case'teamwork':
+   // Otter chewing net
+   c.fillStyle='#8b6e50';c.beginPath();c.ellipse(x+w*.2,y+h*.4,w*.03,w*.02,0,0,Math.PI*2);c.fill();
+   c.fillStyle='#a08060';c.beginPath();c.arc(x+w*.22,y+h*.38,w*.015,0,Math.PI*2);c.fill();
+   // Glowing fish melting plastic
+   c.save();c.shadowColor='#ff8844';c.shadowBlur=12;
+   c.fillStyle='#ff8844';c.beginPath();c.ellipse(x+w*.45,y+h*.35,w*.02,w*.01,0,0,Math.PI*2);c.fill();
+   c.shadowBlur=0;c.restore();
+   // Whale pushing
+   c.fillStyle='#4466aa';c.beginPath();c.ellipse(x+w*.75,y+h*.55,w*.12,w*.06,0,0,Math.PI*2);c.fill();
+   c.fillStyle='#5577bb';c.beginPath();c.ellipse(x+w*.75,y+h*.58,w*.08,w*.03,0,0,Math.PI);c.fill();
+   // Debris scattering
+   for(let i=0;i<8;i++){
+    c.fillStyle='rgba(100,100,80,.4)';
+    c.save();c.translate(x+w*.5+Math.cos(i)*w*.2,y+h*.4+Math.sin(i)*h*.15);c.rotate(i);
+    c.fillRect(-5,-2,10,4);c.restore();
+   }
+   drawMermaid(c,x+w*.4,y+h*.65,w*.035,t);
+   break;
+  case'saved':
+   // Vibrant colorful reef
+   const vivid=[
+    {x:x+w*.08,col:'#ff4488',h:w*.1},{x:x+w*.2,col:'#ffaa33',h:w*.08},
+    {x:x+w*.35,col:'#ff6699',h:w*.12},{x:x+w*.5,col:'#44eedd',h:w*.09},
+    {x:x+w*.65,col:'#ff88bb',h:w*.1},{x:x+w*.8,col:'#88ff66',h:w*.07},
+    {x:x+w*.9,col:'#ffcc44',h:w*.08}
+   ];
+   vivid.forEach(cr=>{
+    c.fillStyle=cr.col;
+    for(let b=0;b<5;b++){c.beginPath();c.arc(cr.x+b*7-14,y+h-cr.h+b*3,cr.h*.45,Math.PI,0);c.fill();}
+   });
+   drawMermaid(c,x+w*.5,y+h*.45,w*.04,t);
+   // Sea creatures celebrating
+   for(let i=0;i<6;i++){
+    c.fillStyle=['#ff8844','#44ddcc','#ffcc44','#88aaff','#ff88aa','#88ff88'][i];
+    c.beginPath();c.ellipse(x+w*.1+i*w*.15,y+h*.3+Math.sin(t/200+i)*10,w*.015,w*.01,0,0,Math.PI*2);c.fill();
+   }
+   // Sparkles
+   for(let i=0;i<10;i++){
+    c.fillStyle=`rgba(255,255,200,${.3+Math.sin(t/100+i)*.3})`;
+    c.beginPath();c.arc(x+Math.random()*w,y+Math.random()*h,2,0,Math.PI*2);c.fill();
+   }
+   break;
+ }
+}
+
+/* ========== HELPER DRAWING FUNCTIONS ========== */
+function drawCityscape(c,x,y,w,h,t){
+ // Gradient sky behind buildings
+ const skyG=c.createLinearGradient(x,y,x,y+h);
+ skyG.addColorStop(0,'#0a1428');skyG.addColorStop(.4,'#152040');skyG.addColorStop(1,'#0d1830');
+ c.fillStyle=skyG;c.fillRect(x,y,w,h);
+ // Distant haze
+ const haze=c.createLinearGradient(x,y+h*.6,x,y+h);
+ haze.addColorStop(0,'transparent');haze.addColorStop(1,'rgba(30,40,80,.4)');
+ c.fillStyle=haze;c.fillRect(x,y,w,h);
+ // Moon
+ c.save();c.shadowColor='rgba(200,220,255,.5)';c.shadowBlur=30;
+ c.fillStyle='#dde8f0';c.beginPath();c.arc(x+w*.8,y+h*.15,w*.04,0,Math.PI*2);c.fill();
+ c.shadowBlur=0;c.restore();
+ // Building silhouettes with detail
+ const buildings=[
+  {x:.02,w:.09,h:.38,col:'#141e2e'},{x:.12,w:.11,h:.55,col:'#1a2840'},{x:.25,w:.08,h:.32,col:'#161e30'},
+  {x:.34,w:.13,h:.62,col:'#1c2a44'},{x:.50,w:.09,h:.45,col:'#152238'},{x:.60,w:.11,h:.52,col:'#1a2a40'},
+  {x:.73,w:.08,h:.36,col:'#141c2e'},{x:.82,w:.11,h:.50,col:'#182640'}
+ ];
+ buildings.forEach((b,bi)=>{
+  const bx=x+b.x*w,bw=b.w*w,bh=b.h*h,by=y+h-bh;
+  // Main body gradient
+  const bg=c.createLinearGradient(bx,by,bx+bw,by+bh);
+  bg.addColorStop(0,b.col);bg.addColorStop(.5,'#0f1a2a');bg.addColorStop(1,'#0a1020');
+  c.fillStyle=bg;c.beginPath();c.roundRect(bx,by,bw,bh,2);c.fill();
+  // Edge highlight
+  c.fillStyle='rgba(100,130,180,.08)';c.fillRect(bx,by,2,bh);
+  // Rooftop accent
+  const roofCols=['#334','#223','#2a2a3a'];
+  c.fillStyle=roofCols[bi%3];c.fillRect(bx+2,by,bw-4,3);
+  // Antenna on some
+  if(bi%3===0){c.strokeStyle='#333';c.lineWidth=1;c.beginPath();c.moveTo(bx+bw*.5,by);c.lineTo(bx+bw*.5,by-h*.05);c.stroke();
+   c.fillStyle='#ff2222';c.beginPath();c.arc(bx+bw*.5,by-h*.05,1.5,0,Math.PI*2);c.fill();}
+  // Windows with variety
+  for(let wy=by+6;wy<by+bh-8;wy+=10){
+   for(let wx=bx+3;wx<bx+bw-5;wx+=7){
+    const lit=Math.sin(bi*7+wx*.1+wy*.2)>.2;
+    if(lit){
+     const warmth=Math.random();
+     c.fillStyle=warmth>.5?`rgba(255,220,100,${.15+Math.random()*.35})`:`rgba(180,220,255,${.1+Math.random()*.2})`;
+     c.fillRect(wx,wy,3.5,4.5);
+     // Window frame
+     c.strokeStyle='rgba(0,0,0,.3)';c.lineWidth=.5;c.strokeRect(wx,wy,3.5,4.5);
+    }
+   }
+  }
+ });
+ // Ground road
+ c.fillStyle='#0a0e18';c.fillRect(x,y+h*.95,w,h*.05);
+ c.strokeStyle='#333844';c.lineWidth=1;c.setLineDash([8,6]);c.beginPath();c.moveTo(x,y+h*.975);c.lineTo(x+w,y+h*.975);c.stroke();c.setLineDash([]);
+ // Street lamps
+ for(let i=0;i<3;i++){
+  const lx=x+w*.15+i*w*.3;
+  c.strokeStyle='#334';c.lineWidth=2;c.beginPath();c.moveTo(lx,y+h*.95);c.lineTo(lx,y+h*.82);c.stroke();
+  c.save();c.shadowColor='rgba(255,200,100,.6)';c.shadowBlur=15;
+  c.fillStyle='rgba(255,220,120,.7)';c.beginPath();c.arc(lx,y+h*.82,3,0,Math.PI*2);c.fill();
+  c.shadowBlur=0;c.restore();
+  // Lamp light cone
+  const cone=c.createRadialGradient(lx,y+h*.82,0,lx,y+h*.88,w*.04);
+  cone.addColorStop(0,'rgba(255,220,120,.12)');cone.addColorStop(1,'transparent');
+  c.fillStyle=cone;c.fillRect(lx-w*.04,y+h*.82,w*.08,h*.14);
+ }
+}
+
+function drawRobot(c,x,y,s,t,pose){
+ c.save();
+ // Shadow on ground
+ c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.ellipse(x,y+s*1.4,s*.8,s*.15,0,0,Math.PI*2);c.fill();
+ // Legs with joints
+ const walk=pose==='walking'?Math.sin(t/150)*s*.15:0;
+ c.fillStyle='#4a5a6a';
+ c.beginPath();c.roundRect(x-s*.55,y+s*.7+walk,s*.38,s*.65,s*.08);c.fill();
+ c.beginPath();c.roundRect(x+s*.17,y+s*.7-walk,s*.38,s*.65,s*.08);c.fill();
+ // Knee joints
+ c.fillStyle='#667';c.beginPath();c.arc(x-s*.36,y+s*.9,s*.08,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*.36,y+s*.9,s*.08,0,Math.PI*2);c.fill();
+ // Feet
+ c.fillStyle='#3a4a5a';
+ c.beginPath();c.roundRect(x-s*.65,y+s*1.2+walk,s*.5,s*.2,s*.06);c.fill();
+ c.beginPath();c.roundRect(x+s*.15,y+s*1.2-walk,s*.5,s*.2,s*.06);c.fill();
+ // Main body - gradient metal
+ const bodyG=c.createLinearGradient(x-s,y-s,x+s,y+s*.8);
+ bodyG.addColorStop(0,'#8899aa');bodyG.addColorStop(.3,'#aabbcc');bodyG.addColorStop(.7,'#667788');bodyG.addColorStop(1,'#556677');
+ c.fillStyle=bodyG;c.beginPath();c.roundRect(x-s,y-s*.8,s*2,s*1.6,s*.25);c.fill();
+ // Body edge highlight
+ c.strokeStyle='rgba(150,180,210,.3)';c.lineWidth=1;c.beginPath();c.roundRect(x-s,y-s*.8,s*2,s*1.6,s*.25);c.stroke();
+ // Chest plate
+ const cpG=c.createLinearGradient(x-s*.7,y-s*.5,x+s*.7,y+s*.3);
+ cpG.addColorStop(0,'#99bbdd');cpG.addColorStop(.5,'#aaccee');cpG.addColorStop(1,'#88aacc');
+ c.fillStyle=cpG;c.beginPath();c.roundRect(x-s*.7,y-s*.5,s*1.4,s,s*.15);c.fill();
+ // Rivets on body
+ c.fillStyle='#889';
+ [{dx:-.85,dy:-.65},{dx:.85,dy:-.65},{dx:-.85,dy:.55},{dx:.85,dy:.55}].forEach(r=>{
+  c.beginPath();c.arc(x+r.dx*s,y+r.dy*s,s*.06,0,Math.PI*2);c.fill();
+ });
+ // Arms
+ const armSwing=pose==='hero'?Math.sin(t/120)*s*.1:pose==='reaching'?-s*.3:0;
+ c.fillStyle='#667788';
+ c.beginPath();c.roundRect(x-s*1.35,y-s*.5+armSwing,s*.4,s*1.1,s*.1);c.fill();
+ c.beginPath();c.roundRect(x+s*.95,y-s*.5-armSwing,s*.4,s*1.1,s*.1);c.fill();
+ // Hands (clamp style)
+ c.fillStyle='#778899';
+ c.beginPath();c.arc(x-s*1.15,y+s*.65+armSwing,s*.15,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*1.15,y+s*.65-armSwing,s*.15,0,Math.PI*2);c.fill();
+ // Head
+ const headG=c.createRadialGradient(x,y-s*1.1,0,x,y-s*1.1,s*.7);
+ headG.addColorStop(0,'#aabbcc');headG.addColorStop(1,'#778899');
+ c.fillStyle=headG;c.beginPath();c.roundRect(x-s*.65,y-s*1.5,s*1.3,s*.8,s*.15);c.fill();
+ // Visor strip
+ c.fillStyle='#1a2a3a';c.beginPath();c.roundRect(x-s*.55,y-s*1.3,s*1.1,s*.35,s*.08);c.fill();
+ // Eyes with glow
+ c.save();c.shadowColor='#44aaff';c.shadowBlur=8;
+ const eyeR=s*.14,blinkT=Math.sin(t/2000);
+ const eyeH=blinkT>0.98?eyeR*.2:eyeR;
+ c.fillStyle='#44ddff';
+ c.beginPath();c.ellipse(x-s*.28,y-s*1.15,eyeR,eyeH,0,0,Math.PI*2);c.fill();
+ c.beginPath();c.ellipse(x+s*.28,y-s*1.15,eyeR,eyeH,0,0,Math.PI*2);c.fill();
+ // Pupil highlights
+ c.fillStyle='#aaeeff';
+ c.beginPath();c.arc(x-s*.24,y-s*1.18,eyeR*.3,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*.32,y-s*1.18,eyeR*.3,0,Math.PI*2);c.fill();
+ c.shadowBlur=0;c.restore();
+ // Mouth LED strip
+ const mouthMod=pose==='hero'?Math.sin(t/200)*.5+.5:.3;
+ for(let i=0;i<5;i++){
+  c.fillStyle=`rgba(68,170,255,${.2+mouthMod*(i%2?1:.5)})`;
+  c.beginPath();c.roundRect(x-s*.25+i*s*.12,y-s*.95,s*.08,s*.04,2);c.fill();
+ }
+ // Antenna
+ const antBob=Math.sin(t/200)*3;
+ c.strokeStyle='#aabbcc';c.lineWidth=2;c.beginPath();c.moveTo(x,y-s*1.5);c.lineTo(x+antBob,y-s*2);c.stroke();
+ c.save();c.shadowColor='#44aaff';c.shadowBlur=10;
+ c.fillStyle='#44ddff';c.beginPath();c.arc(x+antBob,y-s*2,s*.12,0,Math.PI*2);c.fill();
+ c.shadowBlur=0;c.restore();
+ // Chest light (main feature)
+ if(pose==='walking'||pose==='hero'||pose==='reaching'){
+  c.save();c.shadowColor='#44aaff';c.shadowBlur=15;
+  const pulse=.5+Math.sin(t/150)*.3;
+  c.fillStyle=`rgba(68,200,255,${pulse})`;c.beginPath();c.arc(x,y-s*.05,s*.18,0,Math.PI*2);c.fill();
+  c.fillStyle='rgba(180,240,255,.8)';c.beginPath();c.arc(x,y-s*.05,s*.08,0,Math.PI*2);c.fill();
+  c.shadowBlur=0;c.restore();
+  // Light rays
+  c.strokeStyle=`rgba(68,200,255,${pulse*.3})`;c.lineWidth=1;
+  for(let i=0;i<6;i++){const a=Math.PI*2*i/6+t/500;
+   c.beginPath();c.moveTo(x+Math.cos(a)*s*.2,y-s*.05+Math.sin(a)*s*.2);
+   c.lineTo(x+Math.cos(a)*s*.35,y-s*.05+Math.sin(a)*s*.35);c.stroke();}
+ }
+ // Sparkle particles for hero pose
+ if(pose==='hero'){
+  for(let i=0;i<4;i++){
+   const pa=t/300+i*1.5,pr=s*(.8+Math.sin(t/200+i)*.3);
+   c.fillStyle=`rgba(100,200,255,${.3+Math.sin(t/100+i)*.3})`;
+   c.beginPath();c.arc(x+Math.cos(pa)*pr,y-s*.5+Math.sin(pa)*pr*.6,s*.06,0,Math.PI*2);c.fill();
+  }
+ }
+ c.restore();
+}
+
+function drawPerson(c,x,y,s,skin,shirt,t,pose){
+ c.save();
+ // Shadow
+ c.fillStyle='rgba(0,0,0,.15)';c.beginPath();c.ellipse(x,y+s*2.5,s*.8,s*.12,0,0,Math.PI*2);c.fill();
+ // Legs with shoes
+ c.fillStyle='#3344aa';
+ c.beginPath();c.roundRect(x-s*.6,y+s*1.5,s*.45,s*.9,s*.08);c.fill();
+ c.beginPath();c.roundRect(x+s*.15,y+s*1.5,s*.45,s*.9,s*.08);c.fill();
+ // Shoes
+ c.fillStyle='#443322';
+ c.beginPath();c.roundRect(x-s*.7,y+s*2.2,s*.55,s*.22,s*.06);c.fill();
+ c.beginPath();c.roundRect(x+s*.15,y+s*2.2,s*.55,s*.22,s*.06);c.fill();
+ // Body / shirt with gradient
+ const shirtG=c.createLinearGradient(x-s,y-s*.5,x+s,y+s*1.5);
+ shirtG.addColorStop(0,shirt);shirtG.addColorStop(1,shirt.replace(/[0-9a-f]{2}$/i,m=>{const n=Math.max(0,parseInt(m,16)-40);return n.toString(16).padStart(2,'0');}));
+ c.fillStyle=shirt;c.beginPath();c.roundRect(x-s,y-s*.5,s*2,s*2,s*.15);c.fill();
+ // Collar
+ c.fillStyle='rgba(255,255,255,.15)';c.beginPath();c.moveTo(x-s*.3,y-s*.5);c.lineTo(x,y-s*.1);c.lineTo(x+s*.3,y-s*.5);c.fill();
+ // Arms
+ const armA=pose==='waving'?Math.sin(t/200)*s*.3:0;
+ c.fillStyle=shirt;
+ c.beginPath();c.roundRect(x-s*1.4,y-s*.3,s*.45,s*1.1,s*.1);c.fill();
+ c.beginPath();c.roundRect(x+s*.95,y-s*.3+armA,s*.45,s*1.1,s*.1);c.fill();
+ // Hands
+ c.fillStyle=skin;
+ c.beginPath();c.arc(x-s*1.18,y+s*.85,s*.18,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*1.18,y+s*.85+armA,s*.18,0,Math.PI*2);c.fill();
+ // Head
+ c.fillStyle=skin;c.beginPath();c.arc(x,y-s*1.2,s*.8,0,Math.PI*2);c.fill();
+ // Cheek blush
+ c.fillStyle='rgba(255,150,150,.2)';
+ c.beginPath();c.arc(x-s*.45,y-s,s*.15,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*.45,y-s,s*.15,0,Math.PI*2);c.fill();
+ // Hair with volume
+ c.fillStyle='#332211';
+ c.beginPath();c.arc(x,y-s*1.5,s*.65,Math.PI,0,true);c.fill();
+ c.beginPath();c.ellipse(x-s*.55,y-s*1.3,s*.15,s*.4,-.15,0,Math.PI*2);c.fill();
+ c.beginPath();c.ellipse(x+s*.55,y-s*1.3,s*.15,s*.4,.15,0,Math.PI*2);c.fill();
+ // Eyes with detail
+ c.fillStyle='#fff';c.beginPath();c.ellipse(x-s*.25,y-s*1.2,s*.15,s*.12,0,0,Math.PI*2);c.fill();
+ c.beginPath();c.ellipse(x+s*.25,y-s*1.2,s*.15,s*.12,0,0,Math.PI*2);c.fill();
+ c.fillStyle='#334';c.beginPath();c.arc(x-s*.25,y-s*1.18,s*.07,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*.25,y-s*1.18,s*.07,0,Math.PI*2);c.fill();
+ c.fillStyle='#fff';c.beginPath();c.arc(x-s*.22,y-s*1.22,s*.03,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*.28,y-s*1.22,s*.03,0,Math.PI*2);c.fill();
+ // Smile
+ c.strokeStyle='#884444';c.lineWidth=1.5;c.beginPath();c.arc(x,y-s*.95,s*.2,.1,Math.PI-.1);c.stroke();
+ c.restore();
+}
+
+function drawDragonFern(c,x,y,s,t){
+ c.save();
+ // Shadow
+ c.fillStyle='rgba(0,0,0,.15)';c.beginPath();c.ellipse(x,y+s*.8,s*.7,s*.12,0,0,Math.PI*2);c.fill();
+ // Tail with bezier curve
+ c.strokeStyle='#44aa33';c.lineWidth=s*.25;c.lineCap='round';
+ c.beginPath();c.moveTo(x-s*.5,y+s*.2);c.bezierCurveTo(x-s*1.2,y+s*.5,x-s*1.5,y-s*.2,x-s*1.2,y-s*.5);c.stroke();
+ // Tail spade
+ c.fillStyle='#55bb44';c.beginPath();c.moveTo(x-s*1.2,y-s*.5);c.lineTo(x-s*1.5,y-s*.7);c.lineTo(x-s*1.1,y-s*.6);c.lineTo(x-s*1.4,y-s*.4);c.fill();
+ // Body with gradient
+ const bodyG=c.createRadialGradient(x,y,0,x,y,s);
+ bodyG.addColorStop(0,'#66dd55');bodyG.addColorStop(.5,'#55bb44');bodyG.addColorStop(1,'#44aa33');
+ c.fillStyle=bodyG;c.beginPath();c.ellipse(x,y,s,s*.7,0,0,Math.PI*2);c.fill();
+ // Belly
+ c.fillStyle='#88ee77';c.beginPath();c.ellipse(x+s*.1,y+s*.1,s*.5,s*.4,0,0,Math.PI*2);c.fill();
+ // Scale pattern
+ c.fillStyle='rgba(0,0,0,.06)';
+ for(let i=0;i<5;i++){for(let j=0;j<3;j++){
+  c.beginPath();c.arc(x-s*.4+i*s*.22,y-s*.3+j*s*.3,s*.08,0,Math.PI*2);c.fill();
+ }}
+ // Back spines
+ c.fillStyle='#33aa22';
+ for(let i=0;i<5;i++){
+  const sx=x-s*.3+i*s*.18,sy=y-s*.6-Math.sin(t/300+i)*2;
+  c.beginPath();c.moveTo(sx-s*.04,sy+s*.15);c.lineTo(sx,sy);c.lineTo(sx+s*.04,sy+s*.15);c.fill();
+ }
+ // Wings with membrane detail
+ c.fillStyle='rgba(80,200,60,.3)';
+ c.beginPath();c.moveTo(x-s*.2,y-s*.3);c.bezierCurveTo(x-s*1,y-s*1.2,x-s*1.5,y-s*.5,x-s*.6,y+s*.1);c.fill();
+ c.beginPath();c.moveTo(x+s*.2,y-s*.3);c.bezierCurveTo(x+s*1,y-s*1.2,x+s*1.5,y-s*.5,x+s*.6,y+s*.1);c.fill();
+ // Wing bones
+ c.strokeStyle='rgba(40,120,30,.5)';c.lineWidth=1;
+ c.beginPath();c.moveTo(x-s*.2,y-s*.3);c.lineTo(x-s*1.1,y-s*1);c.stroke();
+ c.beginPath();c.moveTo(x-s*.2,y-s*.2);c.lineTo(x-s*1.2,y-s*.5);c.stroke();
+ c.beginPath();c.moveTo(x+s*.2,y-s*.3);c.lineTo(x+s*1.1,y-s*1);c.stroke();
+ c.beginPath();c.moveTo(x+s*.2,y-s*.2);c.lineTo(x+s*1.2,y-s*.5);c.stroke();
+ // Head
+ const headG=c.createRadialGradient(x+s*.3,y-s*.6,0,x+s*.3,y-s*.6,s*.5);
+ headG.addColorStop(0,'#66dd55');headG.addColorStop(1,'#44aa33');
+ c.fillStyle=headG;c.beginPath();c.arc(x+s*.3,y-s*.6,s*.5,0,Math.PI*2);c.fill();
+ // Snout
+ c.fillStyle='#55cc44';c.beginPath();c.ellipse(x+s*.7,y-s*.55,s*.2,s*.15,0,0,Math.PI*2);c.fill();
+ // Nostrils
+ c.fillStyle='#338822';c.beginPath();c.arc(x+s*.75,y-s*.6,s*.04,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*.82,y-s*.6,s*.04,0,Math.PI*2);c.fill();
+ // Smoke puffs from nostrils
+ for(let i=0;i<3;i++){const px=x+s*.85+i*s*.12,py=y-s*.65-i*s*.08;
+  c.fillStyle=`rgba(200,200,200,${.15-i*.04})`;c.beginPath();c.arc(px+Math.sin(t/200+i)*3,py,s*(.06+i*.03),0,Math.PI*2);c.fill();}
+ // Eyes with glow
+ c.save();c.shadowColor='#ffee00';c.shadowBlur=4;
+ c.fillStyle='#ffdd00';c.beginPath();c.ellipse(x+s*.2,y-s*.72,s*.13,s*.1,0,0,Math.PI*2);c.fill();
+ c.beginPath();c.ellipse(x+s*.45,y-s*.72,s*.13,s*.1,0,0,Math.PI*2);c.fill();
+ c.shadowBlur=0;c.restore();
+ // Slit pupils
+ c.fillStyle='#222';c.beginPath();c.ellipse(x+s*.2,y-s*.72,s*.04,s*.09,0,0,Math.PI*2);c.fill();
+ c.beginPath();c.ellipse(x+s*.45,y-s*.72,s*.04,s*.09,0,0,Math.PI*2);c.fill();
+ // Cute smile
+ c.strokeStyle='#2a7722';c.lineWidth=1.5;c.beginPath();c.arc(x+s*.5,y-s*.45,s*.12,.1,Math.PI-.1);c.stroke();
+ // Front legs
+ c.fillStyle='#44aa33';
+ c.beginPath();c.roundRect(x-s*.3,y+s*.3,s*.25,s*.5,s*.06);c.fill();
+ c.beginPath();c.roundRect(x+s*.2,y+s*.3,s*.25,s*.5,s*.06);c.fill();
+ // Claws
+ c.fillStyle='#336622';
+ for(let i=0;i<2;i++){const lx=i===0?x-s*.17:x+s*.33;
+  for(let j=0;j<3;j++){c.beginPath();c.arc(lx-s*.06+j*s*.06,y+s*.82,s*.03,0,Math.PI*2);c.fill();}}
+ c.restore();
+}
+
+function drawMermaid(c,x,y,s,t){
+ c.save();
+ // Underwater glow
+ c.save();c.shadowColor='rgba(100,200,255,.3)';c.shadowBlur=20;
+ // Tail with gradient scales
+ const tailG=c.createLinearGradient(x,y,x,y+s*3.5);
+ tailG.addColorStop(0,'#55ddbb');tailG.addColorStop(.5,'#44ccaa');tailG.addColorStop(1,'#33aa88');
+ c.fillStyle=tailG;c.beginPath();
+ c.moveTo(x-s*.5,y+s*.3);c.bezierCurveTo(x-s*.6,y+s*1.5,x+s*.3,y+s*2,x,y+s*3);c.lineTo(x+s*.2,y+s*3);
+ c.bezierCurveTo(x+s*.6,y+s*2,x+s*.7,y+s*1.5,x+s*.5,y+s*.3);c.fill();
+ c.shadowBlur=0;c.restore();
+ // Scale shimmer
+ c.fillStyle='rgba(150,255,230,.15)';
+ for(let i=0;i<8;i++){for(let j=0;j<3;j++){
+  c.beginPath();c.arc(x-s*.2+j*s*.2,y+s*.5+i*s*.3,s*.08,0,Math.PI*2);c.fill();
+ }}
+ // Tail fin with spread
+ const finWave=Math.sin(t/200)*s*.15;
+ c.fillStyle='#33ddaa';
+ c.beginPath();c.moveTo(x,y+s*3);c.bezierCurveTo(x-s*.3,y+s*3.2,x-s*1,y+s*3+finWave,x-s*1,y+s*3.3+finWave);c.lineTo(x-s*.1,y+s*3.1);c.fill();
+ c.beginPath();c.moveTo(x+s*.2,y+s*3);c.bezierCurveTo(x+s*.5,y+s*3.2,x+s*1.2,y+s*3-finWave,x+s*1.2,y+s*3.3-finWave);c.lineTo(x+s*.3,y+s*3.1);c.fill();
+ // Fin detail lines
+ c.strokeStyle='rgba(0,50,40,.2)';c.lineWidth=.5;
+ for(let i=0;i<4;i++){
+  c.beginPath();c.moveTo(x,y+s*3);c.lineTo(x-s*.3-i*s*.18,y+s*3.2+finWave*(i/4));c.stroke();
+  c.beginPath();c.moveTo(x+s*.2,y+s*3);c.lineTo(x+s*.4+i*s*.2,y+s*3.2-finWave*(i/4));c.stroke();}
+ // Body
+ const skinG=c.createRadialGradient(x,y-s*.2,0,x,y,s);
+ skinG.addColorStop(0,'#ffe0b8');skinG.addColorStop(1,'#ffcc99');
+ c.fillStyle=skinG;c.beginPath();c.ellipse(x,y,s*.5,s*.8,0,0,Math.PI*2);c.fill();
+ // Shell top
+ c.fillStyle='#ee77aa';c.beginPath();c.arc(x-s*.2,y+s*.15,s*.15,Math.PI,0);c.fill();
+ c.beginPath();c.arc(x+s*.2,y+s*.15,s*.15,Math.PI,0);c.fill();
+ // Arms
+ c.fillStyle='#ffe0b8';
+ c.beginPath();c.roundRect(x-s*.8,y-s*.3,s*.35,s*.8,s*.1);c.fill();
+ c.beginPath();c.roundRect(x+s*.45,y-s*.3+Math.sin(t/250)*s*.1,s*.35,s*.8,s*.1);c.fill();
+ // Head
+ c.fillStyle='#ffe0b8';c.beginPath();c.arc(x,y-s,s*.6,0,Math.PI*2);c.fill();
+ // Cheeks
+ c.fillStyle='rgba(255,150,150,.2)';
+ c.beginPath();c.arc(x-s*.35,y-s*.85,s*.1,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*.35,y-s*.85,s*.1,0,Math.PI*2);c.fill();
+ // Hair - flowing underwater effect
+ c.fillStyle='#cc5522';
+ c.beginPath();c.arc(x,y-s*1.25,s*.55,Math.PI,.01,true);c.fill();
+ // Flowing hair strands
+ for(let i=0;i<5;i++){
+  const hx=x-s*.5+i*s*.25,wave=Math.sin(t/250+i*.8)*s*.15;
+  c.fillStyle=i%2?'#dd6633':'#cc5522';
+  c.beginPath();c.ellipse(hx+wave,y-s*.4,s*.08,s*.55,wave*.02,0,Math.PI*2);c.fill();
+ }
+ // Crown with gems
+ c.fillStyle='#ffcc00';c.beginPath();c.moveTo(x-s*.35,y-s*1.55);
+ for(let i=0;i<5;i++){c.lineTo(x-s*.35+i*s*.175,i%2?y-s*1.85:y-s*1.65);}
+ c.lineTo(x+s*.35,y-s*1.55);c.fill();
+ // Crown gems
+ const gemCols=['#ff4466','#44aaff','#ff4466'];
+ gemCols.forEach((gc,i)=>{c.fillStyle=gc;c.beginPath();c.arc(x-s*.18+i*s*.18,y-s*1.68,s*.05,0,Math.PI*2);c.fill();});
+ // Eyes
+ c.fillStyle='#fff';c.beginPath();c.ellipse(x-s*.2,y-s*1.02,s*.12,s*.1,0,0,Math.PI*2);c.fill();
+ c.beginPath();c.ellipse(x+s*.2,y-s*1.02,s*.12,s*.1,0,0,Math.PI*2);c.fill();
+ c.fillStyle='#2a6655';c.beginPath();c.arc(x-s*.2,y-s,s*.06,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*.2,y-s,s*.06,0,Math.PI*2);c.fill();
+ c.fillStyle='#fff';c.beginPath();c.arc(x-s*.18,y-s*1.03,s*.025,0,Math.PI*2);c.fill();
+ c.beginPath();c.arc(x+s*.22,y-s*1.03,s*.025,0,Math.PI*2);c.fill();
+ // Eyelashes
+ c.strokeStyle='#884444';c.lineWidth=.8;
+ c.beginPath();c.moveTo(x-s*.3,y-s*1.08);c.lineTo(x-s*.34,y-s*1.14);c.stroke();
+ c.beginPath();c.moveTo(x+s*.3,y-s*1.08);c.lineTo(x+s*.34,y-s*1.14);c.stroke();
+ // Smile
+ c.strokeStyle='#cc6666';c.lineWidth=1;c.beginPath();c.arc(x,y-s*.88,s*.12,.1,Math.PI-.1);c.stroke();
+ // Bubble trail
+ for(let i=0;i<4;i++){
+  const bx2=x+s*.5+Math.sin(t/200+i)*s*.2,by2=y-s*1.5-i*s*.4;
+  c.strokeStyle=`rgba(150,220,255,${.3-i*.06})`;c.lineWidth=.5;
+  c.beginPath();c.arc(bx2,by2,s*(.05+i*.02),0,Math.PI*2);c.stroke();
+ }
+ c.restore();
+}
+
+function drawSpaceship(c,x,y,s,t){
+ c.save();
+ // Engine exhaust trail
+ for(let i=0;i<5;i++){
+  c.fillStyle=`rgba(255,${120+i*25},${50+i*20},${.3-i*.05})`;
+  c.beginPath();c.ellipse(x,y+s*.8+i*s*.15,s*(.25-i*.03),s*(.1+i*.04)+Math.sin(t/80+i)*s*.02,0,0,Math.PI*2);c.fill();
+ }
+ // Engine main glow
+ c.save();c.shadowColor='#ff8844';c.shadowBlur=25;
+ c.fillStyle='rgba(255,180,80,.5)';c.beginPath();c.ellipse(x,y+s*.75,s*.2,s*.1+Math.sin(t/80)*s*.03,0,0,Math.PI*2);c.fill();
+ c.fillStyle='rgba(255,255,200,.6)';c.beginPath();c.ellipse(x,y+s*.72,s*.08,s*.04,0,0,Math.PI*2);c.fill();
+ c.shadowBlur=0;c.restore();
+ // Side fins / wings
+ c.fillStyle='#6644aa';
+ c.beginPath();c.moveTo(x-s*.35,y+s*.1);c.lineTo(x-s*.8,y+s*.55);c.lineTo(x-s*.7,y+s*.6);c.lineTo(x-s*.2,y+s*.35);c.fill();
+ c.beginPath();c.moveTo(x+s*.35,y+s*.1);c.lineTo(x+s*.8,y+s*.55);c.lineTo(x+s*.7,y+s*.6);c.lineTo(x+s*.2,y+s*.35);c.fill();
+ // Wing accents
+ c.fillStyle='rgba(255,200,100,.2)';
+ c.beginPath();c.moveTo(x-s*.4,y+s*.2);c.lineTo(x-s*.65,y+s*.5);c.lineTo(x-s*.55,y+s*.52);c.lineTo(x-s*.3,y+s*.3);c.fill();
+ c.beginPath();c.moveTo(x+s*.4,y+s*.2);c.lineTo(x+s*.65,y+s*.5);c.lineTo(x+s*.55,y+s*.52);c.lineTo(x+s*.3,y+s*.3);c.fill();
+ // Main body gradient
+ const sg=c.createLinearGradient(x-s*.4,y-s*1.1,x+s*.4,y+s*.6);
+ sg.addColorStop(0,'#bbaadd');sg.addColorStop(.3,'#9977cc');sg.addColorStop(.6,'#7755aa');sg.addColorStop(1,'#553388');
+ c.fillStyle=sg;c.beginPath();c.moveTo(x,y-s*1.1);
+ c.bezierCurveTo(x-s*.15,y-s*.8,x-s*.45,y+s*.1,x-s*.35,y+s*.55);
+ c.lineTo(x+s*.35,y+s*.55);
+ c.bezierCurveTo(x+s*.45,y+s*.1,x+s*.15,y-s*.8,x,y-s*1.1);c.fill();
+ // Body highlight
+ c.fillStyle='rgba(200,180,240,.15)';c.beginPath();
+ c.moveTo(x-s*.05,y-s*.9);c.bezierCurveTo(x-s*.1,y-s*.5,x-s*.2,y+s*.1,x-s*.15,y+s*.4);
+ c.lineTo(x+s*.05,y+s*.4);c.bezierCurveTo(x+s*.05,y+s*.1,x,y-s*.5,x-s*.05,y-s*.9);c.fill();
+ // Hull lines
+ c.strokeStyle='rgba(100,80,160,.3)';c.lineWidth=.8;
+ for(let i=0;i<4;i++){
+  const ly=y-s*.5+i*s*.25;
+  c.beginPath();c.moveTo(x-s*(.25-i*.02),ly);c.lineTo(x+s*(.25-i*.02),ly);c.stroke();}
+ // Cockpit dome
+ const ckG=c.createRadialGradient(x-s*.05,y-s*.45,0,x,y-s*.3,s*.25);
+ ckG.addColorStop(0,'rgba(200,230,255,.6)');ckG.addColorStop(.5,'rgba(150,200,255,.4)');ckG.addColorStop(1,'rgba(100,150,220,.2)');
+ c.fillStyle=ckG;c.beginPath();c.arc(x,y-s*.35,s*.22,0,Math.PI*2);c.fill();
+ // Cockpit shine
+ c.fillStyle='rgba(255,255,255,.3)';c.beginPath();c.arc(x-s*.07,y-s*.42,s*.06,0,Math.PI*2);c.fill();
+ // Cockpit frame
+ c.strokeStyle='rgba(80,60,140,.4)';c.lineWidth=1.5;c.beginPath();c.arc(x,y-s*.35,s*.22,0,Math.PI*2);c.stroke();
+ // Navigation lights
+ c.save();c.shadowColor='#ff4444';c.shadowBlur=5;c.fillStyle='#ff4444';c.beginPath();c.arc(x-s*.38,y+s*.15,s*.04,0,Math.PI*2);c.fill();c.shadowBlur=0;c.restore();
+ c.save();c.shadowColor='#44ff44';c.shadowBlur=5;c.fillStyle='#44ff44';c.beginPath();c.arc(x+s*.38,y+s*.15,s*.04,0,Math.PI*2);c.fill();c.shadowBlur=0;c.restore();
+ // Top antenna
+ c.strokeStyle='#aaaacc';c.lineWidth=1;c.beginPath();c.moveTo(x,y-s*1.1);c.lineTo(x,y-s*1.35);c.stroke();
+ c.save();c.shadowColor='#44aaff';c.shadowBlur=6;c.fillStyle='#44aaff';c.beginPath();c.arc(x,y-s*1.35,s*.05,0,Math.PI*2);c.fill();c.shadowBlur=0;c.restore();
+ c.restore();
+}
+
+function drawBigTree(c,x,y,tw,th,t,season){
+ c.save();
+ // Roots
+ c.fillStyle='#3a2515';
+ for(let i=0;i<4;i++){
+  const rx=x-tw*.25+i*tw*.15,ra=-.3+i*.2;
+  c.beginPath();c.moveTo(rx,y+th*.55);c.bezierCurveTo(rx-tw*.1,y+th*.6,rx-tw*.15,y+th*.65,rx-tw*.2,y+th*.68);
+  c.lineTo(rx-tw*.15,y+th*.7);c.bezierCurveTo(rx-tw*.1,y+th*.67,rx-tw*.05,y+th*.62,rx+tw*.05,y+th*.57);c.fill();
+ }
+ // Trunk with bark texture
+ const trG=c.createLinearGradient(x-tw*.18,y,x+tw*.18,y);
+ trG.addColorStop(0,'#3a2010');trG.addColorStop(.3,'#5a3820');trG.addColorStop(.5,'#6a4830');trG.addColorStop(.7,'#5a3820');trG.addColorStop(1,'#3a2010');
+ c.fillStyle=trG;
+ c.beginPath();c.moveTo(x-tw*.18,y-th*.1);c.bezierCurveTo(x-tw*.2,y+th*.2,x-tw*.22,y+th*.4,x-tw*.2,y+th*.6);
+ c.lineTo(x+tw*.2,y+th*.6);c.bezierCurveTo(x+tw*.22,y+th*.4,x+tw*.2,y+th*.2,x+tw*.18,y-th*.1);c.fill();
+ // Bark detail
+ c.strokeStyle='rgba(0,0,0,.12)';c.lineWidth=1;
+ for(let i=0;i<8;i++){
+  const by=y-th*.05+i*th*.08,bx=x-tw*.12+(i%3)*tw*.06;
+  c.beginPath();c.moveTo(bx,by);c.bezierCurveTo(bx+tw*.02,by+th*.04,bx-tw*.02,by+th*.06,bx+tw*.01,by+th*.08);c.stroke();
+ }
+ // Knot hole
+ c.fillStyle='#2a1808';c.beginPath();c.ellipse(x+tw*.05,y+th*.25,tw*.04,tw*.06,-.2,0,Math.PI*2);c.fill();
+ // Main canopy layers with depth
+ const leafCol=season==='spring'?['#338822','#44aa33','#55cc44','#66dd55']:['#aa5511','#cc8822','#dd9933','#ee8844'];
+ // Shadow canopy (back)
+ c.fillStyle='rgba(0,0,0,.1)';c.beginPath();c.arc(x,y-th*.45,tw*.55,0,Math.PI*2);c.fill();
+ // Canopy clusters
+ const clusters=[{dx:-.35,dy:-.25,r:.35},{dx:.3,dy:-.3,r:.32},{dx:0,dy:-.5,r:.42},
+  {dx:-.2,dy:-.45,r:.3},{dx:.25,dy:-.42,r:.28},{dx:0,dy:-.35,r:.38}];
+ clusters.forEach((cl,i)=>{
+  const colG=c.createRadialGradient(x+cl.dx*tw,y+cl.dy*th-th*.05,0,x+cl.dx*tw,y+cl.dy*th,cl.r*tw);
+  colG.addColorStop(0,leafCol[Math.min(i%leafCol.length+1,leafCol.length-1)]);
+  colG.addColorStop(1,leafCol[i%leafCol.length]);
+  c.fillStyle=colG;c.beginPath();c.arc(x+cl.dx*tw,y+cl.dy*th,cl.r*tw,0,Math.PI*2);c.fill();
+ });
+ // Leaf shimmer
+ if(season==='spring'){
+  for(let i=0;i<10;i++){
+   const lx=x+(Math.random()-.5)*tw*.9,ly=y-th*.2-Math.random()*th*.4;
+   c.fillStyle=`rgba(130,255,100,${.1+Math.random()*.15})`;c.beginPath();c.arc(lx,ly,tw*.02+Math.random()*tw*.02,0,Math.PI*2);c.fill();
+  }
+ }
+ // Falling leaves
+ for(let i=0;i<4;i++){
+  const lx=x+(Math.sin(t/400+i*2))*tw*.5,ly=y-th*.1+((t/8+i*80)%(th*.8));
+  c.save();c.translate(lx,ly);c.rotate(t/300+i);
+  c.fillStyle=leafCol[i%leafCol.length];c.beginPath();c.ellipse(0,0,tw*.02,tw*.01,0,0,Math.PI*2);c.fill();
+  c.restore();
+ }
+ c.restore();
+}
+
+function drawSpeedLines(c,x,y,w,h,alpha){
+ c.save();c.globalAlpha=alpha;
+ const cx=x+w*.5,cy=y+h*.5;
+ // Thick dramatic lines
+ for(let i=0;i<30;i++){
+  const a=Math.random()*Math.PI*2;
+  const r1=Math.max(w,h)*.35,r2=Math.max(w,h)*.65;
+  const lw=.5+Math.random()*2.5;
+  c.strokeStyle=`rgba(0,0,0,${.3+Math.random()*.4})`;c.lineWidth=lw;
+  c.beginPath();c.moveTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1);c.lineTo(cx+Math.cos(a)*r2,cy+Math.sin(a)*r2);c.stroke();
+ }
+ c.globalAlpha=1;c.restore();
+}
+
+function wrapText(c,text,x,y,maxW,lineH){
+ const words=text.split(' ');let line='';
+ for(let n=0;n<words.length;n++){
+  const test=line+words[n]+' ';
+  if(c.measureText(test).width>maxW&&n>0){c.fillText(line.trim(),x,y);y+=lineH;line=words[n]+' ';}
+  else{line=test;}
+ }
+ c.fillText(line.trim(),x,y);
+}
+
+/* ========== FINISH CHAPTER ========== */
+function finishChapter(){
+ stopM();sfx('complete');
+ const st=STORIES[G.curChap];
+ const pct=G.correct/st.questions.length;
+ const stars=pct>=.95?3:pct>=.7?2:pct>=.4?1:0;
+ const inkBonus=stars*15;S.ink+=inkBonus;
+ if(!S.chaps[st.id])S.chaps[st.id]={};
+ S.chaps[st.id].done=true;
+ S.chaps[st.id].stars=Math.max(S.chaps[st.id].stars||0,stars);
+ G._stars=stars;G._inkBonus=inkBonus;
+ save();
+ document.getElementById('hud').classList.remove('active');
+ // Show the full comic review first
+ showComicReview();
+}
+
+function goResults(){
+ const st=STORIES[G.curChap];
+ document.getElementById('resultStars').textContent='★'.repeat(G._stars)+'☆'.repeat(3-G._stars);
+ document.getElementById('resultMsg').textContent=`${G.correct}/${st.questions.length} correct · +${G._inkBonus} bonus ink`;
+ showScr('resultScreen');
+}
+
+function showComicReview(){
+ const st=STORIES[G.curChap];
+ const cv=document.getElementById('reviewCv');
+ const cw=Math.min(800,window.innerWidth*.92);
+ // Comic book layout: title + 5 panels in 3-2 grid + footer
+ const panelW=Math.floor((cw-60)/3);
+ const panelH=Math.floor(panelW*.7);
+ const titleH=80;
+ const footerH=60;
+ const gap=12;
+ const totalH=titleH+panelH*2+gap*3+footerH+40;
+ cv.width=cw;cv.height=totalH;
+ const c=cv.getContext('2d'),t=Date.now();
+
+ // Comic book cover background
+ const bgG=c.createLinearGradient(0,0,cw,totalH);
+ bgG.addColorStop(0,'#fdf6e3');bgG.addColorStop(.5,'#f5eedc');bgG.addColorStop(1,'#ede4c8');
+ c.fillStyle=bgG;c.fillRect(0,0,cw,totalH);
+
+ // Paper texture
+ for(let i=0;i<500;i++){
+  c.fillStyle=`rgba(180,160,120,${Math.random()*.03})`;
+  c.fillRect(Math.random()*cw,Math.random()*totalH,Math.random()*3+1,Math.random()*2+.5);
+ }
+
+ // Outer border
+ c.strokeStyle='#111';c.lineWidth=4;c.beginPath();c.roundRect(4,4,cw-8,totalH-8,8);c.stroke();
+ c.strokeStyle='#333';c.lineWidth=1;c.beginPath();c.roundRect(8,8,cw-16,totalH-16,6);c.stroke();
+
+ // Title banner
+ c.fillStyle=st.accent||'#ff4466';
+ c.beginPath();c.roundRect(20,16,cw-40,titleH-8,10);c.fill();
+ c.strokeStyle='rgba(0,0,0,.3)';c.lineWidth=2;c.beginPath();c.roundRect(20,16,cw-40,titleH-8,10);c.stroke();
+ // Title text
+ c.fillStyle='#fff';c.font='bold '+Math.floor(Math.min(28,cw*.04))+'px Bangers';c.textAlign='center';c.textBaseline='middle';
+ c.fillText(st.title.toUpperCase(),cw/2,titleH/2+12);
+ // Subtitle
+ c.font='bold '+Math.floor(Math.min(14,cw*.02))+'px Comic Neue';
+ c.fillStyle='rgba(255,255,255,.7)';
+ c.fillText('Your Comic Book — '+G.correct+'/'+st.questions.length+' Correct',cw/2,titleH/2+32);
+
+ // Draw panels in 3-2 layout
+ const startY=titleH+gap;
+ const panels=st.panels;
+ const positions=[];
+ // Row 1: 3 panels
+ for(let i=0;i<3;i++){
+  const px=20+i*(panelW+gap);
+  positions.push({x:px,y:startY,w:panelW,h:panelH});
+ }
+ // Row 2: 2 panels centered
+ const row2Offset=20+Math.floor((cw-40-panelW*2-gap)/2);
+ for(let i=0;i<2;i++){
+  const px=row2Offset+i*(panelW+gap);
+  positions.push({x:px,y:startY+panelH+gap,w:panelW,h:panelH});
+ }
+
+ // Render each panel
+ positions.forEach((pos,i)=>{
+  if(i>=panels.length)return;
+  c.save();
+  // Panel shadow
+  c.fillStyle='rgba(0,0,0,.2)';c.beginPath();c.roundRect(pos.x+3,pos.y+3,pos.w,pos.h,5);c.fill();
+  // White panel bg
+  c.fillStyle='#fff';c.beginPath();c.roundRect(pos.x,pos.y,pos.w,pos.h,5);c.fill();
+  // Clip and draw scene
+  c.save();
+  c.beginPath();c.roundRect(pos.x+2,pos.y+2,pos.w-4,pos.h-4,4);c.clip();
+  const result=G.panelResults[i];
+  if(result===true){
+   drawPanelScene(c,st,panels[i],pos.x+2,pos.y+2,pos.w-4,pos.h-4,t);
+  }else if(result===false){
+   drawSillyPanel(c,st,panels[i],pos.x+2,pos.y+2,pos.w-4,pos.h-4,t);
+  }else{
+   c.fillStyle='#222';c.fillRect(pos.x+2,pos.y+2,pos.w-4,pos.h-4);
+  }
+  c.restore();
+  // Panel border
+  c.strokeStyle='#111';c.lineWidth=3;c.beginPath();c.roundRect(pos.x,pos.y,pos.w,pos.h,5);c.stroke();
+  // Panel number
+  c.fillStyle=st.accent||'#ff4466';c.beginPath();c.arc(pos.x+12,pos.y+12,10,0,Math.PI*2);c.fill();
+  c.fillStyle='#fff';c.font='bold 12px Bangers';c.textAlign='center';c.textBaseline='middle';
+  c.fillText(String(i+1),pos.x+12,pos.y+13);
+  // Caption below panel
+  c.fillStyle='#1a1a1a';c.font='bold '+Math.floor(Math.min(10,cw*.014))+'px Comic Neue';c.textAlign='center';
+  const capY=pos.y+pos.h-10;
+  c.fillStyle='rgba(255,255,220,.85)';c.beginPath();c.roundRect(pos.x+5,capY-8,pos.w-10,16,3);c.fill();
+  c.fillStyle='#1a1a1a';
+  const capText=panels[i].desc.length>40?panels[i].desc.slice(0,38)+'...':panels[i].desc;
+  c.fillText(capText,pos.x+pos.w/2,capY+1);
+  // Correct/wrong indicator
+  if(result===true){
+   c.fillStyle='rgba(0,200,80,.15)';c.beginPath();c.arc(pos.x+pos.w-12,pos.y+12,8,0,Math.PI*2);c.fill();
+   c.fillStyle='#44ff88';c.font='bold 12px sans-serif';c.fillText('\u2713',pos.x+pos.w-12,pos.y+13);
+  }else if(result===false){
+   c.fillStyle='rgba(255,80,40,.15)';c.beginPath();c.arc(pos.x+pos.w-12,pos.y+12,8,0,Math.PI*2);c.fill();
+   c.fillStyle='#ff4444';c.font='bold 12px sans-serif';c.fillText('\u2717',pos.x+pos.w-12,pos.y+13);
+  }
+  c.restore();
+ });
+
+ // Connector arrows between panels
+ c.strokeStyle='rgba(0,0,0,.15)';c.lineWidth=2;c.setLineDash([4,3]);
+ for(let i=0;i<positions.length-1;i++){
+  if(i===2){
+   // Arrow from row 1 last to row 2 first (down-left)
+   c.beginPath();c.moveTo(positions[2].x+positions[2].w/2,positions[2].y+positions[2].h+2);
+   c.lineTo(positions[3].x+positions[3].w/2,positions[3].y-2);c.stroke();
+  }else{
+   c.beginPath();c.moveTo(positions[i].x+positions[i].w+2,positions[i].y+positions[i].h/2);
+   c.lineTo(positions[i+1].x-2,positions[i+1].y+positions[i+1].h/2);c.stroke();
+  }
+ }
+ c.setLineDash([]);
+
+ // Footer with stars and score
+ const fy=startY+panelH*2+gap*2+10;
+ c.fillStyle='rgba(0,0,0,.05)';c.beginPath();c.roundRect(20,fy,cw-40,footerH-10,8);c.fill();
+ c.fillStyle='#ffcc00';c.font='bold '+Math.floor(Math.min(28,cw*.035))+'px Bangers';c.textAlign='center';
+ c.fillText('\u2605'.repeat(G._stars)+'\u2606'.repeat(3-G._stars),cw/2,fy+25);
+ c.fillStyle='#666';c.font='bold '+Math.floor(Math.min(13,cw*.018))+'px Comic Neue';
+ c.fillText(G.correct+'/'+st.questions.length+' correct  \u00B7  +'+G._inkBonus+' bonus ink',cw/2,fy+43);
+
+ // Halftone decoration corners
+ drawHalftone(c,12,12,50,50,.3);
+ drawHalftone(c,cw-62,totalH-62,50,50,.2);
+
+ document.getElementById('reviewTitle').textContent=st.title;
+ document.getElementById('reviewSub').textContent=G.correct+'/'+st.questions.length+' correct — Scroll down to see your whole story!';
+ showScr('reviewScreen');
+ startM('comic');
+}
+
+function replayChapter(){startChapter(G.curChap)}
+
+/* ========== SHOP ========== */
+function goShop(){
+ iA();showScr('shopScreen');
+ document.getElementById('shopGold').textContent='Ink: '+S.ink;
+ const grid=document.getElementById('shopGrid');grid.innerHTML='';
+ SHOP.forEach(it=>{
+  const d=document.createElement('div');d.className='shop-item'+(S.items[it.id]?' owned':'');
+  d.innerHTML=`<div class="shop-emoji">${it.em}</div><div class="shop-name">${it.name}</div><div class="shop-cost">${S.items[it.id]?'OWNED':it.cost+' ink'}</div>`;
+  d.onclick=()=>{
+   if(S.items[it.id])return;
+   if(S.ink>=it.cost){S.ink-=it.cost;S.items[it.id]=true;S.buys++;sfx('buy');save();goShop();showBnr('Purchased '+it.name,'#44ff88');}
+   else showBnr('Need more ink!','#ff4444');
+  };
+  grid.appendChild(d);
+ });
+}
+
+/* ========== TITLE ANIMATION ========== */
+function drawTitleAnim(){
+ const cv=document.getElementById('titleCv'),c=cv.getContext('2d'),t=Date.now();
+ cv.width=320;cv.height=200;
+ c.fillStyle='#0a0a1a';c.fillRect(0,0,320,200);
+ // Comic panel grid
+ c.strokeStyle='#333';c.lineWidth=3;
+ c.beginPath();c.roundRect(10,10,145,85,6);c.roundRect(165,10,145,85,6);
+ c.roundRect(10,105,145,85,6);c.roundRect(165,105,145,85,6);c.stroke();
+ // Panel 1: Robot
+ c.save();c.beginPath();c.roundRect(12,12,141,81,5);c.clip();
+ c.fillStyle='#0d1a30';c.fillRect(12,12,141,81);
+ for(let i=0;i<10;i++){c.fillStyle=`rgba(255,255,255,${Math.random()*.5})`;c.beginPath();c.arc(12+Math.random()*141,12+Math.random()*81,1,0,Math.PI*2);c.fill();}
+ drawRobot(c,80,55,12,t,'small');c.restore();
+ // Panel 2: Dragon
+ c.save();c.beginPath();c.roundRect(167,12,141,81,5);c.clip();
+ c.fillStyle='#1a3a20';c.fillRect(167,12,141,81);
+ drawDragonFern(c,235,50,18,t);
+ c.restore();
+ // Panel 3: Mermaid
+ c.save();c.beginPath();c.roundRect(12,107,141,81,5);c.clip();
+ const oc=c.createLinearGradient(12,107,12,188);oc.addColorStop(0,'#1a4466');oc.addColorStop(1,'#081828');
+ c.fillStyle=oc;c.fillRect(12,107,141,188);
+ drawMermaid(c,80,140,10,t);c.restore();
+ // Panel 4: Space
+ c.save();c.beginPath();c.roundRect(167,107,141,81,5);c.clip();
+ c.fillStyle='#060414';c.fillRect(167,107,141,81);
+ for(let i=0;i<15;i++){c.fillStyle=`rgba(255,255,255,${.3+Math.random()*.5})`;c.beginPath();c.arc(167+Math.random()*141,107+Math.random()*81,1,0,Math.PI*2);c.fill();}
+ drawSpaceship(c,235,145,16,t);c.restore();
+ // Ink splatter decorations
+ c.fillStyle='rgba(255,200,50,.08)';
+ c.beginPath();c.arc(160,100,25,0,Math.PI*2);c.fill();
+ requestAnimationFrame(drawTitleAnim);
+}
+drawTitleAnim();
+
+/* ========== INIT ========== */
+document.getElementById('mBtn').textContent=S.musicOn?'MUSIC':'MUTED';
+showScr('titleScreen');
+
+// =====================================================================
+// STORYQUEST ENHANCEMENT SUITE — v1.0
+// SM-2 Per-Chapter | Daily Streak | Achievement System | Toasts
+// =====================================================================
+
+const SQ3_SM2_KEY  = 'sq3_sm2';
+const SQ3_STR_KEY  = 'sq3_streak2'; // separate from in-game streak
+let sq3ChapPerf = {};  // keyed by story id
+let sq3_streak  = {count:0,lastPlay:null};
+
+// ===== SM-2 (per chapter) =====
+function sq3_loadSM2(){
+  try{const d=JSON.parse(localStorage.getItem(SQ3_SM2_KEY)||'{}');
+    STORIES.forEach(st=>{sq3ChapPerf[st.id]=d[st.id]||{ef:2.5,interval:1,reps:0,correct:0,total:0}});
+  }catch(e){STORIES.forEach(st=>{sq3ChapPerf[st.id]={ef:2.5,interval:1,reps:0,correct:0,total:0}})}
+}
+function sq3_saveSM2(){localStorage.setItem(SQ3_SM2_KEY,JSON.stringify(sq3ChapPerf))}
+
+function sq3_recordChapPerf(storyId,correct,total){
+  const p=sq3ChapPerf[storyId];if(!p)return;
+  p.total+=total;p.correct+=correct;
+  const ratio=p.correct/p.total;
+  const q=ratio>=0.85?5:ratio>=0.65?4:ratio>=0.45?3:2;
+  if(p.reps===0){p.interval=1}else if(p.reps===1){p.interval=6}else{p.interval=Math.round(p.interval*p.ef)}
+  p.ef=Math.max(1.3,p.ef+0.1-(5-q)*(0.08+(5-q)*0.02));
+  if(q>=3)p.reps++;else p.reps=0;
+  sq3_saveSM2();
+}
+
+// Patch finishChapter to record SM-2
+const _sq3_origFinishChapter=window.finishChapter;
+window.finishChapter=function(){
+  const st=STORIES[G.curChap];
+  _sq3_origFinishChapter.apply(this,arguments);
+  if(st) sq3_recordChapPerf(st.id,G.correct,st.questions.length);
+  sq3_checkAchs();
+};
+
+// Patch goChapters to show SM-2 indicators on chapter cards
+const _sq3_origGoChapters=window.goChapters;
+window.goChapters=function(){
+  _sq3_origGoChapters.apply(this,arguments);
+  const cards=document.querySelectorAll('#chapGrid .chap-card');
+  STORIES.forEach((st,i)=>{
+    if(!cards[i])return;
+    const p=sq3ChapPerf[st.id];
+    if(!p||p.total===0)return;
+    const acc=p.correct/p.total;
+    const color=acc>=0.8?'#44ff88':acc>=0.55?'#ffcc44':'#ff5566';
+    const icon=acc>=0.8?'✓':acc>=0.55?'~':'⚠';
+    const badge=document.createElement('div');
+    badge.style.cssText=`font-family:'Comic Neue',cursive;font-weight:700;font-size:10px;color:${color};text-align:center;padding:2px 0;text-shadow:0 0 6px ${color}80`;
+    badge.textContent=`${icon} ${Math.round(acc*100)}% accuracy`;
+    cards[i].appendChild(badge);
+    if(acc<0.55&&p.total>=3){
+      cards[i].style.boxShadow=`0 0 12px ${color}60`;
+      cards[i].style.borderColor=color;
+    }
+  });
+};
+
+// ===== ACHIEVEMENT SYSTEM =====
+const SQ3_ACHS=[
+  {id:'reader',  em:'📖',n:'First Story',    d:'Complete your first chapter'},
+  {id:'scholar', em:'🎓',n:'Scholar',         d:'Complete 3 chapters'},
+  {id:'library', em:'🏛️',n:'Librarian',       d:'Complete all chapters'},
+  {id:'perfect', em:'⭐',n:'Perfect Score',   d:'100% on any chapter'},
+  {id:'streak3', em:'🔥',n:'Story Streak',    d:'3 correct answers in a row'},
+  {id:'streak7', em:'💥',n:'On Fire!',        d:'7 correct answers in a row'},
+  {id:'ink500',  em:'💎',n:'Ink Hoarder',     d:'Earn 500 total ink'},
+  {id:'lvl3',    em:'🌟',n:'Level 3',         d:'Reach Level 3'},
+  {id:'lvl5',    em:'🌌',n:'Level 5',         d:'Reach Level 5'},
+  {id:'shopper', em:'🛒',n:'Collector',       d:'Buy 3 items from the shop'},
+  {id:'retry',   em:'🔄',n:'Persistent',      d:'Replay a chapter'},
+  {id:'allstar', em:'👑',n:'All Stars',       d:'3-star every chapter'},
+];
+
+function sq3_grantAch(id){
+  if(!S.achs)S.achs={};
+  if(S.achs[id])return;
+  S.achs[id]=true;save();
+  const a=SQ3_ACHS.find(a=>a.id===id);if(!a)return;
+  showBnr('🏆 '+a.em+' '+a.n,'#ffcc00');
+  setTimeout(()=>sq3_showAchToast(a),300);
+}
+
+function sq3_checkAchs(){
+  if(!S.achs)S.achs={};
+  const chapsDone=Object.values(S.chaps).filter(c=>c&&c.done).length;
+  if(chapsDone>=1)sq3_grantAch('reader');
+  if(chapsDone>=3)sq3_grantAch('scholar');
+  if(chapsDone>=STORIES.length)sq3_grantAch('library');
+  if(G.correct===STORIES[G.curChap]?.questions.length)sq3_grantAch('perfect');
+  if(S.mxStreak>=3)sq3_grantAch('streak3');
+  if(S.mxStreak>=7)sq3_grantAch('streak7');
+  if(S.ink>=500)sq3_grantAch('ink500');
+  if(S.lvl>=3)sq3_grantAch('lvl3');
+  if(S.lvl>=5)sq3_grantAch('lvl5');
+  if(S.buys>=3)sq3_grantAch('shopper');
+  const allStar=STORIES.every(st=>S.chaps[st.id]&&S.chaps[st.id].stars>=3);
+  if(allStar)sq3_grantAch('allstar');
+}
+
+// Also check in-game streak milestones during answerQ
+const _sq3_origAnswerQ=window.answerQ;
+window.answerQ=function(idx,btn){
+  _sq3_origAnswerQ.apply(this,arguments);
+  sq3_checkAchs();
+};
+
+// Patch replayChapter to grant retry achievement
+const _sq3_origReplay=window.replayChapter;
+window.replayChapter=function(){
+  sq3_grantAch('retry');
+  _sq3_origReplay.apply(this,arguments);
+};
+
+function sq3_showAchToast(a){
+  const toast=document.createElement('div');
+  toast.style.cssText=`position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(110px);opacity:0;background:linear-gradient(135deg,#1a0d2e,#0d0820);border:2px solid #ffcc00;border-radius:14px;padding:14px 26px;font-family:'Comic Neue',cursive;font-weight:700;z-index:2500;min-width:270px;text-align:center;box-shadow:0 6px 32px rgba(255,200,0,0.45);transition:transform 0.42s cubic-bezier(0.175,0.885,0.32,1.275),opacity 0.35s ease`;
+  toast.innerHTML=`<div style="font-size:11px;color:#ffcc00;letter-spacing:2px;margin-bottom:7px;font-family:'Bangers',cursive">🏆 ACHIEVEMENT UNLOCKED!</div><div style="font-size:32px;margin-bottom:6px">${a.em}</div><div style="font-size:14px;color:#fff;margin-bottom:4px;font-family:'Bangers',cursive;letter-spacing:1px">${a.n}</div><div style="font-size:10px;color:#aaa">${a.d}</div>`;
+  document.body.appendChild(toast);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{toast.style.transform='translateX(-50%) translateY(0)';toast.style.opacity='1'}));
+  setTimeout(()=>{toast.style.transform='translateX(-50%) translateY(110px)';toast.style.opacity='0';setTimeout(()=>toast.remove(),450)},3600);
+}
+
+// ===== DAILY STREAK =====
+function sq3_loadStreak(){try{const d=JSON.parse(localStorage.getItem(SQ3_STR_KEY)||'{}');sq3_streak.count=d.count||0;sq3_streak.lastPlay=d.lastPlay||null}catch(e){}}
+function sq3_saveStreak(){localStorage.setItem(SQ3_STR_KEY,JSON.stringify(sq3_streak))}
+function sq3_checkStreak(){
+  const today=new Date().toDateString();
+  if(sq3_streak.lastPlay===today)return;
+  const yesterday=new Date(Date.now()-86400000).toDateString();
+  sq3_streak.count=sq3_streak.lastPlay===yesterday?sq3_streak.count+1:1;
+  sq3_streak.lastPlay=today;sq3_saveStreak();
+  setTimeout(sq3_showStreakPopup,700);
+}
+function sq3_showStreakPopup(){
+  if(document.getElementById('sq3-streak-overlay'))return;
+  const bonus=Math.min(sq3_streak.count*8,80);
+  if(!document.getElementById('sq3-anim-style')){const s=document.createElement('style');s.id='sq3-anim-style';s.textContent='@keyframes sq3Flame{0%,100%{transform:scale(1) rotate(-5deg)}50%{transform:scale(1.25) rotate(6deg)}}@keyframes sq3Slide{from{transform:translate(-50%,60px);opacity:0}to{transform:translate(-50%,0);opacity:1}}';document.head.appendChild(s)}
+  const ov=document.createElement('div');ov.id='sq3-streak-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:3000;display:flex;align-items:center;justify-content:center';
+  ov.innerHTML=`<div style="background:linear-gradient(140deg,#1a0d2e,#0d0820);border:2px solid #bb99ff;border-radius:20px;padding:36px 44px;text-align:center;font-family:'Bangers',cursive;letter-spacing:1px;box-shadow:0 0 50px rgba(187,153,255,0.35);animation:sq3Slide 0.45s ease-out">
+    <div style="font-size:54px;animation:sq3Flame 1.4s ease-in-out infinite;display:inline-block;margin-bottom:10px">📚</div>
+    <div style="font-size:22px;color:#bb99ff;margin-bottom:10px">DAILY READING STREAK!</div>
+    <div style="font-size:52px;color:#96ee80;margin:10px 0;text-shadow:0 0 20px rgba(150,238,128,0.55)">${sq3_streak.count}🔥</div>
+    <div style="font-size:16px;color:#8cc082;margin-bottom:${bonus?'14px':'22px'}">DAY${sq3_streak.count!==1?'S':''} IN A ROW!</div>
+    ${bonus?`<div style="font-size:16px;color:#ffcc44;margin-bottom:22px">🖊️ STREAK BONUS: +${bonus} INK!</div>`:''}
+    <button id="sq3-streak-btn" style="font-family:'Bangers',cursive;font-size:20px;letter-spacing:1px;padding:12px 30px;background:linear-gradient(135deg,#6633cc,#bb99ff);border:none;border-radius:10px;color:#fff;cursor:pointer;box-shadow:0 4px 22px rgba(187,153,255,0.5)">READ ON! 📖</button>
+  </div>`;
+  document.body.appendChild(ov);
+  document.getElementById('sq3-streak-btn').onclick=()=>{ov.remove();if(bonus>0){S.ink+=bonus;save()}};
+}
+
+// Patch goChapters to also check streak (first visit of day)
+let _sq3_streakDone=false;
+const _sq3_origGoChap2=window.goChapters;
+window.goChapters=function(){
+  _sq3_origGoChap2.apply(this,arguments);
+  if(!_sq3_streakDone){_sq3_streakDone=true;sq3_checkStreak()}
+};
+
+// Keyboard shortcut: 1-4 for answer options
+document.addEventListener('keydown',e=>{
+  if(e.ctrlKey||e.altKey||e.metaKey)return;
+  if(['1','2','3','4'].includes(e.key)){
+    const btns=[...document.querySelectorAll('.q-opt')].filter(b=>b.offsetParent!==null);
+    const b=btns[parseInt(e.key)-1];if(b)b.click();
+  }
+});
+
+sq3_loadSM2();sq3_loadStreak();
+if(!S.achs)S.achs={};
+
+</script>
+</body>
+</html>

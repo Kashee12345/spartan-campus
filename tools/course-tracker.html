@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>USC Upstate Campus — Course Game Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #1a3a8a 0%, #00693e 100%);
+    padding: 28px 40px 20px;
+    border-bottom: 3px solid #f5a623;
+  }
+  header h1 { font-size: 1.7rem; letter-spacing: 1px; }
+  header p { font-size: 0.92rem; opacity: 0.85; margin-top: 4px; }
+
+  .stats-bar {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    padding: 18px 40px;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+  }
+  .stat {
+    background: #21262d; border-radius: 8px; padding: 12px 20px;
+    text-align: center; min-width: 120px;
+  }
+  .stat .num { font-size: 2rem; font-weight: 700; }
+  .stat .lbl { font-size: 0.78rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .stat.green .num { color: #3fb950; }
+  .stat.red .num { color: #f85149; }
+  .stat.yellow .num { color: #f5a623; }
+  .stat.blue .num { color: #58a6ff; }
+
+  .filters {
+    padding: 14px 40px;
+    background: #161b22;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+    border-bottom: 1px solid #30363d;
+  }
+  .filters label { font-size: 0.85rem; opacity: 0.6; margin-right: 4px; }
+  .filter-btn {
+    padding: 5px 14px; border-radius: 20px; border: 1px solid #30363d;
+    background: #21262d; color: #e6edf3; cursor: pointer; font-size: 0.82rem;
+    transition: all 0.15s;
+  }
+  .filter-btn.active { background: #1a3a8a; border-color: #58a6ff; color: #fff; }
+  .filter-btn.active.has { background: #0d4a1a; border-color: #3fb950; }
+  .filter-btn.active.none { background: #4a0d0d; border-color: #f85149; }
+
+  .search-box {
+    margin-left: auto;
+    padding: 5px 12px; border-radius: 6px;
+    border: 1px solid #30363d; background: #21262d; color: #e6edf3;
+    font-size: 0.85rem; width: 200px;
+  }
+
+  main { padding: 24px 40px; display: grid; gap: 20px; }
+
+  .dept-block {
+    background: #161b22; border-radius: 10px;
+    border: 1px solid #30363d; overflow: hidden;
+  }
+  .dept-header {
+    padding: 12px 18px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer; user-select: none;
+    transition: background 0.15s;
+  }
+  .dept-header:hover { background: #1c2128; }
+  .dept-emoji { font-size: 1.4rem; }
+  .dept-name { font-weight: 700; font-size: 1rem; flex: 1; }
+  .dept-building { font-size: 0.78rem; opacity: 0.5; }
+  .dept-badge {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .badge {
+    font-size: 0.75rem; padding: 2px 8px; border-radius: 12px;
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+  .badge.has { background: #0d4a1a; color: #3fb950; border: 1px solid #3fb950; }
+  .badge.none { background: #21262d; color: #888; border: 1px solid #30363d; }
+  .dept-chevron { font-size: 0.8rem; opacity: 0.4; transition: transform 0.2s; }
+  .dept-block.collapsed .dept-chevron { transform: rotate(-90deg); }
+
+  .course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px; padding: 0 18px 18px;
+  }
+  .dept-block.collapsed .course-grid { display: none; }
+
+  .course-card {
+    border-radius: 8px; padding: 12px 14px;
+    border-left: 4px solid;
+    background: #21262d;
+    transition: transform 0.1s;
+  }
+  .course-card:hover { transform: translateY(-1px); }
+  .course-card.has-game { border-color: #3fb950; background: #0d2a15; }
+  .course-card.no-game  { border-color: #30363d; }
+  .course-card.hidden   { display: none; }
+
+  .cc-num { font-size: 0.78rem; font-weight: 700; letter-spacing: 1px; opacity: 0.7; margin-bottom: 2px; }
+  .cc-title { font-size: 0.92rem; font-weight: 600; margin-bottom: 4px; }
+  .cc-status {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.75rem; padding: 2px 8px; border-radius: 4px;
+    margin-top: 4px;
+  }
+  .cc-status.has { background: #0d4a1a; color: #3fb950; }
+  .cc-status.none { background: #21262d; color: #6e7681; border: 1px solid #30363d; }
+  .cc-game { font-size: 0.72rem; opacity: 0.6; margin-top: 4px; font-family: monospace; }
+
+  .progress-bar-wrap { height: 4px; background: #30363d; }
+  .progress-bar { height: 4px; background: linear-gradient(90deg, #3fb950, #f5a623); transition: width 0.3s; }
+
+  .no-results { padding: 30px; text-align: center; opacity: 0.4; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎮 USC Upstate Campus — Course Game Tracker</h1>
+  <p>All sub-300 courses across every building · green = has a game · grey = needs one</p>
+</header>
+
+<div class="stats-bar" id="statsBar">
+  <div class="stat blue"><div class="num" id="statTotal">0</div><div class="lbl">Total Courses</div></div>
+  <div class="stat green"><div class="num" id="statHas">0</div><div class="lbl">Have Games</div></div>
+  <div class="stat red"><div class="num" id="statNo">0</div><div class="lbl">Need Games</div></div>
+  <div class="stat yellow"><div class="num" id="statPct">0%</div><div class="lbl">Coverage</div></div>
+</div>
+
+<div class="filters">
+  <label>FILTER:</label>
+  <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn has" onclick="setFilter('has',this)">✅ Has Game</button>
+  <button class="filter-btn none" onclick="setFilter('none',this)">🔒 Needs Game</button>
+  <input class="search-box" type="text" placeholder="🔍 Search courses…" oninput="doSearch(this.value)" id="searchBox">
+</div>
+
+<main id="main"></main>
+
+<script>
+const DEPTS = [
+  {
+    code:'BIOL', emoji:'🧬', name:'Biology', building:'Smith Science Building',
+    courses:[
+      {num:'BIOL U101', title:'Introduction to Biology I',           game:'AnatomyQuestGame.html'},
+      {num:'BIOL U102', title:'Introduction to Biology II',          game:'AnatomyQuestGame.html'},
+      {num:'BIOL U110', title:'General Biology',                     game:null},
+      {num:'BIOL U143', title:'Foundations of Human Physiology',     game:'BodyQuestGame.html'},
+      {num:'BIOL U206', title:'Genetics and Society',                game:null},
+      {num:'BIOL U230', title:'Medical Terminology',                 game:null},
+      {num:'BIOL U240', title:'Human Biology and Society',           game:null},
+      {num:'BIOL U243', title:'Human Anatomy & Physiology I',        game:'AnatomyQuestGame.html'},
+      {num:'BIOL U244', title:'Human Anatomy & Physiology II',       game:'AnatomyQuestAP2.html'},
+      {num:'BIOL U250', title:'Principles of Microbiology',          game:'PathoQuest_BIO280_USC_FINAL.html'},
+      {num:'BIOL U260', title:'Emerging Infectious Diseases',        game:null},
+      {num:'BIOL U270', title:'Environmental Science',               game:null},
+    ]
+  },
+  {
+    code:'CHEM', emoji:'⚗️', name:'Chemistry', building:'Smith Science Building',
+    courses:[
+      {num:'CHEM U101', title:'Fundamental Chemistry I',             game:null},
+      {num:'CHEM U106', title:'Chemistry and Society',               game:null},
+      {num:'CHEM U111', title:'General Chemistry I',                 game:null},
+      {num:'CHEM U112', title:'General Chemistry II',                game:null},
+      {num:'CHEM U211', title:'Intro Organic Chemistry I',           game:null},
+      {num:'CHEM U212', title:'Intro Organic Chemistry II',          game:null},
+    ]
+  },
+  {
+    code:'PHYS', emoji:'⚡', name:'Physics', building:'Smith Science Building',
+    courses:[
+      {num:'PHYS U101', title:'Introduction to Physical Science',    game:null},
+      {num:'PHYS U201', title:'General Physics I',                   game:null},
+      {num:'PHYS U202', title:'General Physics II',                  game:null},
+      {num:'PHYS U211', title:'Essentials of Physics I',             game:null},
+      {num:'PHYS U212', title:'Essentials of Physics II',            game:null},
+    ]
+  },
+  {
+    code:'MATH', emoji:'📐', name:'Mathematics', building:'Hodge Center',
+    courses:[
+      {num:'MATH U102', title:'Elementary Statistics',               game:null},
+      {num:'MATH U120', title:'College Mathematics',                 game:null},
+      {num:'MATH U121', title:'College Algebra',                     game:null},
+      {num:'MATH U122', title:'Calculus for Management & Social Sci',game:null},
+      {num:'MATH U126', title:'Precalculus I',                       game:null},
+      {num:'MATH U127', title:'Precalculus II',                      game:null},
+      {num:'MATH U141', title:'Calculus I',                          game:null},
+      {num:'MATH U142', title:'Calculus II',                         game:null},
+      {num:'MATH U174', title:'Elements of Discrete Mathematics',    game:null},
+      {num:'MATH U231', title:'Elementary Math for Education I',     game:null},
+      {num:'MATH U232', title:'Elementary Math for Education II',    game:null},
+      {num:'MATH U241', title:'Calculus III',                        game:null},
+      {num:'MATH U245', title:'Differential Equations',              game:null},
+      {num:'MATH U255', title:'MATLAB Programming',                  game:null},
+    ]
+  },
+  {
+    code:'CSCI', emoji:'💻', name:'Computer Science', building:'Hodge Center',
+    courses:[
+      {num:'CSCI U138', title:'Intro to Computer Technology',        game:null},
+      {num:'CSCI U150', title:'Intro to Computer Science',           game:null},
+      {num:'CSCI U200', title:'Computer Science I',                  game:null},
+      {num:'CSCI U210', title:'Computer Organization',               game:null},
+      {num:'CSCI U236', title:'Python Programming',                  game:null},
+      {num:'CSCI U238', title:'C++ Programming',                     game:null},
+    ]
+  },
+  {
+    code:'ENGL', emoji:'📝', name:'English', building:'Humanities & Performing Arts Ctr',
+    courses:[
+      {num:'ENGL U101', title:'Composition I',                       game:null},
+      {num:'ENGL U102', title:'Composition II',                      game:null},
+      {num:'ENGL U208', title:'Introduction to Creative Writing',    game:null},
+      {num:'ENGL U240', title:'Interpreting Popular Culture',        game:null},
+      {num:'ENGL U245', title:'Business Writing',                    game:null},
+      {num:'ENGL U252', title:'Understanding English Grammar',       game:null},
+      {num:'ENGL U275', title:'Masterpieces of World Literature',    game:null},
+      {num:'ENGL U279', title:'Survey of American Literature I',     game:null},
+      {num:'ENGL U280', title:'Survey of American Literature II',    game:null},
+      {num:'ENGL U289', title:'Survey of British Literature I',      game:null},
+      {num:'ENGL U290', title:'Survey of British Literature II',     game:null},
+      {num:'ENGL U291', title:'African American Literature',         game:null},
+    ]
+  },
+  {
+    code:'THEA', emoji:'🎭', name:'Theatre', building:'Humanities & Performing Arts Ctr',
+    courses:[
+      {num:'THEA U161', title:'Introduction to Theatre Art',         game:null},
+      {num:'THEA U170', title:'Fundamentals in Acting',              game:null},
+      {num:'THEA U260', title:'Theatre Laboratory',                  game:null},
+    ]
+  },
+  {
+    code:'MUSC', emoji:'🎵', name:'Music', building:'Humanities & Performing Arts Ctr',
+    courses:[
+      {num:'MUSC U100', title:'Recital Attendance',                  game:null},
+      {num:'MUSC U101', title:'Fundamentals of Music Theory',        game:null},
+      {num:'MUSC U110', title:'Introduction to Music',               game:null},
+      {num:'MUSC U115', title:'Commercial Music Theory I',           game:null},
+      {num:'MUSC U116', title:'Commercial Music Theory II',          game:null},
+      {num:'MUSC U140', title:'History of American Popular Music',   game:null},
+      {num:'MUSC U162', title:'Intro to Music Technology',           game:null},
+      {num:'MUSC U215', title:'Commercial Music Theory III',         game:null},
+    ]
+  },
+  {
+    code:'SPCH', emoji:'🎙️', name:'Speech / Communication', building:'Humanities & Performing Arts Ctr',
+    courses:[
+      {num:'SPCH U201', title:'Foundations in Oral Communication',   game:null},
+      {num:'SPCH U210', title:'Interpersonal Communication',         game:null},
+    ]
+  },
+  {
+    code:'PSYC', emoji:'🧠', name:'Psychology', building:'Arts & Sciences Building',
+    courses:[
+      {num:'PSYC U101', title:'Introduction to Psychology',          game:'PsychQuestGame.html'},
+      {num:'PSYC U225', title:'Psychological Statistics',            game:null},
+    ]
+  },
+  {
+    code:'SOCY', emoji:'🤝', name:'Sociology', building:'Arts & Sciences Building',
+    courses:[
+      {num:'SOCY U101', title:'Introduction to Sociology',           game:null},
+      {num:'SOCY U201', title:'Intro Statistics for Social Sciences', game:null},
+    ]
+  },
+  {
+    code:'CRJU', emoji:'⚖️', name:'Criminal Justice', building:'Arts & Sciences / Safety',
+    courses:[
+      {num:'CRJU U101', title:'Introduction to Criminal Justice',    game:null},
+      {num:'CRJU U210', title:'Policing in America',                 game:null},
+      {num:'CRJU U220', title:'The Criminal Courts',                 game:null},
+      {num:'CRJU U230', title:'Introduction to Corrections',         game:null},
+      {num:'CRJU U272', title:'Foundations of Crime Analysis',       game:null},
+    ]
+  },
+  {
+    code:'HIST', emoji:'🏛️', name:'History', building:'Media Center',
+    courses:[
+      {num:'HIST U101', title:'World History I',                     game:null},
+      {num:'HIST U102', title:'World History II',                    game:null},
+      {num:'HIST U105', title:'US History to 1877',                  game:null},
+      {num:'HIST U106', title:'US History from 1865',                game:null},
+      {num:'HIST U198', title:'Current History',                     game:null},
+    ]
+  },
+  {
+    code:'POLI', emoji:'🗳️', name:'Political Science', building:'Media Center',
+    courses:[
+      {num:'POLI U101', title:'American National Government',        game:null},
+      {num:'POLI U210', title:'Research Methods in Political Science',game:null},
+    ]
+  },
+  {
+    code:'PHIL', emoji:'💭', name:'Philosophy', building:'Media Center',
+    courses:[
+      {num:'PHIL U102', title:'Introduction to Philosophy',          game:null},
+      {num:'PHIL U111', title:'Political Philosophy',                game:null},
+      {num:'PHIL U211', title:'Contemporary Moral Issues',           game:null},
+    ]
+  },
+  {
+    code:'SPAN', emoji:'🌎', name:'Spanish', building:'Burroughs Building',
+    courses:[
+      {num:'SPAN U101',  title:'Introductory Spanish I',             game:null},
+      {num:'SPAN U101B', title:'Introductory Spanish I: Business',   game:null},
+      {num:'SPAN U101C', title:'Introductory Spanish I: Criminal Justice', game:null},
+      {num:'SPAN U101N', title:'Introductory Spanish I: Health Professions', game:null},
+      {num:'SPAN U102',  title:'Introductory Spanish II',            game:null},
+      {num:'SPAN U201',  title:'Intermediate Spanish',               game:null},
+      {num:'SPAN U202',  title:'Intermediate Spanish II',            game:null},
+    ]
+  },
+  {
+    code:'AFAM', emoji:'✊', name:'African American Studies', building:'Burroughs Building',
+    courses:[
+      {num:'AFAM U201', title:'Introduction to African American Studies', game:null},
+      {num:'AFAM U204', title:'African American Culture',            game:null},
+    ]
+  },
+  {
+    code:'ARTS', emoji:'🎨', name:'Art Studio', building:'Hicks Visual Arts Center',
+    courses:[
+      {num:'ARTS U103', title:'Fundamentals of Two Dimensional Design', game:null},
+      {num:'ARTS U104', title:'Fundamentals of Three Dimensional Design', game:null},
+      {num:'ARTS U108', title:'Computer Graphics I',                 game:null},
+      {num:'ARTS U110', title:'Drawing I',                           game:null},
+      {num:'ARTS U203', title:'Color and Composition',               game:null},
+      {num:'ARTS U205', title:'Digital Imaging',                     game:null},
+      {num:'ARTS U206', title:'Illustration I',                      game:null},
+      {num:'ARTS U207', title:'Printmaking I',                       game:null},
+      {num:'ARTS U210', title:'Drawing II',                          game:null},
+      {num:'ARTS U211', title:'Introduction to Painting',            game:null},
+      {num:'ARTS U214', title:'Graphic Design I',                    game:null},
+      {num:'ARTS U228', title:'Business for the Visual Artist',      game:null},
+      {num:'ARTS U231', title:'Introduction to Life Drawing',        game:null},
+      {num:'ARTS U262', title:'Digital Photography',                 game:null},
+    ]
+  },
+  {
+    code:'NURS', emoji:'🏥', name:'Nursing', building:'Health Education Complex',
+    courses:[
+      {num:'NURS U230', title:'Medical Terminology',                 game:null},
+    ]
+  },
+  {
+    code:'EXSC', emoji:'💪', name:'Exercise Science', building:'HEC / Readiness Center',
+    courses:[
+      {num:'EXSC U124', title:'Health and Wellness with Dogs',       game:null},
+      {num:'EXSC U270', title:'Introduction to Athletic Training',   game:null},
+      {num:'EXSC U280', title:'Introduction to Exercise & Sport Science', game:null},
+      {num:'EXSC U290', title:'Functional Kinesiology I',            game:null},
+      {num:'EXSC U291', title:'Functional Kinesiology II',           game:null},
+    ]
+  },
+  {
+    code:'UNIV', emoji:'🎓', name:'University Experience', building:'Stockwell / Sansbury / Rampey',
+    courses:[
+      {num:'UNIV U101', title:'The Student in the University',       game:null},
+      {num:'UNIV U102', title:'Freshmen Orientation',                game:null},
+      {num:'UNIV U201', title:'Leadership Development I',            game:null},
+      {num:'UNIV U202', title:'Introduction to Leadership II',       game:null},
+      {num:'UNIV U204', title:'Life Design',                         game:null},
+      {num:'UNIV U205', title:'Personal Financial Literacy',         game:null},
+      {num:'UNIV U210', title:'Prior Learning Portfolio Development', game:null},
+    ]
+  },
+];
+
+let currentFilter = 'all';
+let currentSearch = '';
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function doSearch(q) {
+  currentSearch = q.toLowerCase();
+  render();
+}
+
+function render() {
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  let totalShown = 0, hasShown = 0, noShown = 0;
+
+  DEPTS.forEach(dept => {
+    const visibleCourses = dept.courses.filter(c => {
+      const matchFilter = currentFilter === 'all'
+        || (currentFilter === 'has' && c.game)
+        || (currentFilter === 'none' && !c.game);
+      const matchSearch = !currentSearch
+        || c.num.toLowerCase().includes(currentSearch)
+        || c.title.toLowerCase().includes(currentSearch)
+        || dept.name.toLowerCase().includes(currentSearch)
+        || dept.building.toLowerCase().includes(currentSearch);
+      return matchFilter && matchSearch;
+    });
+
+    if (visibleCourses.length === 0) return;
+
+    const hasCount = visibleCourses.filter(c => c.game).length;
+    const noCount  = visibleCourses.length - hasCount;
+    const pct = Math.round(hasCount / visibleCourses.length * 100);
+
+    totalShown += visibleCourses.length;
+    hasShown += hasCount;
+    noShown += noCount;
+
+    const block = document.createElement('div');
+    block.className = 'dept-block';
+
+    block.innerHTML = `
+      <div class="dept-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <span class="dept-emoji">${dept.emoji}</span>
+        <div>
+          <div class="dept-name">${dept.code} — ${dept.name}</div>
+          <div class="dept-building">${dept.building}</div>
+        </div>
+        <div class="dept-badge">
+          <span class="badge has">✅ ${hasCount} game${hasCount===1?'':'s'}</span>
+          <span class="badge none">🔒 ${noCount} needed</span>
+        </div>
+        <span class="dept-chevron">▼</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      <div class="course-grid">
+        ${visibleCourses.map(c => `
+          <div class="course-card ${c.game ? 'has-game' : 'no-game'}">
+            <div class="cc-num">${c.num}</div>
+            <div class="cc-title">${c.title}</div>
+            ${c.game
+              ? `<div class="cc-status has">🎮 GAME LIVE</div><div class="cc-game">${c.game}</div>`
+              : `<div class="cc-status none">🔒 Game needed</div>`
+            }
+          </div>`).join('')}
+      </div>`;
+
+    main.appendChild(block);
+  });
+
+  if (main.children.length === 0) {
+    main.innerHTML = '<div class="no-results">No courses match your filter.</div>';
+  }
+
+  document.getElementById('statTotal').textContent = totalShown;
+  document.getElementById('statHas').textContent = hasShown;
+  document.getElementById('statNo').textContent = noShown;
+  document.getElementById('statPct').textContent = totalShown > 0
+    ? Math.round(hasShown / totalShown * 100) + '%' : '0%';
+}
+
+render();
+</script>
+</body>
+</html>

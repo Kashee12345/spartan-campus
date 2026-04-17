@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FractionQuest: The Potion Lab v2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;900&family=MedievalSharp&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;color:#e0d0ff;font-family:'Nunito',sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
+#game{width:100vw;height:100vh;position:relative;overflow:hidden}
+#sceneCanvas{position:absolute;top:0;left:0;width:100%;height:100%;z-index:1}
+.screen{position:absolute;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10}
+.screen.active{display:flex}
+.overlay-screen{background:transparent!important}
+#titleScreen{background:radial-gradient(ellipse at center,#1a0a3a 0%,#0a0a1a 70%)}
+.title-text{font-family:'Press Start 2P',monospace;font-size:clamp(18px,4vw,48px);color:#b366ff;text-shadow:0 0 20px #7b2fff,0 0 40px #5a1aaa;text-align:center;margin-bottom:8px;animation:titlePulse 2s ease-in-out infinite}
+.subtitle{font-family:'MedievalSharp',serif;font-size:clamp(14px,2.5vw,32px);color:#ffcc66;text-shadow:0 0 10px #ff9900;margin-bottom:25px}
+@keyframes titlePulse{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.03);filter:brightness(1.2)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-80px) scale(0.5)}}
+@keyframes popIn{0%{transform:scale(0) rotate(-20deg);opacity:0}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 5px rgba(180,100,255,0.3)}50%{box-shadow:0 0 25px rgba(180,100,255,0.6)}}
+.btn{font-family:'Press Start 2P',monospace;font-size:clamp(10px,1.6vw,18px);padding:14px 35px;border:3px solid #b366ff;background:rgba(100,30,200,0.3);color:#e0d0ff;border-radius:12px;cursor:pointer;transition:all 0.3s;text-transform:uppercase;letter-spacing:2px}
+.btn:hover{background:rgba(150,60,255,0.5);transform:scale(1.05);box-shadow:0 0 20px #7b2fff}
+.btn:active{transform:scale(0.95)}
+#hud{position:absolute;top:0;left:0;width:100%;padding:8px 12px;display:none;z-index:25;background:linear-gradient(180deg,rgba(10,10,30,0.95) 0%,rgba(10,10,30,0.7) 80%,transparent 100%)}
+#hud.active{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}
+.hud-item{font-family:'Press Start 2P',monospace;font-size:clamp(7px,1.1vw,13px);display:flex;align-items:center;gap:5px}
+.hearts{color:#ff4466}.gold-display{color:#ffcc66}.xp-display{color:#66ffcc}
+.chamber-name{color:#b366ff;font-size:clamp(6px,0.9vw,11px)}
+#musicBtn{position:absolute;top:8px;right:8px;z-index:30;font-size:22px;background:rgba(0,0,0,0.6);border:2px solid #b366ff;border-radius:50%;width:36px;height:36px;cursor:pointer;color:#e0d0ff;display:flex;align-items:center;justify-content:center}
+.combo-meter{width:80px;height:12px;background:rgba(50,20,80,0.6);border:1px solid #5a2d82;border-radius:6px;overflow:hidden;position:relative}
+.combo-fill{height:100%;background:linear-gradient(90deg,#b366ff,#ff66cc,#ffcc00);border-radius:5px;transition:width 0.3s;width:0%}
+.combo-label{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;text-shadow:0 0 3px #000}
+.powerup-bar{display:flex;gap:5px}
+.pu-slot{width:30px;height:30px;border:2px solid #5a2d82;border-radius:6px;background:rgba(30,10,60,0.5);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all 0.2s;position:relative}
+.pu-slot:hover:not(.empty){transform:scale(1.15);border-color:#ffcc66}.pu-slot.empty{opacity:0.3;cursor:default}
+.pu-count{position:absolute;bottom:-2px;right:-2px;font-family:'Press Start 2P',monospace;font-size:6px;background:#b366ff;color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center}
+.wizard-rank{font-family:'Press Start 2P',monospace;font-size:clamp(6px,0.8vw,9px);color:#b366ff}
+.xp-bar{width:70px;height:5px;background:rgba(100,50,200,0.2);border-radius:3px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,#b366ff,#66ccff);border-radius:3px;transition:width 0.5s}
+#mapScreen{background:radial-gradient(ellipse at center,#1a0a3a 0%,#0a0a1a 70%)}
+.map-title{font-family:'Press Start 2P',monospace;font-size:clamp(12px,2.2vw,26px);color:#b366ff;margin:8px 0;text-shadow:0 0 15px #7b2fff}
+.chambers-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding:8px 16px;max-width:880px;width:100%;max-height:58vh;overflow-y:auto}
+.chamber-card{background:linear-gradient(135deg,rgba(50,20,100,0.6),rgba(30,10,60,0.8));border:2px solid #5a2d82;border-radius:12px;padding:10px;text-align:center;cursor:pointer;transition:all 0.3s;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;animation:glowPulse 3s infinite}
+.chamber-card:hover:not(.locked){transform:translateY(-5px) scale(1.03);box-shadow:0 8px 30px rgba(120,50,255,0.5);border-color:#b366ff}
+.chamber-card.locked{opacity:0.35;cursor:not-allowed;filter:grayscale(0.5);animation:none}
+.chamber-card.completed{border-color:#66ff99;box-shadow:0 0 15px rgba(100,255,150,0.2)}
+.chamber-card.boss{border-color:#ff6644;box-shadow:0 0 20px rgba(255,100,60,0.3)}
+.chamber-emoji{font-size:32px}.chamber-label{font-family:'Press Start 2P',monospace;font-size:clamp(5px,0.8vw,9px);color:#d0b0ff}
+.chamber-stars{color:#ffcc00;font-size:12px;margin-top:3px}
+.map-stats{display:flex;gap:16px;margin:10px 0;flex-wrap:wrap;justify-content:center}
+.map-stat{font-family:'Press Start 2P',monospace;font-size:clamp(7px,0.9vw,11px);color:#a080d0}
+.nav-btns{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;justify-content:center}
+.nav-btn{font-family:'Press Start 2P',monospace;font-size:clamp(6px,0.9vw,10px);padding:7px 14px;border:2px solid #5a2d82;background:rgba(40,15,80,0.4);color:#b090d0;border-radius:8px;cursor:pointer;transition:all 0.2s}
+.nav-btn:hover{border-color:#b366ff;color:#e0d0ff;background:rgba(80,30,160,0.4)}
+#challengeScreen{background:transparent}
+.challenge-ui{position:relative;z-index:15;width:90%;max-width:680px;display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:55px}
+.q-text{font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(16px,2.8vw,34px);color:#fff;text-align:center;text-shadow:0 2px 12px rgba(100,50,200,0.6);min-height:50px;animation:popIn 0.4s}
+.q-hint{font-family:'Nunito',sans-serif;font-size:clamp(10px,1.3vw,15px);color:#a080d0;text-align:center;font-style:italic}
+.frac-visual{width:100%;max-width:480px;min-height:160px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap}
+.bottle{position:relative;width:70px;cursor:pointer;display:flex;flex-direction:column;align-items:center}
+.bottle-body{width:54px;height:108px;border:3px solid #b366ff;border-radius:0 0 14px 14px;position:relative;overflow:hidden;background:rgba(30,10,60,0.4);transition:border-color 0.3s}
+.bottle-neck{width:26px;height:18px;border:3px solid #b366ff;border-bottom:none;border-radius:5px 5px 0 0;background:rgba(30,10,60,0.4)}
+.bottle-section{width:100%;cursor:pointer;transition:all 0.25s;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:8px;color:rgba(255,255,255,0.2)}
+.bottle-section:hover{filter:brightness(1.4);transform:scaleY(1.05)}.bottle-section.filled{color:rgba(255,255,255,0.8)}
+.ans-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:480px}
+.ans-btn{font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(14px,2.2vw,26px);padding:10px;border:3px solid #5a2d82;background:rgba(50,20,100,0.4);color:#e0d0ff;border-radius:10px;cursor:pointer;transition:all 0.2s;min-height:46px}
+.ans-btn:hover{border-color:#b366ff;background:rgba(100,40,200,0.4);transform:scale(1.04)}
+.ans-btn.correct{border-color:#66ff99;background:rgba(50,200,100,0.4);color:#66ff99;animation:popIn 0.4s}
+.ans-btn.wrong{border-color:#ff4466;background:rgba(200,50,70,0.3);color:#ff4466;animation:shake 0.4s}
+.speed-bar{width:100%;max-width:480px;height:5px;background:rgba(100,50,200,0.15);border-radius:3px;overflow:hidden}
+.speed-fill{height:100%;background:linear-gradient(90deg,#ff4466,#ffcc66,#66ff99);transition:width 0.1s linear;border-radius:3px}
+.compare-area{display:flex;gap:24px;align-items:flex-end;justify-content:center;width:100%;max-width:480px;min-height:140px}
+.compare-col{display:flex;flex-direction:column;align-items:center;gap:6px}
+.compare-label{font-family:'Press Start 2P',monospace;font-size:clamp(10px,1.8vw,18px);color:#ffcc66}
+.cmp-btns{display:flex;gap:8px;margin-top:8px}
+.cmp-btn{font-family:'Nunito',sans-serif;font-weight:900;font-size:clamp(18px,2.8vw,32px);padding:8px 20px;border:3px solid #5a2d82;background:rgba(50,20,100,0.4);color:#e0d0ff;border-radius:10px;cursor:pointer;transition:all 0.2s;min-width:55px}
+.cmp-btn:hover{border-color:#b366ff;background:rgba(100,40,200,0.4);transform:scale(1.08)}
+.nl-container{width:100%;max-width:480px;position:relative;height:90px}
+.nl-line{position:absolute;top:45px;left:35px;right:35px;height:4px;background:#b366ff;border-radius:2px}
+.nl-tick{position:absolute;top:36px;width:2px;height:22px;background:#d0b0ff;border-radius:1px}
+.nl-label{position:absolute;top:62px;font-family:'Press Start 2P',monospace;font-size:8px;color:#a080d0;transform:translateX(-50%)}
+.nl-drop{position:absolute;top:18px;font-size:26px;cursor:grab;z-index:5;filter:drop-shadow(0 0 10px #b366ff);transition:transform 0.1s}
+.nl-drop:active{cursor:grabbing;transform:scale(1.2)}
+.frac-display{font-family:'Press Start 2P',monospace;font-size:28px;color:#ffcc66;text-shadow:0 0 15px #ff9900}
+/* Cutscene */
+#cutsceneScreen{background:rgba(10,10,26,0.92)}
+.cs-box{background:linear-gradient(135deg,rgba(40,15,80,0.95),rgba(20,8,40,0.98));border:3px solid #b366ff;border-radius:16px;padding:22px;max-width:580px;width:90%;text-align:center;animation:popIn 0.5s}
+.cs-emoji{font-size:48px;margin-bottom:12px}.cs-speaker{font-family:'Press Start 2P',monospace;font-size:clamp(9px,1.3vw,14px);color:#ffcc66;margin-bottom:10px}
+.cs-text{font-family:'Nunito',sans-serif;font-weight:700;font-size:clamp(13px,1.8vw,20px);color:#e0d0ff;line-height:1.6;margin-bottom:16px;min-height:60px}
+/* Mixing minigame */
+#mixScreen{background:rgba(10,10,26,0.85)}
+.mix-title{font-family:'Press Start 2P',monospace;font-size:clamp(10px,1.8vw,20px);color:#ffcc66;text-shadow:0 0 10px #ff9900;margin-bottom:8px}
+.mix-recipe{font-family:'Nunito',sans-serif;font-weight:700;font-size:clamp(12px,1.6vw,18px);color:#d0b0ff;margin-bottom:12px}
+.mix-area{display:flex;gap:16px;align-items:flex-end;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.mix-ingredient{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:all 0.2s}
+.mix-ingredient:hover{transform:scale(1.1)}
+.mix-ing-emoji{font-size:36px}.mix-ing-name{font-family:'Press Start 2P',monospace;font-size:7px;color:#d0b0ff}
+.cauldron-target{width:120px;height:100px;border:4px solid #b366ff;border-radius:0 0 50% 50%;background:rgba(80,30,160,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:10px auto;position:relative;overflow:hidden}
+.cauldron-liquid{position:absolute;bottom:0;width:100%;background:linear-gradient(180deg,rgba(180,100,255,0.6),rgba(100,30,200,0.8));transition:height 0.5s;border-radius:0 0 50% 50%}
+.cauldron-label{font-family:'Press Start 2P',monospace;font-size:8px;color:#ffcc66;z-index:2}
+/* Boss */
+.boss-title{font-family:'Press Start 2P',monospace;font-size:clamp(10px,1.8vw,20px);color:#ff6644;text-shadow:0 0 15px #ff3300;margin-bottom:6px}
+.boss-hp{width:75%;max-width:380px;height:14px;background:rgba(100,20,20,0.4);border:2px solid #ff6644;border-radius:7px;overflow:hidden;margin-bottom:10px}
+.boss-hp-fill{height:100%;background:linear-gradient(90deg,#ff2200,#ff6644);transition:width 0.5s;border-radius:5px}
+.boss-step{font-family:'Nunito',sans-serif;font-weight:700;font-size:clamp(10px,1.3vw,16px);color:#ffaa88;margin-bottom:6px}
+/* Victory */
+#victoryScreen{background:radial-gradient(ellipse at center,#1a1a00 0%,#0a0a1a 70%)}
+.victory-title{font-family:'Press Start 2P',monospace;font-size:clamp(14px,2.8vw,34px);color:#ffcc00;text-shadow:0 0 30px #ffaa00;animation:titlePulse 1.5s infinite}
+.stars-display{font-size:44px;margin:12px 0;letter-spacing:8px}
+.rewards-row{display:flex;gap:16px;margin:10px 0}
+.reward-item{font-family:'Press Start 2P',monospace;font-size:clamp(9px,1.3vw,14px)}
+/* Random event overlay */
+.event-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:50;display:flex;align-items:center;justify-content:center;animation:popIn 0.3s}
+.event-box{background:linear-gradient(135deg,rgba(80,30,0,0.95),rgba(40,15,0,0.98));border:3px solid #ff9900;border-radius:16px;padding:24px;text-align:center;max-width:400px;width:90%}
+.event-title{font-family:'Press Start 2P',monospace;font-size:clamp(12px,2vw,22px);color:#ffcc00;margin-bottom:8px}
+.event-desc{font-family:'Nunito',sans-serif;font-weight:700;font-size:clamp(12px,1.5vw,18px);color:#ffe0aa;margin-bottom:12px}
+/* Shop, Spellbook, Achievements - same structure as v1 but tighter */
+.panel-title{font-family:'Press Start 2P',monospace;font-size:clamp(12px,2.2vw,26px);margin:12px 0}
+.panel-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;padding:8px 16px;max-width:750px;width:100%;max-height:54vh;overflow-y:auto}
+.panel-card{background:linear-gradient(135deg,rgba(50,20,100,0.5),rgba(30,10,50,0.7));border:2px solid #5a2d82;border-radius:10px;padding:10px;text-align:center;transition:all 0.3s;cursor:pointer}
+.panel-card:hover:not(.locked):not(.owned){transform:translateY(-3px);border-color:#b366ff}
+.panel-card.earned,.panel-card.completed-card{border-color:#ffcc00;box-shadow:0 0 10px rgba(255,200,0,0.2)}
+.panel-card.locked{opacity:0.25;cursor:default}.panel-card.owned{border-color:#66ff99;opacity:0.7}
+.card-emoji{font-size:28px}.card-name{font-family:'Press Start 2P',monospace;font-size:7px;color:#d0b0ff;margin:4px 0}
+.card-sub{font-size:10px;color:#a080d0}
+/* Floating text */
+.float-text{position:fixed;pointer-events:none;z-index:100;font-family:'Press Start 2P',monospace;animation:floatUp 1.2s forwards}
+/* Banner */
+#banner{position:fixed;top:-65px;left:50%;transform:translateX(-50%);z-index:100;font-family:'Press Start 2P',monospace;font-size:clamp(9px,1.6vw,16px);padding:10px 28px;border-radius:0 0 12px 12px;text-align:center;transition:top 0.4s cubic-bezier(0.175,0.885,0.32,1.275);white-space:nowrap;pointer-events:none;border:2px solid rgba(255,255,255,0.3);border-top:none}
+#banner.show{top:0}
+#comboDisplay{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Press Start 2P',monospace;font-size:clamp(18px,3.5vw,44px);z-index:60;pointer-events:none;opacity:0;transition:all 0.3s}
+</style>
+</head>
+<body>
+<div id="game">
+<canvas id="sceneCanvas"></canvas>
+<button id="musicBtn" onclick="toggleMusic()">🔊</button>
+<div id="banner"></div>
+<div id="comboDisplay"></div>
+
+<div id="hud">
+<div class="hud-item hearts" id="hearts"></div>
+<div class="hud-item chamber-name" id="chamberTitle"></div>
+<div class="hud-item gold-display">💰 <span id="hudGold">0</span></div>
+<div class="hud-item" style="flex-direction:column;align-items:flex-start">
+  <div class="wizard-rank" id="hudRank">Novice</div>
+  <div class="xp-bar"><div class="xp-fill" id="hudXp" style="width:0%"></div></div>
+</div>
+<div class="hud-item">
+  <div class="combo-meter"><div class="combo-fill" id="comboFill"></div><div class="combo-label" id="comboLabel"></div></div>
+</div>
+<div class="powerup-bar" id="puBar"></div>
+</div>
+
+<!-- TITLE -->
+<div id="titleScreen" class="screen active">
+<div style="font-size:60px;margin-bottom:12px">🧙‍♂️⚗️🧪</div>
+<div class="title-text">FractionQuest</div>
+<div class="subtitle">The Potion Lab</div>
+<button class="btn" onclick="startGame()">Begin Apprenticeship</button>
+<div style="margin-top:12px;font-size:11px;color:#7a5aaa">A CampusQuest Academy Game — v2</div>
+</div>
+
+<!-- MAP -->
+<div id="mapScreen" class="screen">
+<div class="map-title">🏰 Grand Potion Academy</div>
+<div class="map-stats">
+<div class="map-stat">🧙 <span id="mapRank">Novice</span></div>
+<div class="map-stat">💰 <span id="mapGold">0</span></div>
+<div class="map-stat">⭐ <span id="mapStars">0</span>/24</div>
+</div>
+<div class="chambers-grid" id="chambersGrid"></div>
+<div class="nav-btns">
+<button class="nav-btn" onclick="showPanel('shop')">🛒 Potion Shop</button>
+<button class="nav-btn" onclick="showPanel('book')">📖 Spell Book</button>
+<button class="nav-btn" onclick="showPanel('achieve')">🏆 Achievements</button>
+<button class="nav-btn" onclick="showPanel('stable')">🐉 Familiar Den</button>
+</div>
+</div>
+
+<!-- CHALLENGE -->
+<div id="challengeScreen" class="screen overlay-screen">
+<div class="challenge-ui" id="challengeUI"></div>
+</div>
+
+<!-- CUTSCENE -->
+<div id="cutsceneScreen" class="screen">
+<div class="cs-box"><div class="cs-emoji" id="csEmoji"></div><div class="cs-speaker" id="csSpeaker"></div><div class="cs-text" id="csText"></div><button class="btn" onclick="advanceCutscene()">Continue</button></div>
+</div>
+
+<!-- MIXING MINIGAME -->
+<div id="mixScreen" class="screen">
+<div style="display:flex;flex-direction:column;align-items:center;gap:8px;max-width:600px;width:90%">
+<div class="mix-title" id="mixTitle">⚗️ Brew the Potion!</div>
+<div class="mix-recipe" id="mixRecipe"></div>
+<div class="cauldron-target" id="cauldronTarget"><div class="cauldron-liquid" id="cauldronLiquid" style="height:0%"></div><div class="cauldron-label" id="cauldronLabel">0% filled</div></div>
+<div class="mix-area" id="mixArea"></div>
+<div id="mixFeedback" style="font-family:'Press Start 2P',monospace;font-size:10px;min-height:20px"></div>
+<button class="btn" id="mixBrew" style="font-size:11px" onclick="brewPotion()">🧪 Brew!</button>
+</div>
+</div>
+
+<!-- BOSS -->
+<div id="bossScreen" class="screen overlay-screen">
+<div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:55px;width:90%;max-width:680px;z-index:15">
+<div class="boss-title" id="bossTitle">👑 Grand Alchemist</div>
+<div class="boss-hp"><div class="boss-hp-fill" id="bossHpFill" style="width:100%"></div></div>
+<div class="boss-step" id="bossStepLabel"></div>
+<div class="challenge-ui" id="bossUI"></div>
+</div>
+</div>
+
+<!-- VICTORY -->
+<div id="victoryScreen" class="screen">
+<div class="victory-title">⚗️ Chamber Complete!</div>
+<div class="stars-display" id="vStars"></div>
+<div class="rewards-row"><div class="reward-item gold-display">💰 +<span id="vGold">0</span></div><div class="reward-item xp-display">✨ +<span id="vXp">0</span> XP</div></div>
+<div id="vPotion" style="display:none;margin:8px 0"><div style="font-size:36px" id="vPotionEmoji"></div><div style="font-family:'Press Start 2P',monospace;font-size:9px;color:#66ff99;margin-top:4px" id="vPotionName"></div></div>
+<button class="btn" onclick="returnToMap()">Return to Academy</button>
+</div>
+
+<!-- PANELS (shop, book, achievements, stable) -->
+<div id="panelScreen" class="screen">
+<div class="panel-title" id="panelTitle" style="color:#b366ff"></div>
+<div style="font-family:'Press Start 2P',monospace;font-size:11px;color:#ffcc66;margin-bottom:6px" id="panelSub"></div>
+<div class="panel-grid" id="panelGrid"></div>
+<div class="nav-btns"><button class="nav-btn" onclick="showScreen('mapScreen')">← Back to Academy</button></div>
+</div>
+</div>
+
+<script>
+// ============================================================
+// FRACTIONQUEST v2 — THE POTION LAB (FULL OVERHAUL)
+// ============================================================
+
+// ========== STATE ==========
+const S = {
+  gold:0,xp:0,level:0,combo:0,maxCombo:0,hearts:3,score:0,
+  qRight:0,qTotal:0,curChamber:-1,curQ:0,totalQ:8,
+  chambers:Array(8).fill(0).map(()=>({done:false,stars:0,best:0})),
+  inv:{robes:['purple'],wands:['oak'],pups:{scroll:0,shield:0,double:0}},
+  eqRobe:'purple',eqWand:'oak',
+  potions:[],ach:new Set(),musicOn:true,
+  speedBn:0,crits:0,totalGold:0,perfects:0,bossWon:false,
+  purchases:0,familiars:[],mixAttempts:0
+};
+
+// ========== DATA ==========
+const CH=[
+  {n:"The Slicing Chamber",em:"🔪",col:"#ff6699",desc:"Unit Fractions",type:"slice",
+   npc:{name:"Master Zara's Note",em:"📜",lines:["Welcome, apprentice. To brew, you must SLICE. Divide these potions into perfect equal parts!","Remember — every great potion begins with precision."]}},
+  {n:"The Naming Lab",em:"🏷️",col:"#66ccff",desc:"Naming Fractions",type:"name",
+   npc:{name:"Caldwell the Cauldron",em:"🫕",lines:["I speak in fractions, dear! Numerator over denominator — simple, yes? Show me you understand!","Name that fraction! The potion won't brew itself."]}},
+  {n:"Number Line Hall",em:"📏",col:"#66ff99",desc:"Fractions on a Line",type:"numline",
+   npc:{name:"Professor Linesworth",em:"🧑‍🏫",lines:["Between 0 and 1 lies infinite precision. Place each drop EXACTLY right.","The number line never lies, apprentice."]}},
+  {n:"The Mixing Room",em:"🥣",col:"#ffcc66",desc:"Fractions of Groups",type:"group",
+   npc:{name:"Chef Fraction",em:"👨‍🍳",lines:["In my kitchen, we split ingredients into groups! How many do you need?","Fractions of a set — that's real cooking magic!"]}},
+  {n:"Equivalence Tower",em:"⚖️",col:"#cc99ff",desc:"Equivalent Fractions",type:"equiv",
+   npc:{name:"The Twin Wizards",em:"👯",lines:["We look different but we're the SAME! 1/2 and 2/4 — can you spot the twins?","The tower reveals all secrets to those who see through different forms."]}},
+  {n:"Comparison Cauldron",em:"⚔️",col:"#ff9966",desc:"Compare (Same Denom)",type:"cmpD",
+   npc:{name:"Battle Brewer Grix",em:"💪",lines:["TWO potions enter — ONE is greater! When denominators match, it's a battle of numerators!","WHICH. POTION. IS. MIGHTIER?!"]}},
+  {n:"The Comparison Forge",em:"🔥",col:"#ff6666",desc:"Compare (Same Numer)",type:"cmpN",
+   npc:{name:"Forge Master Ember",em:"⚒️",lines:["Tricky! Same numerator, different denominators. Bigger pieces or more pieces?","Would you rather have 1/2 or 1/8 of a pizza? THINK about it!"]}},
+  {n:"Grand Alchemist's Chamber",em:"👑",col:"#ffdd00",desc:"FINAL BOSS",type:"boss",
+   npc:{name:"???",em:"🌑",lines:["So you've mastered the chambers... but can you handle ALL fraction magic at once?","The Academy's fate rests on your knowledge. Show me EVERYTHING you've learned!"]}}
+];
+
+const POTIONS=[
+  {n:"Healing Elixir",em:"❤️‍🩹",f:"1/2 Moonwater + 1/4 Sunpetal + 1/4 Stardust",ings:[{n:"Moonwater",em:"💧",frac:[1,2]},{n:"Sunpetal",em:"🌸",frac:[1,4]},{n:"Stardust",em:"✨",frac:[1,4]}]},
+  {n:"Naming Nectar",em:"🏷️",f:"2/3 Inkberry + 1/3 Whisper Moss",ings:[{n:"Inkberry",em:"🫐",frac:[2,3]},{n:"Whisper Moss",em:"🌿",frac:[1,3]}]},
+  {n:"Precision Potion",em:"🎯",f:"3/4 Dewdrop + 1/4 Crystal Shard",ings:[{n:"Dewdrop",em:"💧",frac:[3,4]},{n:"Crystal Shard",em:"💎",frac:[1,4]}]},
+  {n:"Growth Tonic",em:"🌱",f:"1/3 Root + 1/3 Leaf + 1/3 Rain",ings:[{n:"Root Bark",em:"🪵",frac:[1,3]},{n:"Leaf Dust",em:"🍃",frac:[1,3]},{n:"Rain Essence",em:"🌧️",frac:[1,3]}]},
+  {n:"Twin Mirror Draught",em:"🪞",f:"1/2 Echo Pearl + 2/4 Shadow Silk",ings:[{n:"Echo Pearl",em:"🦪",frac:[1,2]},{n:"Shadow Silk",em:"🕸️",frac:[2,4]}]},
+  {n:"Battle Brew",em:"⚔️",f:"3/5 Dragon Pepper + 2/5 Iron Fizz",ings:[{n:"Dragon Pepper",em:"🌶️",frac:[3,5]},{n:"Iron Fizz",em:"⚙️",frac:[2,5]}]},
+  {n:"Ember Elixir",em:"🔥",f:"1/3 Flame Petal + 2/3 Lava Salt",ings:[{n:"Flame Petal",em:"🌺",frac:[1,3]},{n:"Lava Salt",em:"🧂",frac:[2,3]}]},
+  {n:"Philosopher's Stone",em:"💎",f:"All fractions mastered",ings:[{n:"Pure Magic",em:"🌟",frac:[1,1]}]}
+];
+
+const SHOP=[
+  {id:'blue',n:'Blue Robe',em:'🔵',p:50,t:'robe',c:'blue'},
+  {id:'red',n:'Red Robe',em:'🔴',p:50,t:'robe',c:'red'},
+  {id:'gold',n:'Gold Robe',em:'🟡',p:150,t:'robe',c:'gold'},
+  {id:'black',n:'Shadow Robe',em:'⚫',p:200,t:'robe',c:'black'},
+  {id:'rainbow',n:'Arcane Robe',em:'🌈',p:300,t:'robe',c:'rainbow'},
+  {id:'flame',n:'Flame Wand',em:'🔥',p:80,t:'wand',c:'flame'},
+  {id:'ice',n:'Ice Wand',em:'❄️',p:80,t:'wand',c:'ice'},
+  {id:'shadow',n:'Shadow Wand',em:'🌑',p:120,t:'wand',c:'shadow'},
+  {id:'star',n:'Star Wand',em:'⭐',p:250,t:'wand',c:'star'},
+  {id:'scr3',n:'Scroll ×3',em:'📜',p:40,t:'pup',k:'scroll',q:3},
+  {id:'sh3',n:'Shield ×3',em:'🛡️',p:50,t:'pup',k:'shield',q:3},
+  {id:'db3',n:'Double ×3',em:'⚡',p:60,t:'pup',k:'double',q:3},
+];
+
+const FAMILIARS=['🐱','🦉','🐸','🦊','🐺','🦅','🐉','🦄'];
+
+const ACH=[
+  {id:'first',n:'First Brew',em:'🧪',d:'Complete your first chamber'},
+  {id:'flaw',n:'Flawless',em:'💎',d:'No wrong answers in a chamber'},
+  {id:'c5',n:'Combo Wizard',em:'🔥',d:'5x combo streak'},
+  {id:'c8',n:'Combo Master',em:'💥',d:'8x combo streak'},
+  {id:'sp3',n:'Quick Brewer',em:'⚡',d:'3 speed bonuses in one chamber'},
+  {id:'cr3',n:'Critical Alchemist',em:'💫',d:'3 crits in one chamber'},
+  {id:'allP',n:'Potion Master',em:'🏆',d:'Collect all 8 potions'},
+  {id:'g500',n:'Gold Hoarder',em:'💰',d:'Earn 500 total gold'},
+  {id:'g1k',n:'Dragon Vault',em:'🐉',d:'Earn 1000 total gold'},
+  {id:'p3',n:'Triple Perfect',em:'⭐',d:'3-star three chambers'},
+  {id:'boss',n:'Grand Alchemist',em:'👑',d:'Defeat the final boss'},
+  {id:'allS',n:'Star Collector',em:'🌟',d:'All 24 stars'},
+  {id:'app',n:'Apprentice',em:'🧙',d:'Reach Apprentice rank'},
+  {id:'alch',n:'Alchemist',em:'⚗️',d:'Reach Alchemist rank'},
+  {id:'arch',n:'Archmage',em:'🌌',d:'Reach Archmage rank'},
+  {id:'sl',n:'Slice Master',em:'🔪',d:'Complete Slicing Chamber'},
+  {id:'nm',n:'Name Master',em:'🏷️',d:'Complete Naming Lab'},
+  {id:'ln',n:'Line Master',em:'📏',d:'Complete Number Line Hall'},
+  {id:'mx',n:'Mix Master',em:'🥣',d:'Complete Mixing Room'},
+  {id:'eq',n:'Equiv Master',em:'⚖️',d:'Complete Equivalence Tower'},
+  {id:'cm',n:'Compare Champ',em:'⚔️',d:'Complete both Compare chambers'},
+  {id:'sh',n:'Shop Addict',em:'🛒',d:'Buy 5 items'},
+  {id:'sv',n:'Survivor',em:'💪',d:'Win with 1 heart left'},
+  {id:'pu',n:'Purist',em:'🎗️',d:'Beat boss without powerups'},
+  {id:'mixer',n:'Master Mixer',em:'🫕',d:'Brew 5 potions in the mixing game'},
+  {id:'fam',n:'Familiar Friend',em:'🐾',d:'Collect a familiar'},
+  {id:'ev',n:'Event Survivor',em:'🎪',d:'Complete a random event'},
+];
+
+const LVLS=[
+  {n:'Novice',xp:0},{n:'Apprentice',xp:100},{n:'Mixer',xp:250},
+  {n:'Brewer',xp:450},{n:'Alchemist',xp:700},{n:'Archmage',xp:1000},{n:'Grand Alchemist',xp:1500}
+];
+
+const ROBE_C={purple:'#8844cc',blue:'#4488dd',red:'#cc3344',gold:'#ccaa22',black:'#333355',rainbow:'#ff66aa'};
+const WAND_C={oak:'#aa8844',flame:'#ff4400',ice:'#44ccff',shadow:'#6633aa',star:'#ffcc00'};
+
+// ========== CANVAS SCENE ==========
+let cv,cx,W,H;
+let sceneState={wizard:{x:0,y:0,bobT:0,castT:0,hitT:0},cauldron:{x:0,y:0,bubbles:[],liquidH:0,color:'#b366ff',glowT:0},
+  shelves:[],particles:[],projectiles:[],floatTexts:[],screenShake:0,flash:{a:0,c:'#fff'}};
+
+function initCanvas(){
+  cv=document.getElementById('sceneCanvas');
+  cx=cv.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize',resizeCanvas);
+  requestAnimationFrame(renderScene);
+}
+
+function resizeCanvas(){
+  W=cv.width=window.innerWidth;
+  H=cv.height=window.innerHeight;
+  sceneState.wizard.x=W*0.15;sceneState.wizard.y=H*0.55;
+  sceneState.cauldron.x=W*0.5;sceneState.cauldron.y=H*0.6;
+}
+
+function renderScene(t){
+  cx.clearRect(0,0,W,H);
+  const ss=sceneState;
+  // Screen shake
+  if(ss.screenShake>0){
+    cx.save();
+    cx.translate((Math.random()-0.5)*ss.screenShake,(Math.random()-0.5)*ss.screenShake);
+    ss.screenShake*=0.9;
+    if(ss.screenShake<0.5)ss.screenShake=0;
+  }
+  // Background — potion lab
+  drawLabBg(t);
+  // Cauldron
+  drawCauldron(t);
+  // Wizard
+  drawWizard(t);
+  // Projectiles
+  updateProjectiles(t);
+  // Particles
+  updateParticles();
+  // Flash overlay
+  if(ss.flash.a>0){
+    cx.fillStyle=ss.flash.c;
+    cx.globalAlpha=ss.flash.a;
+    cx.fillRect(0,0,W,H);
+    cx.globalAlpha=1;
+    ss.flash.a*=0.85;
+    if(ss.flash.a<0.01)ss.flash.a=0;
+  }
+  if(ss.screenShake>0)cx.restore();
+  requestAnimationFrame(renderScene);
+}
+
+function drawLabBg(t){
+  // Dark gradient
+  const g=cx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'#0a0518');g.addColorStop(0.4,'#120828');g.addColorStop(1,'#0a0518');
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+  // Stone walls
+  cx.fillStyle='#1a1030';
+  cx.fillRect(0,H*0.7,W,H*0.3);
+  // Shelves with potions
+  const shelfY=[H*0.08,H*0.25];
+  shelfY.forEach(sy=>{
+    cx.fillStyle='#2a1840';cx.fillRect(W*0.6,sy,W*0.35,6);
+    // Potion bottles on shelf
+    for(let i=0;i<5;i++){
+      const bx=W*0.63+i*(W*0.06);
+      const by=sy-20;
+      const hue=(t/20+i*60)%360;
+      cx.fillStyle=`hsla(${hue},60%,40%,0.5)`;
+      cx.fillRect(bx,by,12,18);
+      cx.fillStyle=`hsla(${hue},60%,50%,0.3)`;
+      cx.fillRect(bx+3,by-6,6,6);
+    }
+  });
+  // Floating magic particles in background
+  const time=t*0.001;
+  for(let i=0;i<8;i++){
+    const px=(W*0.3+Math.sin(time+i*1.5)*W*0.4+W)%W;
+    const py=(H*0.2+Math.cos(time*0.7+i*2)*H*0.3+H)%H;
+    cx.beginPath();cx.arc(px,py,2+Math.sin(time+i)*1.5,0,Math.PI*2);
+    cx.fillStyle=`hsla(${270+i*15},70%,70%,${0.15+Math.sin(time+i)*0.1})`;
+    cx.fill();
+  }
+}
+
+function drawCauldron(t){
+  const c=sceneState.cauldron;
+  const x=c.x,y=c.y;
+  c.glowT+=0.03;
+  // Glow underneath
+  const glowR=60+Math.sin(c.glowT)*10;
+  const gg=cx.createRadialGradient(x,y+30,5,x,y+30,glowR);
+  gg.addColorStop(0,c.color+'44');gg.addColorStop(1,'transparent');
+  cx.fillStyle=gg;cx.fillRect(x-glowR,y+30-glowR,glowR*2,glowR*2);
+  // Cauldron body
+  cx.beginPath();cx.ellipse(x,y+25,55,18,0,0,Math.PI);cx.closePath();
+  cx.fillStyle='#2a2a3a';cx.fill();cx.strokeStyle='#4a4a5a';cx.lineWidth=3;cx.stroke();
+  // Liquid inside
+  if(c.liquidH>0){
+    cx.beginPath();cx.ellipse(x,y+25-c.liquidH*0.3,48,14,0,0,Math.PI*2);
+    cx.fillStyle=c.color+'88';cx.fill();
+  }
+  // Cauldron rim (top ellipse)
+  cx.beginPath();cx.ellipse(x,y-5,55,18,0,0,Math.PI*2);
+  cx.fillStyle='#3a3a4a';cx.fill();cx.strokeStyle='#5a5a6a';cx.lineWidth=3;cx.stroke();
+  // Liquid surface
+  const surfH=Math.max(0,c.liquidH*0.4);
+  if(surfH>0){
+    cx.beginPath();cx.ellipse(x,y-5,48*Math.min(1,surfH/20),14*Math.min(1,surfH/20),0,0,Math.PI*2);
+    cx.fillStyle=c.color+'aa';cx.fill();
+  }
+  // Bubbling
+  c.bubbles=c.bubbles.filter(b=>{
+    b.y-=b.sp;b.a-=0.01;
+    if(b.a<=0)return false;
+    cx.beginPath();cx.arc(b.x,b.y,b.r,0,Math.PI*2);
+    cx.fillStyle=`${c.color}${Math.floor(b.a*255).toString(16).padStart(2,'0')}`;
+    cx.fill();
+    return true;
+  });
+  if(Math.random()<0.15){
+    c.bubbles.push({x:x-30+Math.random()*60,y:y-5,r:2+Math.random()*5,sp:0.5+Math.random(),a:0.6+Math.random()*0.3});
+  }
+  // Legs
+  cx.strokeStyle='#4a4a5a';cx.lineWidth=4;
+  [[-35,25],[35,25],[0,28]].forEach(([ox,oy])=>{
+    cx.beginPath();cx.moveTo(x+ox,y+oy);cx.lineTo(x+ox+(ox<0?-8:ox>0?8:0),y+oy+20);cx.stroke();
+  });
+}
+
+function drawWizard(t){
+  const w=sceneState.wizard;
+  w.bobT+=0.04;
+  const x=w.x,baseY=w.y;
+  const bob=Math.sin(w.bobT)*3;
+  const y=baseY+bob;
+  const robeCol=ROBE_C[S.eqRobe]||'#8844cc';
+  const wandCol=WAND_C[S.eqWand]||'#aa8844';
+  // Cast animation
+  let castOff=0;
+  if(w.castT>0){w.castT-=0.05;castOff=Math.sin(w.castT*Math.PI)*15;}
+  // Hit animation
+  let hitFlash=false;
+  if(w.hitT>0){w.hitT-=0.04;hitFlash=Math.sin(w.hitT*20)>0;}
+  if(hitFlash)return; // Flash invisibility
+  // Shadow
+  cx.beginPath();cx.ellipse(x,y+50,25,8,0,0,Math.PI*2);
+  cx.fillStyle='rgba(0,0,0,0.3)';cx.fill();
+  // Robe body
+  cx.beginPath();cx.moveTo(x-18,y);cx.lineTo(x-25,y+48);cx.lineTo(x+25,y+48);cx.lineTo(x+18,y);cx.closePath();
+  cx.fillStyle=robeCol;cx.fill();cx.strokeStyle=robeCol+'88';cx.lineWidth=2;cx.stroke();
+  // Robe trim
+  cx.beginPath();cx.moveTo(x-25,y+48);cx.lineTo(x+25,y+48);
+  cx.strokeStyle='#ffcc6644';cx.lineWidth=3;cx.stroke();
+  // Head
+  cx.beginPath();cx.arc(x,y-10,14,0,Math.PI*2);
+  cx.fillStyle='#f0d0b0';cx.fill();
+  // Eyes
+  cx.fillStyle='#222';
+  cx.fillRect(x-6,y-13,3,4);cx.fillRect(x+3,y-13,3,4);
+  // Eye glow
+  cx.fillStyle='#66ccff';
+  cx.fillRect(x-5,y-12,1.5,2);cx.fillRect(x+4,y-12,1.5,2);
+  // Hat
+  cx.beginPath();cx.moveTo(x-18,y-18);cx.lineTo(x,y-55-bob);cx.lineTo(x+18,y-18);cx.closePath();
+  cx.fillStyle=robeCol;cx.fill();
+  // Hat brim
+  cx.beginPath();cx.ellipse(x,y-18,22,6,0,0,Math.PI*2);
+  cx.fillStyle=robeCol;cx.fill();
+  // Hat star
+  cx.fillStyle='#ffcc00';cx.font='10px serif';cx.textAlign='center';
+  cx.fillText('⭐',x+2,y-35-bob);
+  // Wand arm
+  const wandX=x+20+castOff;
+  const wandY=y-5;
+  cx.beginPath();cx.moveTo(x+15,y+5);cx.lineTo(wandX,wandY);
+  cx.strokeStyle='#f0d0b0';cx.lineWidth=4;cx.stroke();
+  // Wand
+  cx.beginPath();cx.moveTo(wandX,wandY);cx.lineTo(wandX+15+castOff*0.5,wandY-20);
+  cx.strokeStyle=wandCol;cx.lineWidth=3;cx.stroke();
+  // Wand tip glow
+  const tipX=wandX+15+castOff*0.5,tipY=wandY-20;
+  const wg=cx.createRadialGradient(tipX,tipY,0,tipX,tipY,10+Math.sin(w.bobT*2)*3);
+  wg.addColorStop(0,wandCol+'aa');wg.addColorStop(1,'transparent');
+  cx.fillStyle=wg;cx.beginPath();cx.arc(tipX,tipY,12,0,Math.PI*2);cx.fill();
+}
+
+// ========== PROJECTILES ==========
+function launchProjectile(emoji,fromX,fromY,toX,toY,color,onHit){
+  sceneState.projectiles.push({emoji,x:fromX,y:fromY,tx:toX,ty:toY,t:0,color,onHit});
+}
+
+function updateProjectiles(){
+  sceneState.projectiles=sceneState.projectiles.filter(p=>{
+    p.t+=0.035;
+    if(p.t>=1){
+      if(p.onHit)p.onHit();
+      spawnBurst(p.tx,p.ty,p.color,12);
+      return false;
+    }
+    // Parabolic arc
+    const x=p.x+(p.tx-p.x)*p.t;
+    const arcH=-150*Math.sin(p.t*Math.PI);
+    const y=p.y+(p.ty-p.y)*p.t+arcH;
+    cx.font='24px serif';cx.textAlign='center';
+    cx.fillText(p.emoji,x,y);
+    // Trail
+    cx.beginPath();cx.arc(x,y+5,3,0,Math.PI*2);
+    cx.fillStyle=p.color+'66';cx.fill();
+    return true;
+  });
+}
+
+// ========== PARTICLES ==========
+function spawnBurst(x,y,color,count){
+  for(let i=0;i<count;i++){
+    const a=Math.PI*2*i/count;
+    const sp=2+Math.random()*4;
+    sceneState.particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-2,life:1,color,r:2+Math.random()*4});
+  }
+}
+
+function spawnFloatText(x,y,text,color){
+  const el=document.createElement('div');
+  el.className='float-text';
+  el.textContent=text;
+  el.style.cssText=`left:${x}px;top:${y}px;color:${color};font-size:${text.length>5?'12px':'16px'};text-shadow:0 0 8px ${color}`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1200);
+}
+
+function updateParticles(){
+  sceneState.particles=sceneState.particles.filter(p=>{
+    p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.life-=0.02;
+    if(p.life<=0)return false;
+    cx.beginPath();cx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);
+    cx.fillStyle=p.color+Math.floor(p.life*200).toString(16).padStart(2,'0');
+    cx.fill();
+    return true;
+  });
+}
+
+// ========== AUDIO ==========
+let actx,musicInt,curTrack='';
+
+function initAudio(){if(actx)return;actx=new(window.AudioContext||window.webkitAudioContext)()}
+
+function pn(freq,dur,type='square',vol=0.07){
+  if(!actx||!S.musicOn)return;
+  const o=actx.createOscillator(),g=actx.createGain();
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+dur);
+  o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+dur);
+}
+
+function sfx(name){
+  if(!actx||!S.musicOn)return;
+  switch(name){
+    case 'correct':[523,659,784,1047].forEach((f,i)=>setTimeout(()=>pn(f,0.12,'square',0.06),i*40));break;
+    case 'wrong':pn(200,0.3,'sawtooth',0.08);pn(150,0.35,'sawtooth',0.06);break;
+    case 'crit':[523,784,1047,1319,1568].forEach((f,i)=>setTimeout(()=>pn(f,0.18,'square',0.06),i*50));break;
+    case 'victory':[523,659,784,1047,784,1047,1319].forEach((f,i)=>setTimeout(()=>pn(f,0.22,'square',0.06),i*100));break;
+    case 'boss':pn(110,0.5,'sawtooth',0.1);pn(130,0.5,'sawtooth',0.07);break;
+    case 'bubble':pn(700+Math.random()*500,0.08,'sine',0.04);break;
+    case 'pour':[0,1,2,3,4].forEach(i=>setTimeout(()=>pn(350+i*70,0.07,'sine',0.03),i*40));break;
+    case 'achieve':[659,784,1047,1319].forEach((f,i)=>setTimeout(()=>pn(f,0.25,'triangle',0.07),i*120));break;
+    case 'lvl':[392,523,659,784,1047].forEach((f,i)=>setTimeout(()=>pn(f,0.3,'square',0.07),i*80));break;
+    case 'event':pn(440,0.15,'triangle',0.08);pn(660,0.15,'triangle',0.06);setTimeout(()=>pn(880,0.2,'triangle',0.07),150);break;
+    case 'explode':for(let i=0;i<8;i++)setTimeout(()=>pn(80+Math.random()*100,0.15,'sawtooth',0.05),i*30);break;
+    case 'splash':for(let i=0;i<5;i++)setTimeout(()=>pn(500+Math.random()*800,0.06,'sine',0.04),i*25);break;
+    case 'whoosh':pn(300,0.15,'sine',0.05);pn(600,0.1,'sine',0.03);break;
+  }
+}
+
+function startMusic(track){
+  stopMusic();if(!actx||!S.musicOn)return;curTrack=track;
+  const sc={map:[262,294,330,392,440,523,587,659],battle:[294,330,370,440,494,554,587,659],boss:[196,220,247,262,294,330,370,392],mix:[330,392,440,523,587,659,784,880]};
+  const notes=sc[track]||sc.map;const bpm=track==='boss'?180:track==='battle'?140:track==='mix'?120:95;
+  let step=0;
+  musicInt=setInterval(()=>{
+    if(!S.musicOn)return;
+    const n=notes[step%notes.length];
+    pn(n,0.13,track==='boss'?'sawtooth':'triangle',0.025);
+    if(step%2===0)pn(n/2,0.18,'sine',0.015);
+    if(track==='boss'&&step%4===0)pn(55,0.25,'sawtooth',0.035);
+    if(track==='mix'&&step%3===0)pn(n*2,0.08,'sine',0.015);
+    step++;
+  },60000/bpm);
+}
+function stopMusic(){clearInterval(musicInt);musicInt=null;curTrack=''}
+function toggleMusic(){S.musicOn=!S.musicOn;document.getElementById('musicBtn').textContent=S.musicOn?'🔊':'🔇';if(!S.musicOn)stopMusic();save()}
+
+// ========== SCREENS ==========
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('hud').classList.remove('active');
+  if(id==='mapScreen'){renderMap();startMusic('map');}
+}
+
+function showBanner(text,color='#b366ff'){
+  const b=document.getElementById('banner');
+  b.textContent=text;b.style.background=`linear-gradient(135deg,${color},${color}cc)`;
+  b.style.color='#fff';b.style.textShadow=`0 0 10px ${color}`;
+  b.classList.add('show');setTimeout(()=>b.classList.remove('show'),2500);
+}
+
+function showCombo(text,color='#ffcc00'){
+  const c=document.getElementById('comboDisplay');
+  c.textContent=text;c.style.color=color;c.style.textShadow=`0 0 20px ${color}`;
+  c.style.opacity=1;c.style.transform='translate(-50%,-50%) scale(1.6)';
+  setTimeout(()=>{c.style.transform='translate(-50%,-50%) scale(1)'},100);
+  setTimeout(()=>{c.style.opacity=0},1100);
+}
+
+// ========== MAP ==========
+function renderMap(){
+  const g=document.getElementById('chambersGrid');g.innerHTML='';
+  CH.forEach((ch,i)=>{
+    const unlocked=i===0||S.chambers[i-1].done;
+    const d=S.chambers[i];
+    const card=document.createElement('div');
+    card.className=`chamber-card${!unlocked?' locked':''}${d.done?' completed':''}${i===7?' boss':''}`;
+    card.innerHTML=`<div class="chamber-emoji">${ch.em}</div><div class="chamber-label">${ch.n}</div><div style="font-size:9px;color:${ch.col}">${ch.desc}</div><div class="chamber-stars">${d.stars>0?'⭐'.repeat(d.stars)+'☆'.repeat(3-d.stars):'☆☆☆'}</div>`;
+    if(unlocked)card.onclick=()=>enterChamber(i);
+    g.appendChild(card);
+  });
+  document.getElementById('mapGold').textContent=S.gold;
+  document.getElementById('mapStars').textContent=S.chambers.reduce((s,c)=>s+c.stars,0);
+  document.getElementById('mapRank').textContent=LVLS[S.level].n;
+}
+
+// ========== PANELS ==========
+function showPanel(type){
+  showScreen('panelScreen');
+  const t=document.getElementById('panelTitle');
+  const sub=document.getElementById('panelSub');
+  const g=document.getElementById('panelGrid');g.innerHTML='';
+  switch(type){
+    case 'shop':
+      t.textContent='🛒 Potion Shop';t.style.color='#ffcc66';
+      sub.textContent=`💰 ${S.gold} gold`;
+      SHOP.forEach(item=>{
+        const owned=item.t==='robe'?S.inv.robes.includes(item.c):item.t==='wand'?S.inv.wands.includes(item.c):false;
+        const card=document.createElement('div');
+        card.className=`panel-card${owned?' owned':''}`;
+        card.innerHTML=`<div class="card-emoji">${item.em}</div><div class="card-name">${item.n}</div><div class="card-sub">${owned?'✅ Owned':`💰 ${item.p}`}</div>`;
+        if(!owned)card.onclick=()=>buyItem(item);
+        g.appendChild(card);
+      });break;
+    case 'book':
+      t.textContent='📖 Spell Book';t.style.color='#b366ff';sub.textContent='';
+      POTIONS.forEach((p,i)=>{
+        const unlocked=S.potions.includes(i);
+        const card=document.createElement('div');
+        card.className=`panel-card${unlocked?' completed-card':' locked'}`;
+        card.innerHTML=`<div class="card-emoji">${unlocked?p.em:'❓'}</div><div class="card-name">${unlocked?p.n:'???'}</div><div class="card-sub">${unlocked?p.f:'Complete chamber'}</div>`;
+        g.appendChild(card);
+      });break;
+    case 'achieve':
+      t.textContent='🏆 Achievements';t.style.color='#ffcc00';sub.textContent=`${S.ach.size}/${ACH.length} earned`;
+      ACH.forEach(a=>{
+        const earned=S.ach.has(a.id);
+        const card=document.createElement('div');
+        card.className=`panel-card${earned?' earned':' locked'}`;
+        card.innerHTML=`<div class="card-emoji">${earned?a.em:'🔒'}</div><div class="card-name">${earned?a.n:'???'}</div><div class="card-sub">${earned?a.d:'Keep playing'}</div>`;
+        g.appendChild(card);
+      });break;
+    case 'stable':
+      t.textContent='🐾 Familiar Den';t.style.color='#66ccff';sub.textContent=`${S.familiars.length}/8 familiars`;
+      FAMILIARS.forEach((f,i)=>{
+        const owned=S.familiars.includes(i);
+        const card=document.createElement('div');
+        card.className=`panel-card${owned?' earned':' locked'}`;
+        card.innerHTML=`<div class="card-emoji" style="font-size:36px">${owned?f:'❓'}</div><div class="card-name">${owned?['Whiskers','Hoot','Ribbit','Firefox','Shadow','Skye','Drake','Starlight'][i]:'???'}</div><div class="card-sub">${owned?'Collected!':'Random drop'}</div>`;
+        g.appendChild(card);
+      });break;
+  }
+}
+
+function buyItem(item){
+  if(S.gold<item.p){showBanner('💰 Not enough gold!','#ff4466');return}
+  S.gold-=item.p;S.purchases++;sfx('pour');
+  if(item.t==='robe'&&!S.inv.robes.includes(item.c)){S.inv.robes.push(item.c);S.eqRobe=item.c;showBanner(`🧙 ${item.n} equipped!`,'#b366ff')}
+  else if(item.t==='wand'&&!S.inv.wands.includes(item.c)){S.inv.wands.push(item.c);S.eqWand=item.c;showBanner(`✨ ${item.n} equipped!`,'#b366ff')}
+  else if(item.t==='pup'){S.inv.pups[item.k]=(S.inv.pups[item.k]||0)+item.q;showBanner(`${item.em} +${item.q}!`,'#66ccff')}
+  checkAch();save();showPanel('shop');
+}
+
+// ========== CUTSCENES ==========
+let csQueue=[],csCb=null;
+function playCutscene(scenes,cb){csQueue=[...scenes];csCb=cb;showScreen('cutsceneScreen');advanceCutscene()}
+function advanceCutscene(){
+  if(!csQueue.length){if(csCb)csCb();return}
+  const s=csQueue.shift();
+  document.getElementById('csEmoji').textContent=s.em;
+  document.getElementById('csSpeaker').textContent=s.name;
+  const el=document.getElementById('csText');el.textContent='';
+  let i=0;const iv=setInterval(()=>{if(i>=s.text.length){clearInterval(iv);return}el.textContent+=s.text[i++]},22);
+}
+
+// ========== ENTER CHAMBER ==========
+let shieldOn=false,doubleOn=false,usedPuBoss=false,speedTmr=null,qStart=0;
+let eventTriggered=false;
+
+function enterChamber(i){
+  initAudio();
+  S.curChamber=i;S.curQ=0;S.hearts=3;S.score=0;S.combo=0;S.maxCombo=0;
+  S.qRight=0;S.qTotal=0;S.speedBn=0;S.crits=0;
+  shieldOn=false;doubleOn=false;usedPuBoss=false;eventTriggered=false;
+  const ch=CH[i];
+  const scenes=ch.npc.lines.map(text=>({em:ch.npc.em,name:ch.npc.name,text}));
+  if(ch.type==='boss'){S.totalQ=12;playCutscene(scenes,()=>startBoss())}
+  else{S.totalQ=8;playCutscene(scenes,()=>startChallenges())}
+}
+
+// ========== CHALLENGE ENGINE ==========
+function startChallenges(){
+  showScreen('challengeScreen');
+  document.getElementById('hud').classList.add('active');
+  sceneState.cauldron.liquidH=0;
+  sceneState.cauldron.color=CH[S.curChamber].col;
+  startMusic('battle');
+  nextQ();
+}
+
+function nextQ(){
+  if(S.curQ>=S.totalQ||S.hearts<=0){endChamber();return}
+  // Random event chance (once per chamber, after Q3)
+  if(!eventTriggered&&S.curQ>=3&&Math.random()<0.25){eventTriggered=true;triggerRandomEvent();return}
+  S.qTotal++;qStart=Date.now();startSpeedBar();
+  const ui=document.getElementById('challengeUI');ui.innerHTML='';
+  const ch=CH[S.curChamber];
+  document.getElementById('chamberTitle').textContent=ch.n;
+  updateHUD();renderPU();
+  switch(ch.type){
+    case 'slice':genSlice(ui);break;case 'name':genName(ui);break;
+    case 'numline':genNumLine(ui);break;case 'group':genGroup(ui);break;
+    case 'equiv':genEquiv(ui);break;case 'cmpD':genCmpD(ui);break;case 'cmpN':genCmpN(ui);break;
+  }
+}
+
+// ========== RANDOM EVENTS ==========
+function triggerRandomEvent(){
+  sfx('event');
+  const events=[
+    {title:'🌟 Ingredient Rush!',desc:'Quick! 3 rapid-fire easy questions for TRIPLE gold!',type:'rush'},
+    {title:'🌊 Cauldron Overflow!',desc:'The cauldron is spilling! Answer in 5 seconds or lose a heart!',type:'overflow'},
+    {title:'🦊 Familiar Spotted!',desc:'A magical familiar appeared! Answer correctly to befriend it!',type:'familiar'},
+    {title:'💰 Gold Jackpot!',desc:'The gold vault opened! Double rewards for the next 3 questions!',type:'jackpot'}
+  ];
+  const ev=events[Math.floor(Math.random()*events.length)];
+  // Check if we already have all familiars, then reroll
+  if(ev.type==='familiar'&&S.familiars.length>=8){
+    ev.title='💰 Gold Jackpot!';ev.desc='Double rewards for the next 3 questions!';ev.type='jackpot';
+  }
+  const overlay=document.createElement('div');
+  overlay.className='event-overlay';
+  overlay.innerHTML=`<div class="event-box"><div class="event-title">${ev.title}</div><div class="event-desc">${ev.desc}</div><button class="btn" style="font-size:11px" id="eventGo">Let's Go!</button></div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('eventGo').onclick=()=>{
+    overlay.remove();
+    grantAch('ev');
+    handleEvent(ev);
+  };
+}
+
+function handleEvent(ev){
+  switch(ev.type){
+    case 'rush':
+      // 3 quick easy questions
+      showBanner('⚡ RUSH MODE — TRIPLE GOLD!','#ffcc00');
+      // Just continue with boosted gold for next 3
+      S._rushLeft=3;nextQ();break;
+    case 'overflow':
+      showBanner('🌊 OVERFLOW — 5 SECOND TIMER!','#44aaff');
+      S._overflowNext=true;nextQ();break;
+    case 'familiar':
+      showBanner('🦊 FAMILIAR CHALLENGE!','#ff9966');
+      S._familiarNext=true;nextQ();break;
+    case 'jackpot':
+      showBanner('💰 JACKPOT — DOUBLE GOLD ×3!','#ffcc00');
+      S._jackpotLeft=3;nextQ();break;
+  }
+}
+
+// ========== QUESTION GENERATORS ==========
+function genSlice(ui){
+  const ds=[2,3,4,6,8],d=ds[Math.floor(Math.random()*ds.length)];
+  const n=1+Math.floor(Math.random()*(d-1));
+  ui.innerHTML=`<div class="q-text">Pour <strong style="color:#ffcc66">${n}/${d}</strong> of the potion!</div>
+    <div class="q-hint">Tap ${n} of ${d} sections to fill them</div>
+    <div class="frac-visual" id="sliceV"></div>
+    <div class="speed-bar"><div class="speed-fill" id="speedFill"></div></div>
+    <div class="frac-display" id="fracDisp">?/${d}</div>
+    <button class="btn" id="sliceGo" style="font-size:11px" disabled>✨ Brew It!</button>`;
+  const va=document.getElementById('sliceV');
+  const bottle=document.createElement('div');bottle.className='bottle';
+  const neck=document.createElement('div');neck.className='bottle-neck';bottle.appendChild(neck);
+  const body=document.createElement('div');body.className='bottle-body';body.style.display='flex';body.style.flexDirection='column';
+  const sH=108/d;let filled=0;const secs=[];
+  for(let i=0;i<d;i++){
+    const sec=document.createElement('div');sec.className='bottle-section';
+    sec.style.height=sH+'px';if(i>0)sec.style.borderTop='1px dashed rgba(180,100,255,0.3)';
+    sec.dataset.f='0';
+    sec.onclick=()=>{
+      sfx('bubble');
+      if(sec.dataset.f==='0'){sec.dataset.f='1';sec.classList.add('filled');sec.style.background=`linear-gradient(180deg,${CH[S.curChamber].col}88,${CH[S.curChamber].col}cc)`;filled++}
+      else{sec.dataset.f='0';sec.classList.remove('filled');sec.style.background='';filled--}
+      document.getElementById('fracDisp').textContent=`${filled}/${d}`;
+      document.getElementById('sliceGo').disabled=filled===0;
+    };
+    secs.push(sec);body.appendChild(sec);
+  }
+  bottle.appendChild(body);va.appendChild(bottle);
+  document.getElementById('sliceGo').onclick=()=>{
+    if(secs.filter(s=>s.dataset.f==='1').length===n)handleCorrect();else handleWrong();
+  };
+}
+
+function genName(ui){
+  const d=[2,3,4,5,6,8][Math.floor(Math.random()*6)];
+  const n=1+Math.floor(Math.random()*(d-1));
+  ui.innerHTML=`<div class="q-text">What fraction is filled?</div>
+    <div class="frac-visual" id="nameV"></div>
+    <div class="speed-bar"><div class="speed-fill" id="speedFill"></div></div>
+    <div class="ans-grid" id="nameOpts"></div>`;
+  const va=document.getElementById('nameV');
+  va.appendChild(makeBottleVis(n,d,CH[S.curChamber].col));
+  const correct=`${n}/${d}`;const wrongs=new Set();
+  while(wrongs.size<3){let wn=1+Math.floor(Math.random()*7),wd=2+Math.floor(Math.random()*7);if(wn>=wd)wn=wd-1;if(`${wn}/${wd}`!==correct)wrongs.add(`${wn}/${wd}`)}
+  const opts=[correct,...wrongs].sort(()=>Math.random()-0.5);
+  const oc=document.getElementById('nameOpts');
+  opts.forEach(o=>{const b=document.createElement('button');b.className='ans-btn';b.textContent=o;
+    b.onclick=()=>{if(o===correct)handleCorrect();else{b.classList.add('wrong');handleWrong()}};oc.appendChild(b)});
+}
+
+function makeBottleVis(n,d,col){
+  const bottle=document.createElement('div');bottle.className='bottle';
+  const neck=document.createElement('div');neck.className='bottle-neck';bottle.appendChild(neck);
+  const body=document.createElement('div');body.className='bottle-body';body.style.display='flex';body.style.flexDirection='column';
+  const sH=108/d;
+  for(let i=0;i<d;i++){
+    const sec=document.createElement('div');sec.className='bottle-section';sec.style.height=sH+'px';
+    if(i>0)sec.style.borderTop='1px dashed rgba(180,100,255,0.3)';
+    if(i>=d-n){sec.classList.add('filled');sec.style.background=`linear-gradient(180deg,${col}88,${col}cc)`}
+    body.appendChild(sec);
+  }
+  bottle.appendChild(body);return bottle;
+}
+
+function genNumLine(ui){
+  const d=[2,3,4,5,6,8][Math.floor(Math.random()*6)];
+  const n=1+Math.floor(Math.random()*(d-1));
+  const target=n/d;
+  ui.innerHTML=`<div class="q-text">Place <strong style="color:#ffcc66">${n}/${d}</strong> on the number line!</div>
+    <div class="q-hint">Drag the potion drop to the right spot</div>
+    <div class="nl-container" id="nlC"><div class="nl-line"></div></div>
+    <div class="speed-bar"><div class="speed-fill" id="speedFill"></div></div>
+    <button class="btn" id="nlGo" style="font-size:11px">✨ Place It!</button>`;
+  const c=document.getElementById('nlC');
+  for(let i=0;i<=d;i++){
+    const pct=i/d*100;const s=`calc(35px + ${pct/100} * (100% - 70px))`;
+    const tick=document.createElement('div');tick.className='nl-tick';tick.style.left=s;c.appendChild(tick);
+    const lbl=document.createElement('div');lbl.className='nl-label';lbl.style.left=s;
+    lbl.textContent=i===0?'0':i===d?'1':'';c.appendChild(lbl);
+  }
+  const drop=document.createElement('div');drop.className='nl-drop';drop.textContent='🧪';drop.style.left='45%';c.appendChild(drop);
+  let dragging=false;
+  const getX=e=>{const r=c.getBoundingClientRect();const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;return Math.max(35,Math.min(r.width-35,cx))};
+  drop.onmousedown=drop.ontouchstart=e=>{e.preventDefault();dragging=true};
+  document.onmousemove=document.ontouchmove=e=>{if(!dragging)return;drop.style.left=(getX(e)-13)+'px'};
+  document.onmouseup=document.ontouchend=()=>{dragging=false};
+  document.getElementById('nlGo').onclick=()=>{
+    const r=c.getBoundingClientRect();const dl=parseFloat(drop.style.left)+13;
+    const frac=(dl-35)/(r.width-70);
+    if(Math.abs(frac-target)<1/(2*d)+0.03){handleCorrect()}else{handleWrong()}
+    document.onmousemove=document.ontouchmove=null;
+  };
+}
+
+function genGroup(ui){
+  const gs=[{t:6,d:2},{t:6,d:3},{t:8,d:2},{t:8,d:4},{t:9,d:3},{t:10,d:5},{t:12,d:3},{t:12,d:4},{t:12,d:6}];
+  const g=gs[Math.floor(Math.random()*gs.length)];
+  const n=1+Math.floor(Math.random()*(g.d-1));const ans=(g.t/g.d)*n;
+  const ings=['🍄','🌿','💎','🔮','🪨','🌸','🍃','⭐'];
+  const ing=ings[Math.floor(Math.random()*ings.length)];
+  ui.innerHTML=`<div class="q-text">What is <strong style="color:#ffcc66">${n}/${g.d}</strong> of ${g.t} ${ing}?</div>
+    <div class="q-hint">${g.t} ingredients, split into ${g.d} equal groups</div>
+    <div class="frac-visual" style="font-size:24px;letter-spacing:3px">${ing.repeat(g.t)}</div>
+    <div class="speed-bar"><div class="speed-fill" id="speedFill"></div></div>
+    <div class="ans-grid" id="grpOpts"></div>`;
+  const wrongs=new Set();while(wrongs.size<3){let w=1+Math.floor(Math.random()*g.t);if(w!==ans)wrongs.add(w)}
+  const opts=[ans,...wrongs].sort(()=>Math.random()-0.5);
+  const oc=document.getElementById('grpOpts');
+  opts.forEach(o=>{const b=document.createElement('button');b.className='ans-btn';b.textContent=o;
+    b.onclick=()=>{if(o===ans)handleCorrect();else{b.classList.add('wrong');handleWrong()}};oc.appendChild(b)});
+}
+
+function genEquiv(ui){
+  const bases=[{n:1,d:2,eq:[[2,4],[3,6],[4,8]]},{n:1,d:3,eq:[[2,6],[3,9]]},{n:1,d:4,eq:[[2,8]]},
+    {n:2,d:3,eq:[[4,6],[6,9]]},{n:2,d:4,eq:[[1,2],[3,6],[4,8]]},{n:3,d:4,eq:[[6,8]]},{n:3,d:6,eq:[[1,2],[2,4],[4,8]]}];
+  const base=bases[Math.floor(Math.random()*bases.length)];
+  const eq=base.eq[Math.floor(Math.random()*base.eq.length)];
+  const correct=`${eq[0]}/${eq[1]}`;
+  ui.innerHTML=`<div class="q-text">Which fraction equals <strong style="color:#ffcc66">${base.n}/${base.d}</strong>?</div>
+    <div class="q-hint">Same amount, different bottle!</div>
+    <div class="speed-bar"><div class="speed-fill" id="speedFill"></div></div>
+    <div class="ans-grid" id="eqOpts"></div>`;
+  const wrongs=new Set();
+  while(wrongs.size<3){let wn=1+Math.floor(Math.random()*6),wd=2+Math.floor(Math.random()*7);
+    if(wn>=wd)continue;const ws=`${wn}/${wd}`;if(ws!==correct&&wn/wd!==base.n/base.d)wrongs.add(ws)}
+  const opts=[correct,...wrongs].sort(()=>Math.random()-0.5);
+  const oc=document.getElementById('eqOpts');
+  opts.forEach(o=>{const b=document.createElement('button');b.className='ans-btn';b.textContent=o;
+    b.onclick=()=>{if(o===correct)handleCorrect();else{b.classList.add('wrong');handleWrong()}};oc.appendChild(b)});
+}
+
+function genCmpD(ui){
+  const d=[2,3,4,5,6,8][Math.floor(Math.random()*6)];
+  let n1=1+Math.floor(Math.random()*(d-1)),n2=1+Math.floor(Math.random()*(d-1));
+  while(n2===n1)n2=1+Math.floor(Math.random()*(d-1));
+  const c1='#ff6699',c2='#66ccff';
+  ui.innerHTML=`<div class="q-text">Which potion has MORE?</div>
+    <div class="compare-area"><div class="compare-col"><div class="compare-label">${n1}/${d}</div><div id="cmpB1"></div></div>
+    <div style="font-size:32px;color:#ffcc66;align-self:center">VS</div>
+    <div class="compare-col"><div class="compare-label">${n2}/${d}</div><div id="cmpB2"></div></div></div>
+    <div class="speed-bar"><div class="speed-fill" id="speedFill"></div></div>
+    <div class="cmp-btns" id="cmpBtns"></div>`;
+  document.getElementById('cmpB1').appendChild(makeBottleVis(n1,d,c1));
+  document.getElementById('cmpB2').appendChild(makeBottleVis(n2,d,c2));
+  const btns=document.getElementById('cmpBtns');
+  const correctAns=n1>n2?`${n1}/${d}`:n2>n1?`${n2}/${d}`:'=';
+  [`${n1}/${d}`,'=',`${n2}/${d}`].forEach(v=>{
+    const b=document.createElement('button');b.className='cmp-btn';b.textContent=v;
+    b.onclick=()=>{if(v===correctAns)handleCorrect();else handleWrong()};btns.appendChild(b)});
+}
+
+function genCmpN(ui){
+  const n=1+Math.floor(Math.random()*3);
+  const ds=[2,3,4,5,6,8].filter(d=>d>n);
+  let d1=ds[Math.floor(Math.random()*ds.length)],d2=ds[Math.floor(Math.random()*ds.length)];
+  while(d2===d1)d2=ds[Math.floor(Math.random()*ds.length)];
+  const c1='#ff9966',c2='#66ff99';
+  ui.innerHTML=`<div class="q-text">Which potion has MORE?</div>
+    <div class="q-hint">Same numerator (${n}) — bigger denominator = smaller pieces!</div>
+    <div class="compare-area"><div class="compare-col"><div class="compare-label">${n}/${d1}</div><div id="cmpB1"></div></div>
+    <div style="font-size:32px;color:#ffcc66;align-self:center">VS</div>
+    <div class="compare-col"><div class="compare-label">${n}/${d2}</div><div id="cmpB2"></div></div></div>
+    <div class="speed-bar"><div class="speed-fill" id="speedFill"></div></div>
+    <div class="cmp-btns" id="cmpBtns"></div>`;
+  document.getElementById('cmpB1').appendChild(makeBottleVis(n,d1,c1));
+  document.getElementById('cmpB2').appendChild(makeBottleVis(n,d2,c2));
+  const btns=document.getElementById('cmpBtns');
+  const v1=n/d1,v2=n/d2;
+  const correctAns=v1>v2?`${n}/${d1}`:v2>v1?`${n}/${d2}`:'=';
+  [`${n}/${d1}`,'=',`${n}/${d2}`].forEach(v=>{
+    const b=document.createElement('button');b.className='cmp-btn';b.textContent=v;
+    b.onclick=()=>{if(v===correctAns)handleCorrect();else handleWrong()};btns.appendChild(b)});
+}
+
+// ========== SPEED BAR ==========
+function startSpeedBar(){
+  clearInterval(speedTmr);
+  const fill=document.getElementById('speedFill');if(!fill)return;fill.style.width='100%';
+  const start=Date.now();
+  speedTmr=setInterval(()=>{
+    const el=Date.now()-start;const pct=Math.max(0,100-el/80);
+    const f=document.getElementById('speedFill');if(f)f.style.width=pct+'%';
+    // Overflow event: auto-fail after 5 seconds
+    if(S._overflowNext&&el>5000){S._overflowNext=false;clearInterval(speedTmr);handleWrong()}
+    if(pct<=0)clearInterval(speedTmr);
+  },50);
+}
+
+// ========== ANSWER HANDLERS ==========
+function handleCorrect(){
+  clearInterval(speedTmr);sfx('correct');
+  S.qRight++;S.combo++;if(S.combo>S.maxCombo)S.maxCombo=S.combo;
+
+  let goldE=15,xpE=12;
+  // Event bonuses
+  if(S._rushLeft>0){goldE*=3;S._rushLeft--;if(S._rushLeft===0)showBanner('⚡ Rush Complete!','#66ff99')}
+  if(S._jackpotLeft>0){goldE*=2;S._jackpotLeft--;if(S._jackpotLeft===0)showBanner('💰 Jackpot Over!','#ffcc00')}
+  if(S._overflowNext){S._overflowNext=false;goldE+=25;showBanner('🌊 Overflow Survived! +25g','#44aaff')}
+  if(S._familiarNext){
+    S._familiarNext=false;
+    const avail=FAMILIARS.map((_,i)=>i).filter(i=>!S.familiars.includes(i));
+    if(avail.length){const fi=avail[Math.floor(Math.random()*avail.length)];S.familiars.push(fi);
+      showBanner(`🐾 ${FAMILIARS[fi]} Familiar Caught!`,'#ff9966');grantAch('fam')}
+  }
+  // Speed bonus
+  const elapsed=Date.now()-qStart;
+  if(elapsed<4500){goldE+=12;S.speedBn++;sfx('whoosh');
+    setTimeout(()=>showBanner('⚡ LIGHTNING BREW!','#ffcc00'),200)}
+  // Critical hit (20%)
+  if(Math.random()<0.2){
+    goldE*=2;xpE*=2;S.crits++;sfx('crit');
+    setTimeout(()=>showBanner('💫 CRITICAL BREW! ×2!','#ff66cc'),350);
+    spawnBurst(W/2,H/2,'#ffcc00',20);
+    sceneState.flash={a:0.3,c:'#ffcc00'};
+  }
+  if(doubleOn){goldE*=2;doubleOn=false}
+  // Combo
+  if(S.combo>=3){
+    const cn={3:'TRIPLE! 🔥',4:'QUAD! ⚡',5:'PENTA! 💫',6:'HEXA! 🌟',7:'ULTRA! 💥',8:'GODLIKE! 👑'};
+    showCombo(cn[Math.min(S.combo,8)]||`${S.combo}× STREAK!`);goldE+=S.combo*4;
+  }
+  // Wizard cast animation + projectile
+  sceneState.wizard.castT=1;
+  const wiz=sceneState.wizard;
+  const cld=sceneState.cauldron;
+  launchProjectile('✨',wiz.x+30,wiz.y-20,cld.x,cld.y-10,CH[S.curChamber].col,()=>{
+    sfx('splash');spawnBurst(cld.x,cld.y-10,CH[S.curChamber].col,8);
+    cld.liquidH=Math.min(40,cld.liquidH+5);
+  });
+  // Floating gold text
+  spawnFloatText(W/2,H/3,`+${goldE}g`,'#ffcc66');
+  S.gold+=goldE;S.totalGold+=goldE;addXP(xpE);S.score+=goldE;S.curQ++;
+  sceneState.flash={a:0.15,c:'#66ff99'};
+  updateComboMeter();checkAch();updateHUD();
+  setTimeout(()=>nextQ(),750);
+}
+
+function handleWrong(){
+  clearInterval(speedTmr);
+  if(shieldOn){shieldOn=false;showBanner('🛡️ Shield Absorbed!','#66ccff');sfx('bubble');
+    S.combo=0;S.curQ++;updateComboMeter();updateHUD();renderPU();
+    if(S._overflowNext)S._overflowNext=false;if(S._familiarNext)S._familiarNext=false;
+    setTimeout(()=>nextQ(),700);return}
+  sfx('wrong');sfx('explode');S.hearts--;S.combo=0;S.curQ++;
+  sceneState.screenShake=15;sceneState.flash={a:0.3,c:'#ff4466'};
+  sceneState.wizard.hitT=1;
+  // Cauldron explosion
+  spawnBurst(sceneState.cauldron.x,sceneState.cauldron.y-10,'#ff4466',15);
+  spawnFloatText(W/2,H/3,'-1 ❤️','#ff4466');
+  if(S._overflowNext)S._overflowNext=false;if(S._familiarNext)S._familiarNext=false;
+  updateComboMeter();updateHUD();
+  if(S.hearts<=0){showBanner('💀 Potion Exploded!','#ff2200');setTimeout(()=>endChamber(),1200)}
+  else setTimeout(()=>nextQ(),800);
+}
+
+// ========== BOSS ==========
+let bossHP=0,bossMax=0,bossQs=[];
+function startBoss(){
+  showScreen('bossScreen');
+  document.getElementById('hud').classList.add('active');
+  sceneState.cauldron.color='#ff6644';sceneState.cauldron.liquidH=0;
+  startMusic('boss');sfx('boss');
+  bossHP=20;bossMax=20;S.totalQ=12;S.curQ=0;
+  const types=['slice','name','numline','group','equiv','cmpD','cmpN'];
+  bossQs=[];for(let i=0;i<12;i++)bossQs.push(types[i%types.length]);
+  bossQs.sort(()=>Math.random()-0.5);
+  nextBossQ();
+}
+
+function nextBossQ(){
+  if(bossHP<=0||S.curQ>=S.totalQ||S.hearts<=0){S.bossWon=bossHP<=0;endChamber();return}
+  document.getElementById('bossHpFill').style.width=(bossHP/bossMax*100)+'%';
+  document.getElementById('bossStepLabel').textContent=`Step ${S.curQ+1}/${S.totalQ} — HP: ${bossHP}/${bossMax}`;
+  S.qTotal++;qStart=Date.now();startSpeedBar();updateHUD();renderPU();
+  const qType=bossQs[S.curQ];
+  const ui=document.getElementById('bossUI');ui.innerHTML='';
+  // Override handlers for boss
+  const origC=window.handleCorrect,origW=window.handleWrong;
+  window.handleCorrect=function(){
+    clearInterval(speedTmr);sfx('correct');S.qRight++;S.combo++;
+    if(S.combo>S.maxCombo)S.maxCombo=S.combo;
+    let dmg=2,goldE=15;
+    if(Date.now()-qStart<4500){goldE+=12;S.speedBn++;showBanner('⚡ LIGHTNING!','#ffcc00')}
+    if(Math.random()<0.2){dmg*=2;goldE*=2;S.crits++;sfx('crit');showBanner('💫 CRITICAL! ×2 DMG!','#ff66cc');sceneState.flash={a:0.3,c:'#ffcc00'}}
+    if(doubleOn){dmg*=2;doubleOn=false}
+    if(S.combo>=3){showCombo(`${S.combo}× COMBO!`);goldE+=S.combo*4}
+    bossHP=Math.max(0,bossHP-dmg);
+    sceneState.wizard.castT=1;
+    launchProjectile('⚡',sceneState.wizard.x+30,sceneState.wizard.y-20,sceneState.cauldron.x,sceneState.cauldron.y-10,'#ff6644',()=>{sfx('splash');spawnBurst(sceneState.cauldron.x,sceneState.cauldron.y,'#ff6644',10)});
+    spawnFloatText(W/2,100,`-${dmg} HP`,'#ff6644');
+    S.gold+=goldE;S.totalGold+=goldE;addXP(15);S.score+=goldE;S.curQ++;
+    sceneState.flash={a:0.15,c:'#66ff99'};
+    updateComboMeter();updateHUD();checkAch();
+    document.getElementById('bossHpFill').style.width=(bossHP/bossMax*100)+'%';
+    window.handleCorrect=origC;window.handleWrong=origW;
+    setTimeout(()=>nextBossQ(),800);
+  };
+  window.handleWrong=function(){
+    clearInterval(speedTmr);
+    if(shieldOn){shieldOn=false;showBanner('🛡️ Shield!','#66ccff');S.combo=0;S.curQ++;
+      window.handleCorrect=origC;window.handleWrong=origW;updateHUD();renderPU();
+      setTimeout(()=>nextBossQ(),700);return}
+    sfx('wrong');sfx('explode');S.hearts--;S.combo=0;S.curQ++;
+    sceneState.screenShake=20;sceneState.flash={a:0.4,c:'#ff4466'};sceneState.wizard.hitT=1;
+    spawnBurst(sceneState.cauldron.x,sceneState.cauldron.y,'#ff2200',15);
+    updateComboMeter();updateHUD();
+    window.handleCorrect=origC;window.handleWrong=origW;
+    if(S.hearts<=0){showBanner('💀 Defeated!','#ff2200');setTimeout(()=>endChamber(),1200)}
+    else setTimeout(()=>nextBossQ(),800);
+  };
+  switch(qType){
+    case 'slice':genSlice(ui);break;case 'name':genName(ui);break;case 'numline':genNumLine(ui);break;
+    case 'group':genGroup(ui);break;case 'equiv':genEquiv(ui);break;case 'cmpD':genCmpD(ui);break;case 'cmpN':genCmpN(ui);break;
+  }
+}
+
+// ========== MIXING MINIGAME ==========
+let mixTarget=[],mixAdded={},mixTotal=0;
+
+function startMixing(chamberIdx){
+  const potion=POTIONS[chamberIdx];
+  if(!potion||chamberIdx===7)return endMixing(true);
+  showScreen('mixScreen');startMusic('mix');
+  document.getElementById('mixTitle').textContent=`⚗️ Brew: ${potion.n} ${potion.em}`;
+  document.getElementById('mixRecipe').textContent=potion.f;
+  document.getElementById('cauldronLiquid').style.height='0%';
+  document.getElementById('cauldronLabel').textContent='0% filled';
+  document.getElementById('mixFeedback').textContent='';
+  mixTarget=potion.ings;mixAdded={};mixTotal=0;
+  const area=document.getElementById('mixArea');area.innerHTML='';
+  // Create draggable ingredients
+  mixTarget.forEach((ing,i)=>{
+    mixAdded[i]=0;
+    const div=document.createElement('div');div.className='mix-ingredient';
+    div.innerHTML=`<div class="mix-ing-emoji">${ing.em}</div><div class="mix-ing-name">${ing.n}</div><div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#ffcc66">${ing.frac[0]}/${ing.frac[1]}</div>
+      <div style="display:flex;gap:4px;margin-top:4px">
+        <button class="nav-btn" style="font-size:10px;padding:4px 8px" onclick="addIngredient(${i})">+ Pour</button>
+        <button class="nav-btn" style="font-size:10px;padding:4px 8px" onclick="removeIngredient(${i})">- Remove</button>
+      </div>
+      <div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#66ff99;margin-top:2px" id="mixCount${i}">0 added</div>`;
+    area.appendChild(div);
+  });
+}
+
+function addIngredient(i){
+  sfx('pour');mixAdded[i]++;
+  document.getElementById(`mixCount${i}`).textContent=`${mixAdded[i]} added`;
+  updateCauldronVisual();
+}
+function removeIngredient(i){
+  if(mixAdded[i]<=0)return;sfx('bubble');mixAdded[i]--;
+  document.getElementById(`mixCount${i}`).textContent=`${mixAdded[i]} added`;
+  updateCauldronVisual();
+}
+
+function updateCauldronVisual(){
+  let total=0;Object.values(mixAdded).forEach(v=>total+=v);
+  const pct=Math.min(100,total*15);
+  document.getElementById('cauldronLiquid').style.height=pct+'%';
+  document.getElementById('cauldronLabel').textContent=`${Math.round(pct)}% filled`;
+}
+
+function brewPotion(){
+  // Check if ratios are correct
+  let correct=true;
+  const fb=document.getElementById('mixFeedback');
+  // Find the LCD and check proportions
+  mixTarget.forEach((ing,i)=>{
+    const expected=ing.frac[0]/ing.frac[1];
+    const totalAdded=Object.values(mixAdded).reduce((s,v)=>s+v,0);
+    if(totalAdded===0){correct=false;return}
+    const actual=mixAdded[i]/totalAdded;
+    if(Math.abs(actual-expected)>0.08)correct=false;
+  });
+  const totalAdded=Object.values(mixAdded).reduce((s,v)=>s+v,0);
+  if(totalAdded<2){fb.textContent='Add more ingredients!';fb.style.color='#ff4466';return}
+
+  if(correct){
+    sfx('victory');
+    S.mixAttempts++;
+    if(!S.potions.includes(S.curChamber))S.potions.push(S.curChamber);
+    if(S.mixAttempts>=5)grantAch('mixer');
+    sceneState.flash={a:0.4,c:'#66ff99'};
+    spawnBurst(W/2,H/2,'#66ff99',25);
+    showBanner(`🧪 ${POTIONS[S.curChamber].n} Brewed!`,'#66ff99');
+    save();
+    setTimeout(()=>endMixing(true),1500);
+  }else{
+    sfx('wrong');sceneState.screenShake=10;sceneState.flash={a:0.2,c:'#ff4466'};
+    fb.textContent='Wrong ratio! Check the recipe and try again.';fb.style.color='#ff4466';
+    spawnBurst(W/2,H/2,'#ff4466',10);
+  }
+}
+
+function endMixing(success){
+  stopMusic();
+  // Show victory screen
+  const ch=S.curChamber;const pct=S.qTotal>0?S.qRight/S.qTotal:0;
+  let stars=S.hearts>0?(pct>=0.95?3:pct>=0.7?2:1):0;
+  if(stars>S.chambers[ch].stars)S.chambers[ch].stars=stars;
+  if(stars>0)S.chambers[ch].done=true;
+  if(S.score>S.chambers[ch].best)S.chambers[ch].best=S.score;
+  if(stars===3)S.perfects++;
+
+  showScreen('victoryScreen');
+  document.getElementById('vStars').textContent=stars>0?'⭐'.repeat(stars)+'☆'.repeat(3-stars):'💀';
+  document.getElementById('vGold').textContent=S.score;
+  document.getElementById('vXp').textContent=S.qRight*10;
+
+  const pd=document.getElementById('vPotion');
+  if(stars>0&&S.potions.includes(ch)){
+    pd.style.display='block';
+    document.getElementById('vPotionEmoji').textContent=POTIONS[ch].em;
+    document.getElementById('vPotionName').textContent=`${POTIONS[ch].n} Brewed!`;
+  }else pd.style.display='none';
+
+  if(S.hearts===1&&stars>0)grantAch('sv');
+  if(ch===7&&stars>0)grantAch('boss');
+  if(ch===7&&stars>0&&!usedPuBoss)grantAch('pu');
+  checkAch();save();
+}
+
+// ========== END CHAMBER ==========
+function endChamber(){
+  stopMusic();clearInterval(speedTmr);
+  // Clean up event state
+  S._rushLeft=0;S._jackpotLeft=0;S._overflowNext=false;S._familiarNext=false;
+  const ch=S.curChamber;
+  if(S.hearts>0&&ch<7){
+    // Go to mixing minigame
+    startMixing(ch);
+  }else{
+    endMixing(S.hearts>0);
+  }
+}
+
+function returnToMap(){showScreen('mapScreen')}
+
+// ========== POWERUPS ==========
+function renderPU(){
+  const bar=document.getElementById('puBar');if(!bar)return;bar.innerHTML='';
+  [{k:'scroll',em:'📜'},{k:'shield',em:'🛡️'},{k:'double',em:'⚡'}].forEach(p=>{
+    const ct=S.inv.pups[p.k]||0;
+    const slot=document.createElement('div');slot.className=`pu-slot${ct<=0?' empty':''}`;
+    slot.innerHTML=`${p.em}${ct>0?`<div class="pu-count">${ct}</div>`:''}`;
+    if(ct>0)slot.onclick=()=>usePU(p.k);
+    bar.appendChild(slot);
+  });
+}
+
+function usePU(k){
+  if((S.inv.pups[k]||0)<=0)return;S.inv.pups[k]--;usedPuBoss=true;sfx('pour');
+  if(k==='scroll')showBanner('📜 Hint Active!','#66ccff');
+  if(k==='shield'){shieldOn=true;showBanner('🛡️ Shield Active!','#66ccff')}
+  if(k==='double'){doubleOn=true;showBanner('⚡ Double Strike!','#ffcc00')}
+  renderPU();save();
+}
+
+// ========== COMBO METER ==========
+function updateComboMeter(){
+  const fill=document.getElementById('comboFill');
+  const label=document.getElementById('comboLabel');
+  if(!fill)return;
+  const pct=Math.min(100,S.combo*12.5);
+  fill.style.width=pct+'%';
+  label.textContent=S.combo>0?`${S.combo}×`:'';
+}
+
+// ========== XP & LEVELING ==========
+function addXP(amt){
+  S.xp+=amt;let nl=0;
+  for(let i=LVLS.length-1;i>=0;i--)if(S.xp>=LVLS[i].xp){nl=i;break}
+  if(nl>S.level){S.level=nl;sfx('lvl');showBanner(`🧙 ${LVLS[nl].n}!`,'#b366ff');
+    spawnBurst(W/2,H/2,'#b366ff',15);
+    if(nl>=1)grantAch('app');if(nl>=4)grantAch('alch');if(nl>=5)grantAch('arch');
+  }
+}
+
+// ========== ACHIEVEMENTS ==========
+function grantAch(id){
+  if(S.ach.has(id))return;S.ach.add(id);
+  const a=ACH.find(a=>a.id===id);
+  if(a){sfx('achieve');showBanner(`🏆 ${a.em} ${a.n}!`,'#ffcc00')}
+  save();
+}
+
+function checkAch(){
+  if(S.chambers.some(c=>c.done))grantAch('first');
+  if(S.qRight===S.qTotal&&S.qTotal>=8)grantAch('flaw');
+  if(S.maxCombo>=5)grantAch('c5');if(S.maxCombo>=8)grantAch('c8');
+  if(S.speedBn>=3)grantAch('sp3');if(S.crits>=3)grantAch('cr3');
+  if(S.potions.length>=8)grantAch('allP');
+  if(S.totalGold>=500)grantAch('g500');if(S.totalGold>=1000)grantAch('g1k');
+  if(S.perfects>=3)grantAch('p3');
+  const ts=S.chambers.reduce((s,c)=>s+c.stars,0);if(ts>=24)grantAch('allS');
+  if(S.chambers[0].done)grantAch('sl');if(S.chambers[1].done)grantAch('nm');
+  if(S.chambers[2].done)grantAch('ln');if(S.chambers[3].done)grantAch('mx');
+  if(S.chambers[4].done)grantAch('eq');
+  if(S.chambers[5].done&&S.chambers[6].done)grantAch('cm');
+  if(S.purchases>=5)grantAch('sh');
+}
+
+// ========== HUD ==========
+function updateHUD(){
+  document.getElementById('hearts').innerHTML='❤️'.repeat(Math.max(0,S.hearts))+'🖤'.repeat(Math.max(0,3-S.hearts));
+  document.getElementById('hudGold').textContent=S.gold;
+  document.getElementById('hudRank').textContent=LVLS[S.level].n;
+  const next=S.level<LVLS.length-1?LVLS[S.level+1].xp:LVLS[S.level].xp;
+  const cur=LVLS[S.level].xp;
+  document.getElementById('hudXp').style.width=(S.level<LVLS.length-1?((S.xp-cur)/(next-cur))*100:100)+'%';
+}
+
+// ========== SAVE/LOAD ==========
+function save(){const d={...S,ach:[...S.ach]};localStorage.setItem('fqv2',JSON.stringify(d))}
+function load(){try{const d=JSON.parse(localStorage.getItem('fqv2'));if(d){Object.assign(S,d);S.ach=new Set(d.ach||[])}}catch(e){}}
+
+// ========== START ==========
+function startGame(){initAudio();showScreen('mapScreen');startMusic('map')}
+
+window.onload=function(){
+  initCanvas();load();
+  document.getElementById('musicBtn').textContent=S.musicOn?'🔊':'🔇';
+  // Cheat code
+  let buf='';document.addEventListener('keydown',e=>{
+    buf+=e.key.toUpperCase();
+    if(buf.includes('POTIONMASTER')){buf='';S.chambers.forEach(c=>{c.done=true;c.stars=3});showBanner('🧪 ALL UNLOCKED!','#b366ff');save()}
+    if(buf.length>20)buf=buf.slice(-20);
+  });
+};
+
+// =====================================================================
+// FRACTIONQUEST ENHANCEMENT SUITE — v1.0
+// SM-2 Spaced Repetition | Daily Streak | Achievement Toasts | Hotkeys
+// =====================================================================
+
+// ========== SM-2 SPACED REPETITION ==========
+const FQ_SM2_KEY = 'fqv2_sm2';
+const FQ_STREAK_KEY = 'fqv2_streak';
+const FQ_QTYPES = ['slice','name','numline','group','equiv','cmpD','cmpN'];
+let qTypePerf = {};
+
+function fq_loadSM2() {
+  try {
+    const d = JSON.parse(localStorage.getItem(FQ_SM2_KEY) || '{}');
+    FQ_QTYPES.forEach(t => {
+      qTypePerf[t] = d[t] || {ef:2.5, interval:1, reps:0, correct:0, total:0};
+    });
+  } catch(e) {
+    FQ_QTYPES.forEach(t => { qTypePerf[t] = {ef:2.5,interval:1,reps:0,correct:0,total:0}; });
+  }
+}
+
+function fq_saveSM2() {
+  localStorage.setItem(FQ_SM2_KEY, JSON.stringify(qTypePerf));
+}
+
+function fq_recordTypePerf(type, isCorrect) {
+  if (!qTypePerf[type]) return;
+  const p = qTypePerf[type];
+  p.total++;
+  if (isCorrect) {
+    p.correct++;
+    const ratio = p.correct / p.total;
+    const q = ratio >= 0.8 ? 5 : ratio >= 0.6 ? 4 : 3;
+    if (p.reps === 0) { p.interval = 1; }
+    else if (p.reps === 1) { p.interval = 6; }
+    else { p.interval = Math.round(p.interval * p.ef); }
+    p.ef = Math.max(1.3, p.ef + 0.1 - (5-q)*(0.08+(5-q)*0.02));
+    p.reps++;
+  } else {
+    p.reps = 0; p.interval = 1;
+    p.ef = Math.max(1.3, p.ef - 0.2);
+  }
+  fq_saveSM2();
+}
+
+function fq_getTypeScore(type) {
+  const p = qTypePerf[type];
+  if (!p || p.total === 0) return 0; // untried = highest priority for review
+  return (p.correct / p.total) * p.ef;
+}
+
+function fq_adaptiveBossTypes() {
+  const scores = FQ_QTYPES.map(t => fq_getTypeScore(t));
+  const maxS = Math.max(...scores, 0.1);
+  const weights = scores.map(s => Math.max(0.3, maxS - s + 0.6));
+  const pool = [];
+  FQ_QTYPES.forEach((t, i) => {
+    const n = Math.max(1, Math.round(weights[i] * 8));
+    for (let j = 0; j < n; j++) pool.push(t);
+  });
+  const picked = [];
+  for (let i = 0; i < 12; i++) picked.push(pool[Math.floor(Math.random() * pool.length)]);
+  return picked;
+}
+
+// Patch handleCorrect/handleWrong for regular (non-boss) chambers
+const _fq_origHandleCorrect = window.handleCorrect;
+window.handleCorrect = function() {
+  const type = (S.curChamber >= 0 && CH[S.curChamber] && CH[S.curChamber].type !== 'boss')
+    ? CH[S.curChamber].type : null;
+  _fq_origHandleCorrect.apply(this, arguments);
+  if (type) fq_recordTypePerf(type, true);
+};
+
+const _fq_origHandleWrong = window.handleWrong;
+window.handleWrong = function() {
+  const type = (S.curChamber >= 0 && CH[S.curChamber] && CH[S.curChamber].type !== 'boss')
+    ? CH[S.curChamber].type : null;
+  _fq_origHandleWrong.apply(this, arguments);
+  if (type) fq_recordTypePerf(type, false);
+};
+
+// Patch nextBossQ to intercept boss-local handler overrides
+const _fq_origNextBossQ = window.nextBossQ;
+window.nextBossQ = function() {
+  const bossType = (typeof bossQs !== 'undefined' && S.curQ < bossQs.length)
+    ? bossQs[S.curQ] : null;
+  _fq_origNextBossQ.apply(this, arguments);
+  if (!bossType) return;
+  const bossC = window.handleCorrect;
+  const bossW = window.handleWrong;
+  window.handleCorrect = function() {
+    bossC.apply(this, arguments);
+    fq_recordTypePerf(bossType, true);
+  };
+  window.handleWrong = function() {
+    bossW.apply(this, arguments);
+    fq_recordTypePerf(bossType, false);
+  };
+};
+
+// Patch startBoss to use SM-2 adaptive question selection
+const _fq_origStartBoss = window.startBoss;
+window.startBoss = function() {
+  _fq_origStartBoss.apply(this, arguments);
+  bossQs = fq_adaptiveBossTypes(); // replace random shuffle with adaptive
+};
+
+// ========== MAP SM-2 PERFORMANCE INDICATORS ==========
+const _fq_origRenderMap = window.renderMap;
+window.renderMap = function() {
+  _fq_origRenderMap.apply(this, arguments);
+  const cards = document.querySelectorAll('#chambersGrid .chamber-card');
+  CH.forEach((ch, i) => {
+    if (ch.type === 'boss' || !cards[i]) return;
+    const p = qTypePerf[ch.type];
+    if (!p || p.total === 0) return;
+    const acc = p.correct / p.total;
+    const color = acc >= 0.8 ? '#66ff99' : acc >= 0.5 ? '#ffcc66' : '#ff4466';
+    const icon  = acc >= 0.8 ? '✓' : acc >= 0.5 ? '~' : '⚠';
+    const badge = document.createElement('div');
+    badge.style.cssText = `font-family:'Press Start 2P',monospace;font-size:6px;color:${color};margin-top:3px;text-shadow:0 0 5px ${color}80`;
+    badge.textContent = `${icon} ${Math.round(acc*100)}% (${p.total}q)`;
+    cards[i].appendChild(badge);
+    if (acc < 0.6 && p.total >= 3) {
+      cards[i].style.boxShadow = `0 0 10px ${color}60, inset 0 0 8px ${color}20`;
+      cards[i].style.borderColor = color;
+    }
+  });
+};
+
+// ========== DAILY STREAK ==========
+let fq_streak = { count: 0, lastPlay: null };
+
+function fq_loadStreak() {
+  try {
+    const d = JSON.parse(localStorage.getItem(FQ_STREAK_KEY) || '{}');
+    fq_streak.count = d.count || 0;
+    fq_streak.lastPlay = d.lastPlay || null;
+  } catch(e) {}
+}
+
+function fq_saveStreak() {
+  localStorage.setItem(FQ_STREAK_KEY, JSON.stringify(fq_streak));
+}
+
+function fq_checkAndShowStreak() {
+  const today = new Date().toDateString();
+  if (fq_streak.lastPlay === today) return;
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  fq_streak.count = fq_streak.lastPlay === yesterday ? fq_streak.count + 1 : 1;
+  fq_streak.lastPlay = today;
+  fq_saveStreak();
+  setTimeout(fq_showStreakPopup, 700);
+}
+
+function fq_showStreakPopup() {
+  if (document.getElementById('fq-streak-overlay')) return;
+  const bonus = Math.min(fq_streak.count * 10, 100);
+  // Inject keyframe animation if needed
+  if (!document.getElementById('fq-anim-style')) {
+    const s = document.createElement('style');
+    s.id = 'fq-anim-style';
+    s.textContent = `
+      @keyframes fqFlame{0%,100%{transform:scale(1) rotate(-5deg)}50%{transform:scale(1.25) rotate(6deg)}}
+      @keyframes fqSlideUp{from{transform:translate(-50%,60px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+    `;
+    document.head.appendChild(s);
+  }
+  const ov = document.createElement('div');
+  ov.id = 'fq-streak-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.78);z-index:3000;display:flex;align-items:center;justify-content:center';
+  ov.innerHTML = `
+    <div style="background:linear-gradient(140deg,#1a0a3a,#0c0618);border:2px solid #b366ff;border-radius:20px;padding:36px 44px;text-align:center;font-family:'Press Start 2P',monospace;box-shadow:0 0 50px rgba(179,102,255,0.35);animation:fqSlideUp 0.45s ease-out;position:relative">
+      <div style="font-size:54px;animation:fqFlame 1.4s ease-in-out infinite;display:inline-block;margin-bottom:10px">🔥</div>
+      <div style="font-size:9px;color:#f0c840;letter-spacing:3px;margin-bottom:10px">DAILY BREW STREAK!</div>
+      <div style="font-size:40px;color:#96ee80;margin:10px 0;text-shadow:0 0 20px rgba(150,238,128,0.55)">${fq_streak.count}🔥</div>
+      <div style="font-size:8px;color:#8cc082;margin-bottom:${bonus ? '14px' : '22px'}">DAY${fq_streak.count!==1?'S':''} IN A ROW!</div>
+      ${bonus ? `<div style="font-size:9px;color:#ffcc66;margin-bottom:22px;text-shadow:0 0 8px rgba(255,200,0,0.4)">🏆 STREAK BONUS: +${bonus} GOLD!</div>` : ''}
+      <button id="fq-streak-btn" style="font-family:'Press Start 2P',monospace;font-size:9px;padding:12px 30px;background:linear-gradient(135deg,#7b2fff,#b366ff);border:none;border-radius:10px;color:#fff;cursor:pointer;box-shadow:0 4px 22px rgba(123,47,255,0.55)">BREW ON! 🧪</button>
+    </div>`;
+  document.body.appendChild(ov);
+  document.getElementById('fq-streak-btn').onclick = () => {
+    ov.remove();
+    if (bonus > 0) { S.gold += bonus; updateHUD(); save(); }
+  };
+}
+
+// Patch startGame to check streak when player enters academy
+const _fq_origStartGame = window.startGame;
+window.startGame = function() {
+  _fq_origStartGame.apply(this, arguments);
+  fq_checkAndShowStreak();
+};
+
+// ========== ENHANCED ACHIEVEMENT TOASTS ==========
+const _fq_origGrantAch = window.grantAch;
+window.grantAch = function(id) {
+  const hadIt = S.ach.has(id);
+  _fq_origGrantAch.apply(this, arguments);
+  if (!hadIt && S.ach.has(id)) fq_showAchToast(id);
+};
+
+function fq_showAchToast(id) {
+  const a = ACH.find(a => a.id === id);
+  if (!a) return;
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    position:fixed;bottom:24px;left:50%;
+    transform:translateX(-50%) translateY(110px);opacity:0;
+    background:linear-gradient(135deg,#2a1050,#180828);
+    border:2px solid #ffcc00;border-radius:14px;
+    padding:14px 26px;font-family:'Press Start 2P',monospace;
+    z-index:2500;min-width:270px;text-align:center;
+    box-shadow:0 6px 32px rgba(255,200,0,0.45),inset 0 1px 0 rgba(255,255,255,0.08);
+    transition:transform 0.42s cubic-bezier(0.175,0.885,0.32,1.275),opacity 0.35s ease`;
+  toast.innerHTML = `
+    <div style="font-size:8px;color:#ffcc00;letter-spacing:2px;margin-bottom:7px">🏆 ACHIEVEMENT UNLOCKED!</div>
+    <div style="font-size:30px;margin-bottom:6px">${a.em}</div>
+    <div style="font-size:9px;color:#fff;margin-bottom:4px">${a.n}</div>
+    <div style="font-size:6px;color:#aaa">${a.d}</div>`;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.opacity = '1';
+  }));
+  setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(110px)';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 450);
+  }, 3600);
+}
+
+// ========== KEYBOARD SHORTCUTS ==========
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  // 1-4: click answer buttons
+  if (['1','2','3','4'].includes(e.key)) {
+    const btns = [...document.querySelectorAll('.ans-btn')].filter(b => b.offsetParent !== null);
+    const b = btns[parseInt(e.key) - 1];
+    if (b) b.click();
+  }
+  // M: toggle music
+  if (e.key.toLowerCase() === 'm') {
+    const mb = document.getElementById('musicBtn');
+    if (mb) mb.click();
+  }
+});
+
+// ========== INIT ==========
+fq_loadSM2();
+fq_loadStreak();
+const _fq_origOnLoad = window.onload;
+window.onload = function() {
+  if (_fq_origOnLoad) _fq_origOnLoad.apply(this, arguments);
+  fq_loadSM2();
+  fq_loadStreak();
+};
+</script>
+</body>
+</html>
