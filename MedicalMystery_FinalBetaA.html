@@ -152,6 +152,18 @@ button{cursor:pointer;font-family:inherit;border:none;outline:none;transition:al
 /* DETERIORATION PULSE */
 @keyframes vitalPulse{0%{box-shadow:none}50%{box-shadow:0 0 6px rgba(248,113,113,.5)}100%{box-shadow:none}}
 .vt-box.deteriorating{animation:vitalPulse 1.2s ease-in-out infinite}
+@keyframes patientWarningFlash{0%{box-shadow:none}30%{box-shadow:inset 0 0 0 5px #dc2626,0 0 50px rgba(220,38,38,0.55)}80%{box-shadow:inset 0 0 0 2px #ef4444,0 0 20px rgba(239,68,68,0.2)}100%{box-shadow:none}}
+.patient-warning-flash{animation:patientWarningFlash 2s ease-out forwards!important}
+@keyframes vitalsRedPulse{0%,100%{background:transparent}50%{background:rgba(220,38,38,0.13)}}
+.vt-val.crit{animation:vitalsRedPulse 0.9s ease-in-out infinite}
+@keyframes patientWarningFlash{0%{box-shadow:none}30%{box-shadow:inset 0 0 0 5px #dc2626,0 0 50px rgba(220,38,38,0.55)}80%{box-shadow:inset 0 0 0 2px #ef4444,0 0 20px rgba(239,68,68,0.2)}100%{box-shadow:none}}
+.patient-warning-flash{animation:patientWarningFlash 2s ease-out forwards!important}
+@keyframes vitalsRedPulse{0%,100%{background:transparent}50%{background:rgba(220,38,38,0.13)}}
+.vt-val.crit{animation:vitalsRedPulse 0.9s ease-in-out infinite}
+@keyframes patientWarningFlash{0%{box-shadow:none;border-color:transparent}20%{box-shadow:inset 0 0 0 4px #dc2626,0 0 40px rgba(220,38,38,0.6);border-color:#dc2626}60%{box-shadow:inset 0 0 0 3px #ef4444,0 0 20px rgba(239,68,68,0.3)}100%{box-shadow:none;border-color:transparent}}
+.patient-warning-flash{animation:patientWarningFlash 1.8s ease-out forwards!important}
+@keyframes vitalsRedPulse{0%,100%{background:transparent}50%{background:rgba(220,38,38,0.12)}}
+.vt-box.crit{animation:vitalsRedPulse 1s ease-in-out infinite}
 /* CORRIDOR ENHANCEMENTS */
 .pa-announcement{position:absolute;top:28%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.35);font-size:.55rem;font-family:'Courier New',monospace;letter-spacing:2px;z-index:5;pointer-events:none;opacity:0;transition:opacity 1.5s;white-space:nowrap;text-shadow:0 0 8px rgba(42,157,143,.4)}
 .pa-announcement.show{opacity:1}
@@ -3964,14 +3976,9 @@ function startHeartMonitor(){
   stopHeartMonitor();
   if(!CP||!soundEnabled)return;
   const hr=CP.vitals.hr;const interval=60000/hr;
-  // Initial beep
-  playBeep(800,0.06,0.1);
+  // Heart rate tracking (silent — visual only)
   heartInterval=setInterval(()=>{
     if(!soundEnabled){stopHeartMonitor();return}
-    // Monitor beep pitch based on SpO2
-    const spo2=CP.vitals.spo2;
-    const pitch=600+(spo2-80)*10; // Higher pitch = better O2
-    playBeep(Math.min(1000,Math.max(400,pitch)),0.06,0.08);
   },interval);
 }
 function stopHeartMonitor(){if(heartInterval){clearInterval(heartInterval);heartInterval=null}}
@@ -5696,10 +5703,37 @@ function startDeterioration(){
     // Flash warning if vitals critical
     if(v.spo2<88||v.hr>140||v.hr<50){
       if(soundEnabled)playAlarm();
+      triggerPatientWarning();
     }
   },10000);
 }
 function stopDeterioration(){if(_deterTimer){clearInterval(_deterTimer);_deterTimer=null}}
+function triggerPatientWarning(){
+  const el=document.getElementById("caseS");
+  if(!el)return;
+  el.classList.remove("patient-warning-flash");
+  void el.offsetWidth;
+  el.classList.add("patient-warning-flash");
+}
+function triggerPatientWarning(){
+  const el=document.getElementById("caseS");
+  if(!el)return;
+  el.classList.remove("patient-warning-flash");
+  void el.offsetWidth;
+  el.classList.add("patient-warning-flash");
+  const vtHead=document.querySelector(".vs-head,.vt-lbl");
+  if(vtHead){const orig=vtHead.style.color;vtHead.style.color="#dc2626";setTimeout(()=>{vtHead.style.color=orig},2000)}
+}
+function triggerPatientWarning(){
+  const el=document.getElementById("caseS");
+  if(!el)return;
+  el.classList.remove("patient-warning-flash");
+  void el.offsetWidth; // force reflow
+  el.classList.add("patient-warning-flash");
+  // Also flash the vitals panel header
+  const vtHead=document.querySelector(".vs-head");
+  if(vtHead){vtHead.style.color="#dc2626";setTimeout(()=>{vtHead.style.color=""},2000)}
+}
 function refreshVitalsDisplay(){
   if(!CP)return;
   const v=CP.vitals;
@@ -5753,17 +5787,25 @@ function startAmbient(){
     const nG=a.createGain();nG.gain.value=0.6;
     nSrc.connect(nFilt);nFilt.connect(nG);nG.connect(_ambientGain);
     nSrc.start();_ambientNodes.push(nSrc);
-    // Periodic monitor beep (distant)
-    setInterval(()=>{
+    // Calming ambient chord music (C-E-G-C pad)
+    const _playAmbientChord = () => {
       if(!soundEnabled||!_ambientGain)return;
       const a2=getAudio();
-      const o=a2.createOscillator();const g=a2.createGain();
-      o.connect(g);g.connect(_ambientGain);
-      o.frequency.value=800+Math.random()*400;o.type="sine";
-      g.gain.setValueAtTime(0.15+Math.random()*0.1,a2.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001,a2.currentTime+0.08);
-      o.start(a2.currentTime);o.stop(a2.currentTime+0.1);
-    },3000+Math.random()*4000);
+      const freqs=[261.63,329.63,392.00,523.25]; // C4 E4 G4 C5
+      freqs.forEach((freq,idx)=>{
+        const o=a2.createOscillator();const g=a2.createGain();
+        o.connect(g);g.connect(_ambientGain);
+        o.frequency.value=freq;o.type="sine";
+        const t=a2.currentTime+idx*0.04;
+        g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(0.04,t+0.3);
+        g.gain.linearRampToValueAtTime(0.025,t+1.2);
+        g.gain.linearRampToValueAtTime(0,t+2.8);
+        o.start(t);o.stop(t+3.0);
+      });
+    };
+    _playAmbientChord();
+    setInterval(_playAmbientChord,8000+Math.random()*4000);
   }catch(e){console.warn("Ambient:",e)}
 }
 function stopAmbient(){
