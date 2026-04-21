@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Pathogen Defense â BIOL U250 | USC Upstate</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#06111f;font-family:'Courier New',monospace;color:#00e5ff;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+#wrap{position:relative;width:920px}
+#hud{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;background:#0a1a30;border:1px solid #00e5ff22;border-bottom:none;font-size:11px}
+.hi{display:flex;align-items:center;gap:5px}
+.hl{color:#4dd0e1;font-size:9px}
+.hv{color:#00e5ff;font-weight:bold;font-size:14px}
+#c{display:block;border:1px solid #00e5ff33;cursor:crosshair}
+#tbar{display:flex;gap:6px;padding:8px 10px;background:#0a1a30;border:1px solid #00e5ff22;border-top:none;justify-content:center;align-items:center}
+.tb{display:flex;flex-direction:column;align-items:center;padding:6px 12px;border:2px solid #00e5ff33;border-radius:5px;background:#06111f;color:#00e5ff;cursor:pointer;font-family:'Courier New',monospace;font-size:10px;transition:all .15s;min-width:88px}
+.tb:hover{border-color:#00e5ff;background:#0d2040}
+.tb.sel{border-color:#00e5ff;background:#0d2040;box-shadow:0 0 10px #00e5ff44}
+.tb .tn{font-weight:bold;font-size:11px;margin:2px 0}
+.tb .tc{color:#4dd0e1;font-size:9px}
+.tb .te{font-size:18px;margin-bottom:2px}
+#ov{position:absolute;top:36px;left:0;right:0;bottom:54px;background:rgba(6,17,31,.96);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;padding:24px;overflow-y:auto}
+#ov h1{color:#00e5ff;font-size:26px;margin-bottom:6px;text-align:center}
+#ov h2{color:#4dd0e1;font-size:16px;margin-bottom:16px;text-align:center}
+#ov p{color:#90a4ae;font-size:12px;text-align:center;margin-bottom:12px;max-width:580px;line-height:1.8}
+.btn{padding:10px 24px;background:transparent;border:2px solid #00e5ff;color:#00e5ff;font-family:'Courier New',monospace;font-size:13px;cursor:pointer;border-radius:4px;transition:all .15s;margin:5px;text-decoration:none;display:inline-block}
+.btn:hover{background:#00e5ff18;box-shadow:0 0 12px #00e5ff44}
+.qbox{background:#0a1a30;border:1px solid #00e5ff33;border-radius:7px;padding:18px 24px;width:100%;max-width:600px;margin-bottom:14px}
+.qn{color:#4dd0e1;font-size:10px;margin-bottom:5px}
+.qt{color:#e0f7fa;font-size:13px;margin-bottom:12px;line-height:1.7}
+.qa{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.qab{padding:7px 11px;background:#06111f;border:1px solid #00e5ff22;border-radius:4px;color:#90a4ae;font-family:'Courier New',monospace;font-size:11px;cursor:pointer;transition:all .12s;text-align:left}
+.qab:hover{border-color:#00e5ff;color:#00e5ff;background:#0d2040}
+.qab.ok{border-color:#00e676!important;color:#00e676!important;background:#001a0a!important}
+.qab.no{border-color:#ff1744!important;color:#ff1744!important;background:#1a0000!important}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:400px;margin-bottom:18px}
+.si{background:#0a1a30;border:1px solid #00e5ff18;border-radius:5px;padding:9px 13px}
+.sl{color:#4dd0e1;font-size:9px}
+.sv{color:#00e5ff;font-size:17px;font-weight:bold}
+.wp{display:flex;align-items:center;gap:14px;margin-bottom:10px;padding:10px 18px;background:#06111f;border:1px solid #00e5ff18;border-radius:5px;width:100%;max-width:600px}
+.we{font-size:30px}
+.wn{color:#00e5ff;font-size:14px;font-weight:bold}
+.wd{color:#607d8b;font-size:10px;margin-top:2px}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="hud">
+    <div class="hi"><span class="hl">WAVE</span><span class="hv" id="hW">1/6</span></div>
+    <div class="hi"><span class="hl">â¤ HP</span><span class="hv" id="hH">100</span></div>
+    <div class="hi"><span class="hl">â¡ RES</span><span class="hv" id="hR">60</span></div>
+    <div class="hi"><span class="hl">ð KILLS</span><span class="hv" id="hK">0</span></div>
+    <div class="hi"><button class="btn" id="pbtn" style="padding:3px 9px;font-size:10px">â¸ PAUSE</button></div>
+  </div>
+  <canvas id="c" width="920" height="440"></canvas>
+  <div id="tbar">
+    <span style="color:#4dd0e1;font-size:10px;margin-right:4px">DEPLOY:</span>
+    <button class="tb" data-t="neutrophil"><span class="te">ðµ</span><span class="tn">NEUTROPHIL</span><span class="tc">â¡10 Â· Fast burst</span></button>
+    <button class="tb" data-t="macrophage"><span class="te">ð¢</span><span class="tn">MACROPHAGE</span><span class="tc">â¡25 Â· High dmg</span></button>
+    <button class="tb" data-t="bcell"><span class="te">ð¡</span><span class="tn">B-CELL</span><span class="tc">â¡20 Â· Long range</span></button>
+    <button class="tb" data-t="tcell"><span class="te">ð </span><span class="tn">T-CELL</span><span class="tc">â¡30 Â· Targeted</span></button>
+    <button class="tb" data-t="sell" style="border-color:#ff444433;color:#ff6666"><span class="te">â</span><span class="tn">REMOVE</span><span class="tc">+5 refund</span></button>
+  </div>
+  <div id="ov"></div>
+</div>
+<script>
+// âââââââââââââââââââââââââââââââââââââââââââââââââââ
+// PATHOGEN DEFENSE  Â·  BIOL U250  Â·  USC Upstate
+// âââââââââââââââââââââââââââââââââââââââââââââââââââ
+const CV=document.getElementById('c'), CX=CV.getContext('2d'), W=920, H=440;
+
+// ââ WAVE DATA âââââââââââââââââââââââââââââââââââââ
+const WAVES=[
+{num:1,name:'Gram-Positive Cocci',path:'Staphylococcus aureus',em:'ð¦ ',col:'#7a4a10',brd:'#c47a28',sh:'cocci',gp:true,spd:0.55,hp:28,cnt:8,si:130,
+ desc:'Spherical gram-positive bacteria forming grape-like clusters. Major cause of skin and wound infections.',
+ quiz:[
+  {q:'After gram staining, gram-positive bacteria appear what color?',a:['Purple / Violet','Pink / Red','Blue-green','Colorless'],c:0,ex:'Gram-positive cells retain the crystal violet-iodine complex due to their thick peptidoglycan layer, appearing purple.'},
+  {q:'Which shape describes COCCI bacteria?',a:['Rod-shaped','Spiral / corkscrew','Spherical / round','Comma-shaped'],c:2,ex:'Cocci (singular: coccus) are spherical. They form clusters (staphylococci) or chains (streptococci).'},
+  {q:'Staphylococcus aureus is primarily associated with?',a:['Lyme disease','MRSA skin infections','Malaria','Tuberculosis'],c:1,ex:'S. aureus causes skin, wound, and nosocomial infections. MRSA strains are resistant to methicillin-class antibiotics.'}
+ ]},
+{num:2,name:'Gram-Negative Bacilli',path:'Escherichia coli (pathogenic)',em:'ð´',col:'#7a1a1a',brd:'#cc2200',sh:'bacilli',gp:false,spd:0.85,hp:22,cnt:10,si:100,
+ desc:'Rod-shaped gram-negative bacteria. E. coli O157:H7 and Salmonella cause severe GI and systemic infections.',
+ quiz:[
+  {q:'Gram-negative bacteria appear what color after staining?',a:['Purple / Violet','Pink / Red','Green','Orange'],c:1,ex:'Gram-negatives lose crystal violet during decolorization and pick up safranin counterstain, appearing pink/red.'},
+  {q:'Rod-shaped bacteria are called?',a:['Cocci','Spirochetes','Vibrio','Bacilli'],c:3,ex:'Bacilli (singular: bacillus) are rod-shaped. E. coli, Salmonella, and Mycobacterium tuberculosis are all bacilli.'},
+  {q:'Gram-negative bacteria are harder to treat because they have?',a:['No cell wall','An outer LPS membrane blocking antibiotics','Thicker peptidoglycan','No ribosomes'],c:1,ex:'The outer lipopolysaccharide (LPS) membrane of gram-negatives reduces antibiotic penetration and also triggers severe inflammatory responses.'}
+ ]},
+{num:3,name:'Spirochetes',path:'Treponema pallidum / Borrelia',em:'ð',col:'#1a5a7a',brd:'#00aacc',sh:'spiro',gp:false,spd:1.1,hp:18,cnt:12,si:80,
+ desc:'Corkscrew-shaped bacteria with internal flagella. Treponema causes syphilis; Borrelia causes Lyme disease.',
+ quiz:[
+  {q:'Which shape best describes spirochetes?',a:['Round and clustered','Long straight rod','Spiral / corkscrew','Comma-shaped'],c:2,ex:'Spirochetes have a distinctive helical shape with internal periplasmic flagella enabling corkscrew motility through viscous tissues.'},
+  {q:'Treponema pallidum is the causative agent of?',a:['Gonorrhea','Chlamydia','Syphilis','Lyme disease'],c:2,ex:'T. pallidum causes syphilis, progressing through primary (chancre), secondary (rash), and tertiary (organ damage) stages if untreated.'},
+  {q:'Lyme disease is transmitted by which vector?',a:['Mosquitoes','Ticks','Fleas','Direct contact'],c:1,ex:'Borrelia burgdorferi is transmitted by Ixodes ticks. Classic sign: bull\'s-eye rash (erythema migrans) at bite site.'}
+ ]},
+{num:4,name:'Viral Invaders',path:'Influenza A / SARS-CoV-2',em:'â¡',col:'#3a0a7a',brd:'#9c27b0',sh:'virus',gp:null,spd:1.3,hp:15,cnt:14,si:70,
+ desc:'Acellular obligate intracellular parasites. They hijack host cell machinery. Antibiotics are completely ineffective.',
+ quiz:[
+  {q:'Antibiotics are effective against viral infections.',a:['True â broad-spectrum ones work','False â antibiotics target only bacterial structures','True if given within 48 hrs','Only for DNA viruses'],c:1,ex:'Antibiotics target bacterial structures (cell walls, 70S ribosomes, etc.). Viruses lack these structures, making antibiotics entirely useless against them.'},
+  {q:'In the LYTIC replication cycle, the host cell is?',a:['Slowly released over weeks','Immediately lysed and destroyed','Integrated with viral DNA permanently','Left unharmed'],c:1,ex:'In the lytic cycle, viral progeny replicate rapidly until the host cell bursts (lyses), releasing hundreds of new virions.'},
+  {q:'Which immune cell primarily kills virally-infected body cells?',a:['Neutrophils','B-cells','Cytotoxic T-cells (CD8+)','Basophils'],c:2,ex:'CD8+ cytotoxic T-cells recognize viral antigens presented on MHC class I molecules and deliver a lethal hit to infected cells.'}
+ ]},
+{num:5,name:'Fungal Pathogens',path:'Candida albicans',em:'ð',col:'#1a5a1a',brd:'#4caf50',sh:'fungi',gp:null,spd:0.7,hp:45,cnt:9,si:115,
+ desc:'Eukaryotic organisms. Candida causes thrush and life-threatening systemic infections in immunocompromised patients.',
+ quiz:[
+  {q:'Fungi are classified as what type of organism?',a:['Prokaryotic','Eukaryotic','Acellular','Archaea'],c:1,ex:'Fungi are eukaryotes with membrane-bound nuclei. This similarity to human cells makes antifungal drug development challenging.'},
+  {q:'Antifungal drugs (e.g., Amphotericin B) target which component unique to fungal cells?',a:['Peptidoglycan','Cholesterol','Ergosterol','Murein'],c:2,ex:'Ergosterol replaces cholesterol in fungal membranes, making it a selective drug target. Polyene antifungals bind ergosterol and disrupt membrane integrity.'},
+  {q:'Systemic Candida infections are most dangerous in which population?',a:['Healthy athletes','Children under 5','Immunocompromised patients','Pregnant women'],c:2,ex:'Invasive candidiasis is a leading cause of mortality in ICU patients, transplant recipients, and those on long-term antibiotics or chemotherapy.'}
+ ]},
+{num:6,name:'Antibiotic-Resistant Superbugs',path:'MRSA / C. difficile',em:'â ï¸',col:'#5a1010',brd:'#ff1744',sh:'super',gp:true,spd:0.9,hp:60,cnt:10,si:130,
+ desc:'Bacteria that have evolved resistance to multiple antibiotics. MRSA resists methicillin; C. diff thrives post-antibiotic therapy.',
+ quiz:[
+  {q:'MRSA stands for?',a:['Multi-Resistant Strep Aureus','Methicillin-Resistant Staphylococcus Aureus','Membrane-Resistant Staph Antigen','Multi-Resistant Salmonella Agent'],c:1,ex:'MRSA acquired the mecA gene encoding an altered penicillin-binding protein (PBP2a) that beta-lactam antibiotics cannot inhibit.'},
+  {q:'How does antibiotic resistance primarily spread between bacteria?',a:['Vertical gene transfer only','Horizontal gene transfer via plasmids','Physical contact between humans','Through contaminated water alone'],c:1,ex:'Bacteria share resistance genes rapidly through horizontal gene transfer: conjugation (plasmid transfer), transformation (DNA uptake), and transduction (bacteriophage).'},
+  {q:'Which antibiotic is the primary "last resort" for serious MRSA infections?',a:['Penicillin','Amoxicillin','Vancomycin','Tetracycline'],c:2,ex:'Vancomycin targets the D-Ala-D-Ala terminus of peptidoglycan precursors by a different mechanism than beta-lactams. VRSA strains have begun emerging, representing a critical public health threat.'}
+ ]}
+];
+
+// ââ TOWER DEFS âââââââââââââââââââââââââââââââââââââ
+const TD={
+  neutrophil:{name:'Neutrophil',cost:10,dmg:7, range:95, rate:20, col:'#00b0ff',gl:'#0077aa'},
+  macrophage:{name:'Macrophage',cost:25,dmg:24,range:80, rate:80, col:'#00e676',gl:'#008844'},
+  bcell:     {name:'B-Cell',    cost:20,dmg:11,range:160,rate:55, col:'#ffea00',gl:'#aaaa00'},
+  tcell:     {name:'T-Cell',    cost:30,dmg:38,range:115,rate:110,col:'#ff9100',gl:'#bb5500'}
+};
+
+// ââ TOWER SLOT GRID ââââââââââââââââââââââââââââââââ
+// Lanes at y=110, 220, 330 (each 28px wide). Slots between/around lanes.
+const LY=[110,220,330];
+const SX=[100,190,290,390,490,590,690,790];
+const SY=[58,168,278,388];
+let SLOTS=[];
+function buildSlots(){
+  SLOTS=[];
+  for(const sy of SY) for(const sx of SX) SLOTS.push({x:sx,y:sy,t:null});
+}
+
+// ââ GAME STATE âââââââââââââââââââââââââââââââââââââ
+let G={};
+function resetG(){
+  buildSlots();
+  G={
+    st:'TITLE',wave:0,hp:100,res:60,kills:0,tkills:0,score:0,
+    pathos:[],towers:[],bullets:[],parts:[],
+    spawnT:0,spawnC:0,frame:0,
+    selT:null,hoverSlot:null,
+    paused:false,
+    qIdx:0,qOk:0,bonus:0
+  };
+}
+
+// ââ HELPERS ââââââââââââââââââââââââââââââââââââââââ
+function lc(hex,p){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16),f=p/100;
+  return '#'+[Math.min(255,r+255-r)*f|0),Math.min(255,g+(255-g)*f|0),Math.min(255,b+(255-b)*f|0)].map(v=>v.toString(16).padStart(2,'0')).join('');
+}
+
+// ââ PATHOGEN CLASS âââââââââââââââââââââââââââââââââ
+class Patho {
+  constructor(wi,lane){
+    const w=WAVES[wi];
+    this.wi=wi; this.lane=lane;
+    this.x=W-12; this.y=LY[lane];
+    this.hp=w.hp; this.mhp=w.hp;
+    this.spd=w.spd; this.col=w.col; this.brd=w.brd; this.sh=w.sh;
+    this.dead=false; this.reached=false; this.counted=false;
+    this.wob=Math.random()*Math.PI*2; this.ws=0.05+Math.random()*0.03;
+    this.sz=13+Math.random()*4;
+  }
+  upd(){
+    this.x-=this.spd; this.wob+=this.ws;
+    if(this.x<48){this.reached=true;this.dead=true;}
+  }
+  draw(cx){
+    if(this.dead&&!this.reached) return;
+    cx.save();
+    cx.translate(this.x,this.y+this.wob)*3);
+    drawPShape(cx,this.sh,this.sz, this.col,this.brd);
+    if(this.hp<this.mhp){
+      const bw=this.sz*2.8;
+      cx.fillStyle='#200';cx.fillRect(-bw/2,-this.sz-10,bw,4);
+      cx.fillStyle='#f44';cx.fillRect(-bw/2,-this.sz-10,bw*(this.hp/this.mhp),4);
+    }
+    cx.restore();
+  }
+}
+
+function drawPShape(cx,sh,sz,col,brd){
+  cx.strokeStyle=brd; cx.lineWidth=2;
+  if(sh==='cocci'){
+    const g=cx.createRadialGradient(-sz*.3,-sz*.3,1,0,0,sz);
+    g.addColorStop(0,lc(col,55)); g.addColorStop(1,col);
+    cx.fillStyle=g; cx.beginPath(); cx.arc(0,0,sz,0,Math.PI*2); cx.fill(); cx.stroke();
+    cx.fillStyle='#9c6bff'; cx.beginPath(); cx.arc(sz*.4,-sz*.4,sz*.22,0,Math.PI*2); cx.fill();
+  } else if(sh==='bacilli'){
+    cx.fillStyle=col; cx.beginPath();
+    cx.roundRect(-sz*1.6,-sz*.55,sz*3.2,sz*1.1,sz*.55);
+    cx.fill(); cx.stroke();
+    cx.fillStyle='#ff6b6b'; cx.beginPath(); cx.arc(sz*.8,0,sz*.22,0,Math.PI*2); cx.fill();
+  } else if(sh==='spiro'){
+    cx.lineWidth=3; cx.strokeStyle=brd; cx.beginPath();
+    for(let t=-sz*2;t<=sz*2;t++){
+      const sy=Math.sin(t*.32)*sz*.75;
+      t===-sz*2?cx.moveTo(t,sy):cx.lineTo(t,sy);
+    }
+    cx.stroke();
+    cx.fillStyle=col;
+    cx.beginPath();cx.arc(-sz*2,0,4,0,Math.PI*2);cx.fill();
+    cx.beginPath();cx.arc(sz*2,0,4,0,Math.PI*2);cx.fill();
+  } else if(sh==='virus'){
+    cx.fillStyle=col; cx.beginPath(); cx.arc(0,0,sz*.7,0,Math.PI*2); cx.fill(); cx.stroke();
+    for(let i=0;i<8;i++){
+      const a=i/8*Math.PI*2;
+      cx.beginPath();cx.moveTo(Math.cos(a)*sz*.7,Math.sin(a)*sz*.7);
+      cx.lineTo(Math.cos(a)*sz*1.5,Math.sin(a)*sz*1.5);
+      cx.strokeStyle=brd;cx.lineWidth=2;cx.stroke();
+      cx.fillStyle=lc(brd,20);cx.beginPath();cx.arc(Math.cos(a)*sz*1.5,Math.sin(a)*sz*1.5,3,0,Math.PI*2);cx.fill();
+    }
+  } else if(sh==='fungi'){
+    cx.fillStyle=col;
+    cx.beginPath();cx.ellipse(0,0,sz*1.1,sz*.85,0,0,Math.PI)2);cx.fill();cx.stroke();
+    cx.beginPath();cx.ellipse(sz*.9,-sz*.55,sz*.55,sz*.45,-.4,0,Math.PI*2);cx.fill();cx.stroke();
+  } else if(sh==='super'){
+    cx.fillStyle=col; cx.beginPath();
+    for(let i=0;i<12;i++){
+      const a=i/6*Math.PI, r=i%2===0?sz*1.35:sz*.8;
+      i===0?cx.moveTo(Math.cos(a)*r,Math.sin(a)*r):cx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+    }
+    cx.closePath();cx.fill();cx.strokeStyle=brd;cx.lineWidth=2;cx.stroke();
+    cx.fillStyle='#fff4';cx.font='bold '+(sz*.9|0)+'px serif';
+    cx.textAlign='center';cx.textBaseline='middle';cx.fillText('â ',0,1);
+  }
+}
+
+// ââ TOWER CLASS ââââââââââââââââââââââââââââââââââââ
+class Tower {
+  constructor(slot,type){
+    const d=TD[type];
+    this.slot=slot; this.x=slot.x; this.y=slot.y;
+    this.type=type; this.dmg=d.dmg; this.range=d.range;
+    this.rate=d.rate; this.col=d.col; this.gl=d.gl;
+    this.timer=0; this.anim=0; this.target=null;
+  }
+  upd(pathos,bullets){
+    this.timer++; this.anim=(this.anim+1)%60;
+    let best=null,bestX=Infinity;
+    for(const p of pathos){
+      if(p.dead) continue;
+      const dx=p.x-this.x,dy=p.y-this.y;
+      if(Math.sqrt(dx*dx+dy*dy)<this.range && p.x<bestX){bestX=p.x;best=p;}
+    }
+    this.target=best;
+    if(best&&this.timer>=this.rate){
+      this.timer=0;
+      bullets.push(new Bullet(this.x,this.y,best,this.dmg,this.col));
+      if(this.type==='neutrophil'){
+        const others=pathos.filter(p=>!p.dead&&p!==best);
+        if(others.length) bullets.push(new Bullet(this.x,this.y,others[0],this.dmg,this.col));
+      }
+    }
+  }
+  draw(cx){
+    const pulse=0.92+Math.sin(this.anim*.15)*.08;
+    if(this.target){
+      cx.beginPath();cx.arc(this.x,this.y,this.range,0,Math.PI*2);
+      cx.strokeStyle=this.col+'18';cx.lineWidth=1;cx.stroke();
+    }
+    cx.save();cx.shadowBlur=10;cx.shadowColor=this.gl;
+    cx.fillStyle='#0a1a30';cx.strokeStyle=this.col;cx.lineWidth=2;
+    cx.beginPath();cx.arc(this.x,this.y,13*pulse,0,Math.PI*2);cx.fill();cx.stroke();
+    cx.fillStyle=this.col;cx.beginPath();cx.arc(this.x,this.y,6*pulse,0,Math.PI*2);cx.fill();
+    cx.restore();
+    cx.fillStyle='#fff6';cx.font='7px Courier New';
+    cx.textAlign='center';cx.textBaseline='bottom';
+    cx.fillText(TD[this.type].name[0],this.x,this.y+25);
+  }
+}
+
+// ââ BULLET CLASS âââââââââââââââââââââââââââââââââââ
+class Bullet {
+  constructor(x,y,tgt,dmg,col){
+    this.x=x;this.y=y;this.tgt=tgt;this.dmg=dmg;this.col=col;
+    this.dead=false;
+  }
+  upd(){
+    if(this.tgt.dead){this.dead=true;return;}
+    const dx=this.tgt.x-this.x,dy=this.tgt.y-this.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<8){
+      this.tgt.hp-=this.dmg;
+      if(this.tgt.hp<=0)this.tgt.dead=true;
+      this.dead=true;
+    } else {this.x+=dx/d*7;this.y+=dy/d*7;}
+  }
+  draw(cx){
+    cx.save();cx.shadowBlur=8;cx.shadowColor=this.col;
+    cx.fillStyle=this.col;cx.beginPath();cx.arc(this.x,this.y,4,0,Math.PI*2);cx.fill();
+    cx.restore();
+  }
+}
+
+// ââ PARTICLE CLASS âââââââââââââââââââââââââââââââââ
+class Part {
+  constructor(x,y,col){
+    this.x=x;this.y=y;this.vx=(Math.random()-.5)*5;this.vy=(Math.random()-.5)*5-1;
+    this.col=col;this.life=1;this.dec=.035+Math.random()*.04;this.sz=3+Math.random()*4;
+  }
+  upd(){this.x+=this.vx;this.y+=this.vy;this.vy+=.12;this.life-=this.dec;}
+  draw(cx){
+    cx.globalAlpha=this.life;cx.fillStyle=this.col;
+    cx.beginPath();cx.arc(this.x,this.y,this.sz*this.life,0,Math.PI*2);cx.fill();
+    cx.globalAlpha=1;
+  }
+}
+
+// ââ DRAWING ââââââââââââââââââââââââââââââââââââââââ
+function drawBG(){
+  CX.fillStyle='#040d18';CX.fillRect(0,0,W,H);
+  CX.strokeStyle='#00e5ff06';CX.lineWidth=1;
+  for(let x=0;x<W;x+=40){CX.beginPath();CX.moveTo(x,0);CX.lineTo(x,H);CX.stroke();}
+  for(let y=0;y<H;y+=40){CX.beginPath();CX.moveTo(0,y);CX.lineTo(W,y);CX.stroke();}
+  // Lane paths
+  for(const ly of LY){
+    CX.strokeStyle='#00e5ff14';CX.lineWidth=30;
+    CX.beginPath();CX.moveTo(52,ly);CX.lineTo(W-8,ly);CX.stroke();
+    CX.setLineDash([8,12]);CX.strokeStyle='#00e5ff2a';CX.lineWidth=1;
+    CX.beginPath();CX.moveTo(52,ly);CX.lineTo(W-8,ly);CX.stroke();
+    CX.setLineDash([]);
+  }
+  // Organ wall
+  const og=CX.createLinearGradient(0,0,48,0);
+  og.addColorStop(0,'#12003a');og.addColorStop(1,'#200050');
+  CX.fillStyle=og;CX.fillRect(0,0,48,H);
+  CX.strokeStyle='#9c00ff44';CX.lineWidth=2;
+  CX.beginPath();CX.moveTo(48,0);CX.lineTo(48,H);CX.stroke();
+  // HP bar
+  const hf=G.hp/100;
+  CX.fillStyle='#1a0030';CX.fillRect(6,24,14,H-48);
+  CX.fillStyle=hf>.5?'#cc00ff':hf>.25?'#ff9100':'#ff1744';
+  CX.fillRect(6,24+(H-48)*(1-hf),14,(H-48)*hf);
+  CX.strokeStyle='#9c00ff33';CX.lineWidth=1;CX.strokeRect(6,24,14,H-48);
+  CX.fillStyle='#9c00ff';CX.font='bold 8px Courier New';
+  CX.textAlign='center';CX.save();
+  CX.translate(13,H/2);CX.rotate(-Math.PI/2);CX.fillText('ORGAN',0,0);CX.restore();
+  // Spawn zone
+  CX.fillStyle='#ff174408';CX.fillRect(W-28,0,28,H);
+  CX.strokeStyle='#ff174428';CX.lineWidth=1;
+  CX.beginPath();CX.moveTo(W-28,0);CX.lineTo(W-28,H);CX.stroke();
+}
+
+function drawSlots(){
+  for(const s of SLOTS){
+    if(s.t) continue;
+    const hov=G.hoverSlot===s;
+    CX.save();CX.globalAlpha=hov?.7:.28;
+    CX.strokeStyle=hov?'#00e5ff':'#00e5ff44';
+    CX.lineWidth=hov?2:1;CX.setLineDash([3,3]);
+    CX.beginPath();CX.arc(s.x,s.y,40,0,Math.PI*2);
+    CX.setLineDash([]);
+    if(hov&&G.selT&&TD[G.selT]){
+      CX.globalAlpha=.12;CX.fillStyle='#00e5ff';
+      CX.beginPath();CX.arc(s.x,s.y,40,0,Math.PI*2);CX.fill();
+      CX.globalAlpha=.07;CX.fillStyle=TD[G.selT].col;
+      CX.beginPath();CX.arc(s.x,s.y,TD[G.selT].range,0,Math.PI*2);CX.fill();
+    }
+    CX.restore();
+  }
+}
+
+function render(){
+  CX.clearRect(0,0,W,H);
+  drawBG(); drawSlots();
+  for(const t of G.towers) t.draw(CX);
+  for(const p of G.pathos) p.draw(CX);
+  for(const b of G.bullets) b.draw(CX);
+  for(const p of G.parts) p.draw(CX);
+  if((G.st==='PLAYING'||G.st==='PLACE')&&WAVES[G.wave]){
+    CX.fillStyle='#00e5ff33';CX.font='9px Courier New';
+    CX.textAlign='right';CX.textBaseline='top';
+    CX.fillText('â¶ '+WAVES[G.wave].path,W-32,6);
+  }
+  updHUD();
+}
+
+function updHUD(){
+  document.getElementById('hW').textContent=(G.wave+1)+'/'+WAVES.length;
+  document.getElementById('hH').textContent=G.hp;
+  document.getElementById('hR').textContent=G.res;
+  document.getElementById('hK').textContent=G.tkills;
+  const hh=document.getElementById('hH');
+  hh.style.color=G.hp>50?'#00e5ff':G.hp>25?'#ff9100':'#ff1744';
+}
+
+// ââ UPDATE âââââââââââââââââââââââââââââââââââââââââ
+function update(){
+  if(G.st!=='PLAYING'||G.paused) return;
+  G.frame++;
+  const w=WAVES[G.wave];
+  if(G.spawnC<w.cnt){G.spawnT++;if(G.spawnT>=w.si){G.spawnT=0;G.spawnC++;G.pathos.push(new Patho(G.wave,Math.floor(Math.random()*3)));}}
+  for(const p of G.pathos){if(!p.dead)p.upd();}
+  for(const p of G.pathos){
+    if(p.reached){G.hp=Math.max(0,G.hp-12);}
+    if(p.dead&&!p.reached&&!p.counted){
+      p.counted=true;G.kills++;G.tkills++;G.score+=10;
+      G.res=Math.min(200,G.res+2);
+      for(let i=0;i<6;i++)G.parts.push(new Part(p.x,p.y,w.brd));
+    }
+  }
+  G.pathos=G.pathos.filter(p=>!(p.dead&&(p.counted||p.reached)));
+  for(const t of G.towers)t.upd(G.pathos,G.bullets);
+  for(const b of G.bullets)b.upd();
+  G.bullets=G.bullets.filter(b=>!b.dead);
+  for(const p of G.parts)p.upd();
+  G.parts=G.parts.filter(p=>p.life>0);
+  if(G.spawnC>=w.cnt&&G.pathos.length===0)waveEnd();
+  if(G.hp<=0){G.hp=0;setState('OVER');}
+}
+
+// ââ STATE / OVERLAY ââââââââââââââââââââââââââââââââ
+function setState(s){G.st=s;showOv(s);}
+
+function showOv(s){
+  const ov=document.getElementById('ov');
+  if(s==='TITLE'){
+    ov.style.display='flex';
+    ov.innerHTML=`
+      <div style="text-align:center;margin-bottom:18px">
+        <div style="font-size:44px;margin-bottom:10px">ð¦ </div>
+        <h1 style="font-size:28px;letter-spacing:3px;margin-bottom:5px">PATHOGEN DEFENSE</h1>
+        <div style="color:#4dd0e1;font-size:12px;letter-spacing:2px">BIOL U250 Â· PRINCIPLES OF MICROBIOLOGY Â· USC UPSTATE</div>
+      </div>
+      <div class="wp"><span class="we">ð¥</span>
+        <div><div class="wn">Mission: Defend the Organ</div>
+        <div class="wd">Deploy immune cells to stop 6 waves of pathogens. Answer microbiology questions before each wave to earn bonus resources.</div></div>
+      </div>
+      <div style="display:flex;gap:16px;margin:10px 0 6px;font-size:10px;color:#607d8b;flex-wrap:wrap;justify-content:center">
+        <span>ðµ Neutrophil â fast burst (â¡10)</span>
+        <span>ð¢ Macrophage â high dmg (â¡25)</span>
+        <span>ð¡ B-Cell â long range (â¡20)</span>
+        <span>ð  T-Cell â targeted kill (â¡30)</span>
+      </div>
+      <p style="font-size:10px;color:#455a64;margin-bottom:4px">Select a tower below, then click any dashed slot on the battlefield to deploy.</p>
+      <button class="btn" onclick="startGame()">â¶ BEGIN MISSION</button>`;
+  } else if(s==='QUIZ'){
+    ov.style.display='flex';
+    G.qIdx=0;G.qOk=0;G.bonus=0;
+    renderQuiz();
+  } else if(s==='PLACE'){
+    const w=WAVES[G.wave],bn=G.bonus;
+    ov.style.display='flex';
+    ov.innerHTML=`
+      <div class="wp"><span class="we">${w.em}</span>
+        <div><div class="wn">WAVE ${G.wave+1} â ${w.name}</div>
+        <div class="wd">${w.path} Â· ${w.desc}</div></div>
+      </div>
+      <h2 style="color:#00e5ff;margin-bottom:4px">Quiz: ${G.qOk}/${WAVES[G.wave].quiz.length} correct</h2>
+      <p style="margin-bottom:4px">Bonus resources earned: <span style="color:#00e676;font-weight:bold">â¡ +${bn}</span></p>
+      <p style="font-size:10px;color:#546e7a;margin-bottom:14px">Current: â¡${G.res} Â· Place your immune defenses, then launch the wave.</p>
+      <button class="btn" onclick="launchWave()">â¶ LAUNCH WAVE ${G.wave+1}</button>`;
+  } else if(s==='WDONE'){
+    const w=WAVES[G.wave],last=G.wave>=WAVES.length-1;
+    ov.style.display='flex';
+    ov.innerHTML=`
+      <h2 style="color:#00e676;margin-bottom:6px">â WAVE ${G.wave+1} CLEARED</h2>
+      <h1 style="margin-bottom:14px">${w.name} â NEUTRALIZED</h1>
+      <div class="sg">
+        <div class="si"><div class="sl">KILLED</div><div class="sv">${G.kills}</div></div>
+        <div class="si"><div class="sl">ORGAN HP</div><div class="sv" style="color:${G.hp>50?'#00e676':G.hp>25?'#ff9100':'#ff1744'}">${G.hp}</div></div>
+        <div class="si"><div class="sl">SCORE</div><div class="sv">${G.score}</div></div>
+        <div class="si"><div class="sl">RESOURCES</div><div class="sv">${G.res} â¡</div></div>
+      </div>
+      ${last?'<button class="btn" style="border-color:#00e676;color:#00e676" onclick="setState(\'WIN\')">â¶ MISSION COMPLETE</button>':
+              `<button class="btn" onclick="nextWave()">â¶ NEXT: Wave ${G.wave+2} â ${WAVES[G.wave+1].name}</button>`}`;
+  } else if(s==='OVER'){
+    ov.style.display='flex';
+    ov.innerHTML=`
+      <div style="font-size:44px;margin-bottom:10px">ð</div>
+      <h1 style="color:#ff1744;margin-bottom:6px">ORGAN COMPROMISED</h1>
+      <h2 style="margin-bottom:18px">The infection overwhelmed your immune defense.</h2>
+      <div class="sg">
+        <div class="si"><div class="sl">WAVES SURVIVED</div><div class="sv">${G.wave}</div></div>
+        <div class="si"><div class="sl">TOTAL KILLS</div><div class="sv">${G.tkills}</div></div>
+        <div class="si"><div class="sl">SCORE</div><div class="sv">${G.score}</div></div>
+        <div class="si"><div class="sl">FINAL HP</div><div class="sv" style="color:#ff1744">0</div></div>
+      </div>
+      <p style="color:#546e7a;margin-bottom:14px">Review your microbiology notes and reinforce your defenses. Consider placing towers before the wave launches.</p>
+      <button class="btn" onclick="location.reload()">âº RESTART</button>`;
+  } else if(s==='WIN'){
+    const gr=G.hp>=70?'A':G.hp>=50?'B':G.hp>=30?'C':'D';
+    const gc=gr==='A'?'#00e676':gr==='B'?'#00b0ff':gr==='C'?'#ff9100':'#ff1744';
+    ov.style.display='flex';
+    ov.innerHTML=`
+      <div style="font-size:44px;margin-bottom:8px">ð</div>
+      <h1 style="color:#00e676;margin-bottom:5px">PATHOGEN-FREE</h1>
+      <h2 style="margin-bottom:18px">All 6 waves neutralized. The organ survived.</h2>
+      <div class="sg">
+        <div class="si"><div class="sl">FINAL SCORE</div><div class="sv">${G.score}</div></div>
+        <div class="si"><div class="sl">ORGAN HP</div><div class="sv" style="color:${gc}">${G.hp}%</div></div>
+        <div class="si"><div class="sl">TOTAL KILLS</div><div class="sv">${G.tkills}</div></div>
+        <div class="si"><div class="sl">GRADE</div><div class="sv" style="color:${gc}">${gr}</div></div>
+      </div>
+      <p style="color:#607d8b;margin-bottom:14px">You demonstrated mastery of pathogen classification, immune responses, and antimicrobial therapy. USC Upstate â BIOL U250 complete.</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="location.reload()">âº PLAY AGAIN</button>
+        <a class="btn" href="https://kashee12345.github.io/spartan-campus/" style="text-decoration:none;display:inline-flex;align-items:center">â CAMPUS</a>
+      </div>`;
+  } else {
+    ov.style.display='none';
+  }
+}
+
+// ââ QUIZ âââââââââââââââââââââââââââââââââââââââââââ
+function renderQuiz(){
+  const ov=document.getElementById('ov'),w=WAVES[G.wave],qi=G.qIdx;
+  if(qi>=w.quiz.length){
+    G.bonus=G.qOk*14;G.res=Math.min(200,G.res+G.bonus);
+    setState('PLACE');return;
+  }
+  const q=w.quiz[qi];
+  ov.innerHTML=`
+    <div class="wp"><span class="we">${w.em}</span>
+      <div><div class="wn">INCOMING: Wave ${G.wave+1} â ${w.name}</div>
+      <div class="wd">Answer correctly to earn â¡ bonus resources</div></div>
+    </div>
+    <div class="qbox">
+      <div class="qn">QUESTION ${qi+1} OF ${w.quiz.length}</div>
+      <div class="qt">${q.q}</div>
+      <div class="qa" id="qa">${q.a.map((a,i)=>`<button class="qab" onclick="ansQ(${i})">${a}</button>`).join('')}</div>
+    </div>`;
+}
+
+function ansQ(i){
+  const w=WAVES[G.wave],q=w.quiz[G.qIdx];
+  document.querySelectorAll('.qab').forEach(b=>b.disabled=true);
+  document.querySelectorAll('.qab')[i].classList.add(i===q.c?'ok':'no');
+  if(i!==q.c) document.querySelectorAll('.qab')[q.c].classList.add('ok');
+  if(i===q.c) G.qOk++;
+  const exp=document.createElement('div');
+  exp.style.cssText='margin-top:10px;padding:9px 12px;background:#06111f;border-radius:4px;border-left:3px solid #00e5ff;color:#90a4ae;font-size:10px;line-height:1.8';
+  exp.textContent='ð '+q.ex;
+  document.querySelector('.qbox').appendChild(exp);
+  setTimeout(()=>{G.qIdx++;renderQuiz();},2100);
+}
+
+// ââ FLOW âââââââââââââââââââââââââââââââââââââââââââ
+function startGame(){G.wave=0;setState('QUIZ');}
+
+function launchWave(){
+  G.pathos=[];G.bullets=[];G.parts=[];
+  G.spawnT=0;G.spawnC=0;G.kills=0;G.frame=0;
+  G.st='PLAYING';
+  document.getElementById('ov').style.display='none';
+  document.getElementById('pbtn').textContent='â¸ PAUSE';
+  document.getElementById('pbtn').onclick=togglePause;
+}
+
+function waveEnd(){
+  G.score+=G.hp*2;G.st='WDONE';showOv('WDONE');
+}
+
+function nextWave(){
+  G.wave++;G.res=Math.min(200,G.res+25);setState('QUIZ');
+}
+
+function togglePause(){
+  G.paused=!G.paused;
+  document.getElementById('pbtn').textContent=G.paused?'â¶ RESUME':'â¸ PAUSE';
+}
+
+// ââ INPUT ââââââââââââââââââââââââââââââââââââââââââ
+document.querySelectorAll('.tb').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const t=btn.dataset.t;
+    if(G.selT===t){G.selT=null;document.querySelectorAll('.tb').forEach(b=>b.classList.remove('sel'));}
+    else{G.selT=t;document.querySelectorAll('.tb').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+  });
+});
+
+CV.addEventListener('mousemove',e=>{
+  const r=CV.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  G.hoverSlot=null;
+  for(const s of SLOTS){const dx=mx-s.x,dy=my-s.y;if(dx*dx+dy*dy<196){G.hoverSlot=s;break;}}
+});
+
+CV.addEventListener('click',e=>{
+  if(G.st!=='PLAYING'&&G.st!=='PLACE') return;
+  const r=CV.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  for(const s of SLOTS){
+    const dx=mx-s.x,dy=my-s.y;
+    if(dx*dx+dy*dy<196){
+      if(G.selT==='sell'){
+        if(s.t){G.towers=G.towers.filter(t=>t!==s.t);G.res=Math.min(200,G.res+5);s.t=null;}
+      } else if(G.selT&&!s.t&&TD[G.selT]){
+        const d=TD[G.selT];
+        if(G.res>=d.cost){G.res-=d.cost;const t=new Tower(s,G.selT);s.t=t;G.towers.push(t);}
+        else{const el=document.getElementById('hR');el.style.color='#ff1744';setTimeout(()=>el.style.color='#00e5ff',500);}
+      }
+      break;
+    }
+  }
+});
+
+// ââ MAIN LOOP ââââââââââââââââââââââââââââââââââââââ
+function loop(){update();render();requestAnimationFrame(loop);}
+resetG();showOv('TITLE');loop();
+</script>
+</body>
+</html>

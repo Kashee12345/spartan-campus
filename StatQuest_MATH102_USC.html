@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>StatQuest V2 — MATH 102 | USC Upstate</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:#02020a;}
+#cv{position:fixed;top:0;left:0;width:100%;height:100%;cursor:default;}
+#cv.clickable{cursor:crosshair;}
+
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;height:48px;
+  background:linear-gradient(180deg,rgba(2,2,10,.97),rgba(2,2,10,.6));
+  border-bottom:1px solid #73000A33;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;z-index:10;pointer-events:none;}
+#hud-left{display:flex;align-items:center;gap:12px;}
+#hud-logo{font-family:'Cinzel',serif;font-size:15px;color:#d4af37;letter-spacing:3px;}
+#hud-chapter{font-family:'Share Tech Mono',monospace;font-size:10px;color:#555;letter-spacing:2px;}
+#hud-right{display:flex;align-items:center;gap:20px;}
+.hs{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.hs-l{font-family:'Share Tech Mono',monospace;font-size:8px;color:#555;letter-spacing:1px;}
+.hs-v{font-family:'Share Tech Mono',monospace;font-size:14px;color:#d4af37;font-weight:bold;}
+#streak-wrap{display:flex;align-items:center;gap:5px;}
+#streak-fire{font-size:14px;}
+#streak-val{font-family:'Share Tech Mono',monospace;font-size:12px;color:#ff8844;}
+#bar-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;}
+#mastery-bar{width:100px;height:6px;background:#111;border-radius:3px;border:1px solid #222;overflow:hidden;}
+#mastery-fill{height:100%;width:0%;background:linear-gradient(90deg,#73000A,#d4af37);transition:width .7s ease;}
+
+/* Problem panel - bottom */
+#pp{
+  position:fixed;bottom:0;left:0;right:0;
+  background:linear-gradient(0deg,rgba(2,2,12,.99) 70%,rgba(2,2,12,.85));
+  border-top:1px solid #d4af3722;
+  padding:16px 20px 18px;z-index:15;
+  transform:translateY(100%);transition:transform .35s ease;
+  max-height:44vh;overflow-y:auto;
+}
+#pp.open{transform:translateY(0);}
+#pp-inner{max-width:860px;margin:0 auto;}
+#pp-tag{font-family:'Share Tech Mono',monospace;font-size:9px;color:#d4af37;
+  letter-spacing:3px;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+#pp-tag-icon{font-size:13px;}
+#pp-q{font-family:'Cinzel',serif;font-size:clamp(14px,2.2vw,18px);color:#fff;
+  line-height:1.4;margin-bottom:14px;}
+#pp-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+@media(max-width:600px){#pp-opts{grid-template-columns:1fr;}}
+.pob{
+  background:#08081e;border:2px solid #252545;border-radius:8px;
+  padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:9px;
+  font-family:'Share Tech Mono',monospace;font-size:clamp(11px,1.6vw,13px);color:#ccc;
+  transition:border-color .12s,background .12s,transform .1s;
+}
+.pob:hover:not(.answered){border-color:#d4af37;background:#121230;transform:translateY(-2px);}
+.pob-l{width:26px;height:26px;border-radius:50%;background:#1e1e3a;border:1px solid #404070;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:#d4af37;font-weight:bold;flex-shrink:0;}
+.pob.correct{border-color:#00dd66;background:#001a0c;}
+.pob.correct .pob-l{background:#00dd66;color:#000;border-color:#00dd66;}
+.pob.wrong{border-color:#dd3333;background:#160000;}
+.pob.wrong .pob-l{background:#dd3333;color:#fff;border-color:#dd3333;}
+.pob.missed{border-color:#00dd6655;background:#001a0c44;}
+#pp-click-hint{
+  font-family:'Cinzel',serif;font-size:15px;color:#d4af37;
+  text-align:center;padding:14px;border:1px dashed #d4af3744;border-radius:8px;
+  letter-spacing:2px;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:.8}50%{opacity:.4}}
+#pp-res{text-align:center;font-family:'Cinzel',serif;font-size:15px;
+  padding:8px 12px;border-radius:7px;display:none;margin-bottom:10px;}
+#pp-res.ok{color:#00dd66;background:#00dd1108;}
+#pp-res.bad{color:#dd4444;background:#dd000008;}
+#pp-sol{background:#030f07;border:1px solid #00dd6625;border-radius:8px;
+  padding:14px 16px;display:none;margin-bottom:12px;}
+#pp-sol h4{font-family:'Cinzel',serif;font-size:11px;color:#00dd66;
+  letter-spacing:3px;margin-bottom:9px;}
+.sol-line{font-family:'Share Tech Mono',monospace;font-size:clamp(11px,1.5vw,13px);
+  color:#70b880;line-height:1.9;animation:fadeUp .35s ease both;}
+.sol-line.final-line{color:#00dd77;font-weight:bold;font-size:clamp(12px,1.7vw,14px);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#pp-nxt{width:100%;background:linear-gradient(135deg,#73000A,#9a0012);
+  color:#fff;border:none;border-radius:8px;padding:13px;
+  font-family:'Cinzel',serif;font-size:14px;cursor:pointer;
+  letter-spacing:2px;display:none;transition:transform .12s,box-shadow .12s;}
+#pp-nxt:hover{transform:scale(1.02);box-shadow:0 3px 20px rgba(115,0,10,.5);}
+
+/* Story panel */
+#sp{
+  position:fixed;bottom:0;left:0;right:0;
+  background:linear-gradient(0deg,rgba(2,2,12,.98) 60%,transparent);
+  padding:18px 22px 22px;z-index:10;display:none;cursor:pointer;
+}
+#sp-inner{max-width:800px;margin:0 auto;}
+#sp-spk{font-family:'Cinzel',serif;font-size:10px;color:#d4af37;letter-spacing:3px;
+  border-left:3px solid #73000A;padding-left:9px;margin-bottom:6px;text-transform:uppercase;}
+#sp-txt{font-family:'Crimson Text',serif;font-size:clamp(16px,2.5vw,19px);
+  color:#e8e0d0;line-height:1.65;min-height:52px;}
+#sp-cont{margin-top:9px;font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:#d4af37;opacity:.65;letter-spacing:1px;animation:blink 1.6s infinite;}
+@keyframes blink{0%,100%{opacity:.65}50%{opacity:.15}}
+
+/* Choice panel */
+#cp{position:fixed;bottom:120px;left:50%;transform:translateX(-50%);
+  display:none;z-index:15;width:min(680px,92vw);}
+#cp-q{font-family:'Crimson Text',serif;font-size:17px;color:#e0d8c8;
+  text-align:center;margin-bottom:12px;font-style:italic;}
+#cp-opts{display:flex;flex-direction:column;gap:8px;}
+.cob{background:rgba(6,6,18,.93);border:1px solid #73000A44;border-radius:8px;
+  padding:13px 18px;font-family:'Crimson Text',serif;font-size:15px;color:#e0d8c8;
+  cursor:pointer;text-align:left;transition:border-color .12s,background .12s;}
+.cob:hover{border-color:#d4af37;background:rgba(16,16,38,.96);}
+
+/* Chapter card */
+#chcard{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:linear-gradient(135deg,#060616,#10001a);
+  border:2px solid #73000A;border-radius:14px;padding:38px 52px;
+  text-align:center;z-index:20;display:none;max-width:480px;width:90vw;
+  box-shadow:0 0 80px rgba(115,0,10,.5);}
+#cc-n{font-family:'Share Tech Mono',monospace;font-size:9px;color:#d4af37;
+  letter-spacing:4px;margin-bottom:10px;}
+#cc-t{font-family:'Cinzel',serif;font-size:clamp(22px,4.5vw,34px);color:#fff;margin-bottom:7px;line-height:1.2;}
+#cc-s{font-family:'Crimson Text',serif;font-size:15px;color:#999;font-style:italic;margin-bottom:24px;}
+#cc-b{background:linear-gradient(135deg,#73000A,#9a0012);color:#fff;border:none;
+  border-radius:7px;padding:12px 34px;font-family:'Cinzel',serif;font-size:13px;
+  cursor:pointer;letter-spacing:2px;transition:transform .12s,box-shadow .12s;}
+#cc-b:hover{transform:scale(1.04);box-shadow:0 4px 22px rgba(115,0,10,.55);}
+
+/* Intro */
+#intro{position:fixed;inset:0;z-index:30;
+  background:radial-gradient(ellipse at 50% 35%,#080030 0%,#030012 50%,#000 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:24px;}
+.i-badge{font-family:'Share Tech Mono',monospace;font-size:10px;color:#d4af37;
+  letter-spacing:4px;margin-bottom:16px;}
+.i-title{font-family:'Cinzel',serif;font-size:clamp(38px,8vw,80px);color:#fff;
+  line-height:1.0;margin-bottom:6px;}
+.i-title span{color:#d4af37;}
+.i-sub{font-family:'Crimson Text',serif;font-size:clamp(15px,2.5vw,20px);color:#aaa;
+  font-style:italic;margin-bottom:5px;}
+.i-course{font-family:'Share Tech Mono',monospace;font-size:11px;color:#73000A;
+  letter-spacing:3px;margin-bottom:8px;}
+.i-feats{font-family:'Share Tech Mono',monospace;font-size:9px;color:#333;
+  letter-spacing:2px;margin-bottom:28px;line-height:2;}
+.i-nw label{font-family:'Share Tech Mono',monospace;font-size:9px;color:#666;
+  letter-spacing:2px;display:block;margin-bottom:7px;}
+#iname{background:#080820;border:1px solid #d4af3755;border-radius:6px;
+  padding:10px 18px;font-family:'Cinzel',serif;font-size:16px;color:#fff;
+  text-align:center;width:260px;outline:none;margin-bottom:20px;}
+#iname:focus{border-color:#d4af37;}
+.i-btn{background:linear-gradient(135deg,#73000A,#9a0012);color:#fff;border:none;
+  border-radius:8px;padding:14px 42px;font-family:'Cinzel',serif;font-size:16px;
+  cursor:pointer;letter-spacing:3px;box-shadow:0 4px 34px rgba(115,0,10,.45);
+  transition:transform .12s,box-shadow .12s;}
+.i-btn:hover{transform:scale(1.04);box-shadow:0 6px 44px rgba(115,0,10,.65);}
+.i-sig{position:absolute;bottom:18px;font-family:'Share Tech Mono',monospace;
+  font-size:9px;color:#1a1a2a;letter-spacing:3px;}
+
+/* Finale */
+#fin{position:fixed;inset:0;z-index:30;
+  background:radial-gradient(ellipse at center,#080025,#000);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:24px;overflow-y:auto;}
+.f-badge{font-family:'Share Tech Mono',monospace;font-size:10px;color:#d4af37;letter-spacing:4px;margin-bottom:10px;}
+.f-title{font-family:'Cinzel',serif;font-size:clamp(20px,4vw,42px);color:#fff;margin-bottom:6px;}
+.f-grade{font-family:'Cinzel',serif;font-size:clamp(60px,14vw,120px);font-weight:900;margin-bottom:8px;}
+.f-grade.A{color:#00dd66;text-shadow:0 0 40px #00dd6655;}
+.f-grade.B{color:#4a9fd4;text-shadow:0 0 40px #4a9fd455;}
+.f-grade.C{color:#d4af37;} .f-grade.D{color:#cc8833;} .f-grade.F{color:#cc3333;}
+.f-sc{font-family:'Share Tech Mono',monospace;font-size:16px;color:#d4af37;margin-bottom:14px;}
+.f-msg{font-family:'Crimson Text',serif;font-size:clamp(15px,2.3vw,19px);
+  color:#b8b0a0;max-width:540px;line-height:1.65;margin-bottom:22px;}
+.f-btn{background:linear-gradient(135deg,#73000A,#9a0012);color:#fff;border:none;
+  border-radius:8px;padding:12px 32px;font-family:'Cinzel',serif;font-size:13px;
+  cursor:pointer;letter-spacing:2px;transition:transform .12s;margin-top:6px;}
+.f-btn:hover{transform:scale(1.04);}
+
+/* NULL glitch overlay */
+#null-flash{position:fixed;inset:0;z-index:28;pointer-events:none;
+  background:rgba(255,0,0,.08);display:none;animation:nullglitch .3s ease;}
+@keyframes nullglitch{0%{opacity:0}20%{opacity:1}80%{opacity:.6}100%{opacity:0}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div id="null-flash"></div>
+
+<div id="hud">
+  <div id="hud-left">
+    <div id="hud-logo">STATQUEST</div>
+    <div id="hud-chapter">MATH 102 · USC UPSTATE</div>
+  </div>
+  <div id="hud-right">
+    <div class="hs"><div class="hs-l">SCORE</div><div class="hs-v" id="h-score">0</div></div>
+    <div class="hs"><div class="hs-l">CORRECT</div><div class="hs-v" id="h-corr">0/0</div></div>
+    <div id="streak-wrap"><div id="streak-fire">🔥</div><div id="streak-val">0</div></div>
+    <div id="bar-wrap">
+      <div class="hs-l">MASTERY</div>
+      <div id="mastery-bar"><div id="mastery-fill"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Problem Panel -->
+<div id="pp">
+  <div id="pp-inner">
+    <div id="pp-tag"><span id="pp-tag-icon"></span><span id="pp-tag-txt"></span></div>
+    <div id="pp-q"></div>
+    <div id="pp-opts"></div>
+    <div id="pp-click-hint" style="display:none"></div>
+    <div id="pp-res"></div>
+    <div id="pp-sol"><h4>STEP-BY-STEP SOLUTION</h4><div id="pp-sol-steps"></div></div>
+    <button id="pp-nxt" onclick="closeProblem()">CONTINUE →</button>
+  </div>
+</div>
+
+<!-- Story Panel -->
+<div id="sp" onclick="advanceStory()">
+  <div id="sp-inner">
+    <div id="sp-spk"></div>
+    <div id="sp-txt"></div>
+    <div id="sp-cont">▶ CLICK TO CONTINUE</div>
+  </div>
+</div>
+
+<!-- Choice Panel -->
+<div id="cp">
+  <div id="cp-q"></div>
+  <div id="cp-opts"></div>
+</div>
+
+<!-- Chapter Card -->
+<div id="chcard">
+  <div id="cc-n"></div>
+  <div id="cc-t"></div>
+  <div id="cc-s"></div>
+  <button id="cc-b" onclick="dismissCard()">ENTER CHAPTER →</button>
+</div>
+
+<!-- Intro -->
+<div id="intro">
+  <div class="i-badge">USC UPSTATE · MATH 102 · ELEMENTARY STATISTICS</div>
+  <div class="i-title">STAT<span>QUEST</span></div>
+  <div class="i-sub">Data Detective — Version II</div>
+  <div class="i-course">MATH 102 — ELEMENTARY STATISTICS</div>
+  <div class="i-feats">8 CHAPTERS · LIVE ANIMATED VISUALIZATIONS · CLICK-ON-CANVAS PROBLEMS<br>SIGMA AI COMPANION · 10 PROBLEM TYPES · STEP-BY-STEP SOLUTIONS · 5 ENDINGS</div>
+  <div class="i-nw">
+    <label>DETECTIVE NAME</label>
+    <input id="iname" type="text" placeholder="Enter your name..." maxlength="24">
+  </div>
+  <button class="i-btn" onclick="startGame()">BEGIN INVESTIGATION →</button>
+  <div class="i-sig">ΣIGMA DATA RECOVERY PROTOCOL v2.0</div>
+</div>
+
+<!-- Finale -->
+<div id="fin">
+  <div class="f-badge" id="f-badge"></div>
+  <div class="f-title" id="f-title"></div>
+  <div class="f-grade" id="f-grade"></div>
+  <div class="f-sc" id="f-sc"></div>
+  <div class="f-msg" id="f-msg"></div>
+  <button class="f-btn" onclick="location.reload()">↺ PLAY AGAIN</button>
+</div>
+
+<script>
+// ── CANVAS ──
+const cv=document.getElementById('cv');
+const cx=cv.getContext('2d');
+let W,H,frame=0,gameMode='intro';
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+window.addEventListener('resize',resize);resize();
+
+// ── STATE ──
+let ST={name:'Detective',score:0,correct:0,total:0,streak:0,bestStreak:0};
+let chIdx=0,beatIdx=0,currentScene='dorm';
+let activeProblem=null,probAnswered=false,probClickRegions=[];
+
+// ── SIGMA ──
+const SIG={x:0,y:0,state:'idle',t:0,particles:Array.from({length:10},(_,i)=>({
+  a:i*(Math.PI*2/10),r:0,phase:Math.random()*Math.PI*2
+}))};
+const SIG_COLS={idle:'#4a9fd4',correct:'#00dd66',wrong:'#dd3333',thinking:'#d4af37',null:'#ff2244'};
+
+function drawSIGMA(t){
+  const sx=W-70,sy=80;
+  SIG.x=sx;SIG.y=sy;SIG.t=t;
+  const col=SIG_COLS[SIG.state]||'#4a9fd4';
+  const pulse=0.85+0.15*Math.sin(t*.05);
+  const orbitR=SIG.state==='correct'?34+Math.sin(t*.2)*6:
+                SIG.state==='wrong'?28+Math.sin(t*.3)*4:28;
+  // outer glow
+  const og=cx.createRadialGradient(sx,sy,2,sx,sy,42);
+  og.addColorStop(0,col+'22');og.addColorStop(1,'transparent');
+  cx.fillStyle=og;cx.beginPath();cx.arc(sx,sy,42,0,Math.PI*2);cx.fill();
+  // orbit ring particles
+  SIG.particles.forEach((p,i)=>{
+    const speed=SIG.state==='thinking'?.04:.018;
+    p.a+=speed+(i%2===0?.005:-.005);
+    const px=sx+Math.cos(p.a)*orbitR;
+    const py=sy+Math.sin(p.a)*orbitR;
+    const sz=SIG.state==='correct'?3.5:2.2;
+    const a=0.5+0.5*Math.sin(t*.06+p.phase);
+    cx.beginPath();cx.arc(px,py,sz,0,Math.PI*2);
+    cx.fillStyle=col+(Math.floor(a*99).toString(16).padStart(2,'0'));
+    cx.fill();
+  });
+  // hexagon body
+  cx.save();cx.translate(sx,sy);
+  if(SIG.state==='wrong') cx.rotate(Math.sin(t*.4)*.12);
+  cx.rotate(t*.008);
+  cx.beginPath();
+  for(let i=0;i<6;i++){const a=i*Math.PI/3;cx.lineTo(Math.cos(a)*18,Math.sin(a)*18);}
+  cx.closePath();
+  const hg=cx.createRadialGradient(0,0,2,0,0,18);
+  hg.addColorStop(0,col+'44');hg.addColorStop(1,col+'11');
+  cx.fillStyle=hg;cx.fill();
+  cx.strokeStyle=col+'88';cx.lineWidth=1.5;cx.stroke();
+  cx.restore();
+  // Σ symbol
+  cx.fillStyle=col;cx.font=`bold ${Math.round(H*.025)}px 'Cinzel',serif`;
+  cx.textAlign='center';cx.textBaseline='middle';
+  cx.fillText('Σ',sx,sy);
+  cx.textBaseline='alphabetic';cx.textAlign='left';
+  // state label
+  if(SIG.state!=='idle'){
+    cx.fillStyle=col+'cc';cx.font=`${Math.round(H*.012)}px 'Share Tech Mono',monospace`;
+    cx.textAlign='center';
+    cx.fillText(SIG.state.toUpperCase(),sx,sy+36);
+    cx.textAlign='left';
+  }
+}
+function sigState(s,dur=120){
+  SIG.state=s;
+  if(dur>0) setTimeout(()=>{if(SIG.state===s)SIG.state='idle';},dur*16);
+}
+
+// ── STARS ──
+const STARS=Array.from({length:70},()=>({x:Math.random(),y:Math.random(),r:.2+Math.random()*1.2,s:Math.random()*Math.PI*2}));
+
+// ── SCENE RENDERERS ──
+function drawDorm(t){
+  let bg=cx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#050520');bg.addColorStop(.6,'#0a0a1a');bg.addColorStop(1,'#120c08');
+  cx.fillStyle=bg;cx.fillRect(0,0,W,H);
+  // brick wall
+  for(let r=0;r<16;r++) for(let c=0;c<24;c++){
+    const bx=(c+(r%2*.5))*(W/23),by=r*(H*.58/16);
+    const s=Math.sin(r*6.3+c*4.1)*.05;
+    cx.fillStyle=`rgba(${28+s*30},${10+s*10},${18+s*15},.8)`;
+    cx.fillRect(bx,by,W/23-.4,H*.58/16-.4);
+  }
+  // night window
+  const wx=W*.28,wy=H*.05,ww=W*.28,wh=H*.36;
+  let sg=cx.createLinearGradient(wx,wy,wx,wy+wh);
+  sg.addColorStop(0,'#010108');sg.addColorStop(1,'#020215');
+  cx.fillStyle=sg;cx.fillRect(wx,wy,ww,wh);
+  STARS.slice(0,32).forEach(s=>{
+    const a=.4+.6*Math.sin(t*.035+s.s);
+    cx.beginPath();cx.arc(wx+s.x*ww,wy+s.y*wh,s.r,0,Math.PI*2);
+    cx.fillStyle=`rgba(255,255,220,${a})`;cx.fill();
+  });
+  // moon
+  const mg=cx.createRadialGradient(wx+ww*.82,wy+wh*.16,2,wx+ww*.82,wy+wh*.16,20);
+  mg.addColorStop(0,'#fffde0');mg.addColorStop(.6,'#d4c860');mg.addColorStop(1,'transparent');
+  cx.fillStyle=mg;cx.beginPath();cx.arc(wx+ww*.82,wy+wh*.16,20,0,Math.PI*2);cx.fill();
+  cx.strokeStyle='#8a6040';cx.lineWidth=5;cx.strokeRect(wx,wy,ww,wh);
+  cx.strokeStyle='#6a4030';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(wx+ww/2,wy);cx.lineTo(wx+ww/2,wy+wh);cx.stroke();
+  cx.beginPath();cx.moveTo(wx,wy+wh/2);cx.lineTo(wx+ww,wy+wh/2);cx.stroke();
+  // floor
+  let fl=cx.createLinearGradient(0,H*.58,0,H);
+  fl.addColorStop(0,'#2a1a0a');fl.addColorStop(1,'#180e06');
+  cx.fillStyle=fl;cx.fillRect(0,H*.58,W,H*.42);
+  for(let i=0;i<14;i++){cx.fillStyle=i%2?'#221408':'#1e1204';cx.fillRect(i*W/14,H*.58,W/14,H*.42);}
+  // desk
+  cx.fillStyle='#4a2a10';cx.fillRect(W*.52,H*.52,W*.42,H*.07);
+  cx.fillStyle='#2e1808';cx.fillRect(W*.55,H*.59,W*.04,H*.1);cx.fillRect(W*.88,H*.59,W*.04,H*.1);
+  // laptop with data on screen
+  cx.fillStyle='#1a1a2a';cx.fillRect(W*.62,H*.36,W*.22,H*.16);
+  cx.fillStyle='#04040e';cx.fillRect(W*.625,H*.365,W*.21,H*.145);
+  for(let b=0;b<5;b++){
+    const bh=(.25+.4*Math.abs(Math.sin(b*1.8+t*.02)))*H*.10;
+    cx.fillStyle=['#73000A','#d4af37','#4a9fd4','#00aa44','#9a4aff'][b]+'cc';
+    cx.fillRect(W*.635+b*W*.038,H*.365+H*.145-bh,W*.028,bh);
+  }
+  cx.fillStyle='#1a1a28';cx.fillRect(W*.595,H*.52,W*.28,H*.012);
+  // bed
+  cx.fillStyle='#3a2008';cx.fillRect(W*.02,H*.48,W*.2,H*.2);
+  cx.fillStyle='#73000A';cx.fillRect(W*.02,H*.48,W*.2,H*.06);
+  cx.fillStyle='#8a1020';cx.fillRect(W*.025,H*.49,W*.06,H*.04);
+}
+
+function drawDataLab(t){
+  cx.fillStyle='#040410';cx.fillRect(0,0,W,H);
+  // ceiling
+  cx.fillStyle='#0c0c1a';cx.fillRect(0,0,W,H*.08);
+  for(let i=0;i<5;i++){
+    const lx=W*(.1+i*.2);
+    cx.fillStyle='#ddeeff';cx.fillRect(lx-W*.06,2,W*.12,3);
+    const lg=cx.createRadialGradient(lx,10,2,lx,10,H*.3);
+    lg.addColorStop(0,'rgba(180,210,255,.15)');lg.addColorStop(1,'transparent');
+    cx.fillStyle=lg;cx.fillRect(0,0,W,H*.4);
+  }
+  // three big monitors
+  [[.02,.12,.3,.42,'bar'],[.35,.10,.3,.46,'scatter'],[.68,.12,.3,.42,'line']].forEach(([mx,my,mw,mh,tp])=>{
+    const sx=W*mx,sy=H*my,sw=W*mw,sh=H*mh;
+    cx.fillStyle='#151525';cx.fillRect(sx-5,sy-5,sw+10,sh+10);
+    cx.fillStyle='#020210';cx.fillRect(sx,sy,sw,sh);
+    // grid lines
+    cx.strokeStyle='#0e1a28';cx.lineWidth=1;
+    for(let g=1;g<5;g++){
+      cx.beginPath();cx.moveTo(sx,sy+g*sh/5);cx.lineTo(sx+sw,sy+g*sh/5);cx.stroke();
+      cx.beginPath();cx.moveTo(sx+g*sw/5,sy);cx.lineTo(sx+g*sw/5,sy+sh);cx.stroke();
+    }
+    if(tp==='bar'){
+      const cols=['#73000A','#d4af37','#4a9fd4','#00cc66','#9a4aff'];
+      for(let b=0;b<5;b++){
+        const bh=(.2+.65*Math.abs(Math.sin(b*1.5+t*.025)))*sh*.8;
+        cx.fillStyle=cols[b]+'cc';cx.fillRect(sx+8+b*((sw-16)/5),sy+sh-bh,(sw-24)/5,bh);
+      }
+    } else if(tp==='scatter'){
+      for(let p=0;p<16;p++){
+        const px=sx+12+Math.sin(p*2.1)*sw*.36+sw*.5;
+        const py=sy+10+Math.cos(p*1.7+t*.01)*sh*.34+sh*.46;
+        cx.beginPath();cx.arc(px,py,3,0,Math.PI*2);
+        cx.fillStyle=`rgba(80,200,255,${.5+.5*Math.sin(t*.05+p)})`;cx.fill();
+      }
+      cx.strokeStyle='rgba(212,175,55,.5)';cx.lineWidth=1.5;cx.setLineDash([4,4]);
+      cx.beginPath();cx.moveTo(sx+8,sy+sh-8);cx.lineTo(sx+sw-8,sy+14);cx.stroke();
+      cx.setLineDash([]);
+    } else {
+      cx.strokeStyle='#4a9fd4';cx.lineWidth=2;cx.beginPath();
+      for(let p=0;p<=12;p++){
+        const px=sx+8+p*(sw-16)/12;
+        const py=sy+sh/2+Math.sin(p*.7+t*.03)*sh*.3;
+        p===0?cx.moveTo(px,py):cx.lineTo(px,py);
+      }cx.stroke();
+    }
+    // glow
+    const gg=cx.createRadialGradient(sx+sw/2,sy+sh/2,2,sx+sw/2,sy+sh/2,sw*.5);
+    gg.addColorStop(0,'rgba(60,100,255,.06)');gg.addColorStop(1,'transparent');
+    cx.fillStyle=gg;cx.fillRect(sx,sy,sw,sh);
+    // monitor stand
+    cx.fillStyle='#1e1e30';cx.fillRect(sx+sw/2-5,sy+sh,10,H*.06);
+    cx.fillRect(sx+sw/2-18,sy+sh+H*.06,36,H*.014);
+  });
+  // desk surface
+  cx.fillStyle='#181828';cx.fillRect(0,H*.56,W,H*.06);
+  cx.fillStyle='#0e0e1e';cx.fillRect(0,H*.62,W,H*.38);
+  // SIGMA warning text
+  cx.fillStyle='rgba(0,200,100,.65)';cx.font=`bold ${H*.022}px 'Share Tech Mono',monospace`;
+  cx.textAlign='center';cx.fillText('⚠ NULL CORRUPTION DETECTED — NODE RECOVERY ACTIVE',W/2,H*.06+Math.sin(t*.07)*2);
+  cx.textAlign='left';
+}
+
+function drawClassroom(t){
+  cx.fillStyle='#0a0a18';cx.fillRect(0,0,W,H);
+  let wg=cx.createLinearGradient(0,0,0,H*.6);
+  wg.addColorStop(0,'#111128');wg.addColorStop(1,'#0a0a1c');
+  cx.fillStyle=wg;cx.fillRect(0,0,W,H*.6);
+  // whiteboard
+  const wbx=W*.06,wby=H*.08,wbw=W*.88,wbh=H*.4;
+  cx.fillStyle='#f0f0eb';cx.fillRect(wbx,wby,wbw,wbh);
+  cx.strokeStyle='#999';cx.lineWidth=3;cx.strokeRect(wbx,wby,wbw,wbh);
+  cx.fillStyle='#1a1a40';
+  cx.font=`bold ${H*.038}px 'Crimson Text',serif`;cx.textAlign='center';
+  const eqs=['x̄ = Σx / n','σ = √(Σ(xᵢ−μ)² / N)','z = (x − μ) / σ','P(A) = n(A) / n(S)'];
+  eqs.forEach((eq,i)=>{
+    cx.fillStyle=(Math.floor(t*.012)%4===i)?'#73000A':'#1a1a40';
+    cx.font=`bold ${H*.034}px 'Crimson Text',serif`;
+    cx.fillText(eq,wbx+wbw*(i*.25+.12),wby+wbh*.38);
+  });
+  cx.fillStyle='#2a2a55';cx.font=`${H*.02}px 'Share Tech Mono',monospace`;
+  cx.fillText('DATA: 72  85  68  91  77  83  79  88',wbx+wbw/2,wby+wbh*.6);
+  cx.fillText('x̄ = 79.4   Md = 83   Mo = ?',wbx+wbw/2,wby+wbh*.78);
+  cx.fillStyle='#ccc';cx.fillRect(wbx,wby+wbh,wbw,H*.015);
+  // projector beam
+  let pg=cx.createLinearGradient(W/2,H*.02,W/2,wby);
+  pg.addColorStop(0,'rgba(255,255,255,.1)');pg.addColorStop(1,'transparent');
+  cx.fillStyle=pg;cx.beginPath();
+  cx.moveTo(W*.44,H*.02);cx.lineTo(W*.56,H*.02);cx.lineTo(wbx+wbw*.62,wby);cx.lineTo(wbx+wbw*.38,wby);
+  cx.fill();
+  let fl=cx.createLinearGradient(0,H*.58,0,H);
+  fl.addColorStop(0,'#14121c');fl.addColorStop(1,'#0a0810');
+  cx.fillStyle=fl;cx.fillRect(0,H*.58,W,H*.42);
+  cx.textAlign='left';
+}
+
+function drawResearchLab(t){
+  cx.fillStyle='#060c14';cx.fillRect(0,0,W,H);
+  cx.fillStyle='#0e1824';cx.fillRect(0,0,W,H*.55);
+  // lab bench
+  cx.fillStyle='#1c2030';cx.fillRect(0,H*.5,W,H*.08);
+  cx.fillStyle='#131824';cx.fillRect(0,H*.58,W,H*.42);
+  // beakers
+  [[.2,'#73000A'],[.28,'#4a9fd4'],[.36,'#00aa44'],[.44,'#d4af37']].forEach(([bx,col])=>{
+    const x=W*bx,y=H*.38,w=W*.045,h=H*.12;
+    cx.fillStyle='#1e2838';cx.fillRect(x,y,w,h+H*.025);
+    cx.fillStyle=col+'99';cx.fillRect(x+2,y+h*.25,w-4,h*.7);
+    cx.strokeStyle='#3a4858';cx.lineWidth=1.5;cx.strokeRect(x,y,w,h+H*.025);
+    for(let b=0;b<3;b++){
+      const by=y+h*.3+(t*.6+b*22)%(h*.6);
+      cx.beginPath();cx.arc(x+w*.3+b*w*.2,by,2,0,Math.PI*2);
+      cx.fillStyle=col+'bb';cx.fill();
+    }
+  });
+  // terminal
+  const tx=W*.62,ty=H*.16,tw=W*.24,th=H*.3;
+  cx.fillStyle='#0e1020';cx.fillRect(tx,ty,tw,th);
+  cx.fillStyle='#030a05';cx.fillRect(tx+4,ty+4,tw-8,th-8);
+  const lines=['> LOADING DATASET...','> MEAN: 74.2 ','> STD DEV: 8.33','> VARIANCE: 69.4','> NULL: CORRUPTED !!'];
+  lines.forEach((ln,i)=>{
+    cx.globalAlpha=i<Math.floor((t*.035)%6)?1:.25;
+    cx.fillStyle=i===4?'#ff4444':'#00cc66';
+    cx.font=`${H*.016}px 'Share Tech Mono',monospace`;
+    cx.fillText(ln,tx+8,ty+14+i*H*.048);
+  });cx.globalAlpha=1;
+  // wall shelves
+  [H*.1,H*.22,H*.34].forEach(sy=>{
+    cx.fillStyle='#1a2030';cx.fillRect(W*.84,sy,W*.13,H*.015);
+    for(let b=0;b<6;b++){
+      const bc=['#73000A','#4a9fd4','#00aa44','#9a4aff','#d4af37','#cc6622'][b];
+      cx.fillStyle=bc+'aa';cx.fillRect(W*.845+b*W*.019,sy-H*.062,W*.015,H*.062);
+    }
+  });
+}
+
+function drawArena(t){
+  cx.fillStyle='#04040c';cx.fillRect(0,0,W,H);
+  // court floor
+  let cg=cx.createLinearGradient(0,H*.42,0,H);
+  cg.addColorStop(0,'#3a1206');cg.addColorStop(1,'#200a04');
+  cx.fillStyle=cg;cx.fillRect(0,H*.42,W,H*.58);
+  cx.strokeStyle='rgba(255,255,255,.12)';cx.lineWidth=2;
+  cx.beginPath();cx.arc(W/2,H*.9,H*.28,Math.PI,0);cx.stroke();
+  cx.beginPath();cx.moveTo(W*.08,H*.42);cx.lineTo(W*.92,H*.42);cx.stroke();
+  // analytics wall screens
+  [[.01,.06,.31,.34,'SHOT CHART'],[.35,.05,.3,.36,'TEAM STATS'],[.67,.06,.31,.34,'P(WIN)']].forEach(([sx,sy,sw,sh,ti])=>{
+    const x=W*sx,y=H*sy,w=W*sw,h=H*sh;
+    cx.fillStyle='#08081a';cx.fillRect(x,y,w,h);
+    cx.fillStyle='#040412';cx.fillRect(x+3,y+3,w-6,h-6);
+    cx.fillStyle='rgba(212,175,55,.7)';cx.font=`bold ${H*.016}px 'Share Tech Mono',monospace`;
+    cx.textAlign='center';cx.fillText(ti,x+w/2,y+H*.022);
+    if(ti==='SHOT CHART'){
+      for(let p=0;p<12;p++){
+        cx.beginPath();cx.arc(x+10+Math.sin(p*2.2)*w*.38+w*.48,y+h*.15+Math.cos(p*1.8)*h*.34+h*.44,4,0,Math.PI*2);
+        cx.fillStyle=p%3?'#73000A':'#00cc66';cx.fill();
+      }
+    } else if(ti==='TEAM STATS'){
+      ['FG%: 47.2','3PT: 38.4','REB: 36.1','AST: 22.8'].forEach((s,i)=>{
+        cx.fillStyle='#d4af37';cx.font=`${H*.022}px 'Share Tech Mono',monospace`;
+        cx.fillText(s,x+w/2,y+h*.3+i*h*.17);
+      });
+    } else {
+      cx.fillStyle='#00cc66';cx.font=`${H*.028}px 'Share Tech Mono',monospace`;cx.fillText('P(WIN) =',x+w/2,y+h*.44);
+      cx.fillStyle='#d4af37';cx.font=`bold ${H*.05}px 'Share Tech Mono',monospace`;
+      cx.fillText(`${Math.round(62+8*Math.sin(t*.022))}%`,x+w/2,y+h*.74);
+    }
+  });cx.textAlign='left';
+}
+
+function drawClinic(t){
+  cx.fillStyle='#06101a';cx.fillRect(0,0,W,H);
+  let wg=cx.createLinearGradient(0,0,0,H*.62);
+  wg.addColorStop(0,'#0a1a26');wg.addColorStop(1,'#06101a');
+  cx.fillStyle=wg;cx.fillRect(0,0,W,H*.62);
+  // ceiling light beam
+  const lg=cx.createRadialGradient(W*.5,0,5,W*.5,H*.1,H*.4);
+  lg.addColorStop(0,'rgba(180,220,255,.14)');lg.addColorStop(1,'transparent');
+  cx.fillStyle=lg;cx.fillRect(0,0,W,H*.5);
+  cx.fillStyle='rgba(200,230,255,.9)';cx.fillRect(W*.38,0,W*.24,3);
+  // bell curve poster
+  const c1x=W*.05,c1y=H*.08,c1w=W*.28,c1h=H*.38;
+  cx.fillStyle='#f0f4f8';cx.fillRect(c1x,c1y,c1w,c1h);
+  cx.strokeStyle='#aaa';cx.lineWidth=2;cx.strokeRect(c1x,c1y,c1w,c1h);
+  cx.strokeStyle='#73000A';cx.lineWidth=2.5;cx.beginPath();
+  for(let x=0;x<c1w-4;x++){
+    const z=(x/c1w)*6-3;
+    const y=c1y+c1h*.88-Math.exp(-.5*z*z)*c1h*.72;
+    x===0?cx.moveTo(c1x+x+2,y):cx.lineTo(c1x+x+2,y);
+  }cx.stroke();
+  cx.strokeStyle='#333';cx.lineWidth=1.5;
+  cx.beginPath();cx.moveTo(c1x+4,c1y+c1h*.9);cx.lineTo(c1x+c1w-4,c1y+c1h*.9);cx.stroke();
+  cx.fillStyle='#1a1a40';cx.font=`bold ${H*.018}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+  cx.fillText('NORMAL DIST',c1x+c1w/2,c1y+H*.025);
+  // vitals monitor
+  const c2x=W*.68,c2y=H*.08,c2w=W*.28,c2h=H*.38;
+  cx.fillStyle='#001206';cx.fillRect(c2x,c2y,c2w,c2h);
+  cx.strokeStyle='#00cc66';cx.lineWidth=2;cx.beginPath();
+  for(let x=0;x<c2w-4;x++){
+    const v=c2y+c2h/2+Math.sin(x*.18)*18+Math.sin(x*.44)*8+Math.sin(t*.08+x*.22)*3;
+    x===0?cx.moveTo(c2x+x,v):cx.lineTo(c2x+x,v);
+  }cx.stroke();
+  cx.fillStyle='#00cc66';cx.fillText('PATIENT VITALS',c2x+c2w/2,c2y+H*.025);
+  // exam table
+  cx.fillStyle='#c0d0d8';cx.fillRect(W*.3,H*.46,W*.4,H*.12);
+  cx.fillStyle='#98b0b8';cx.fillRect(W*.3,H*.58,W*.4,H*.035);
+  cx.fillStyle='#fff';cx.fillRect(W*.32,H*.47,W*.12,H*.09);
+  let fl=cx.createLinearGradient(0,H*.59,0,H);
+  fl.addColorStop(0,'#0e1820');fl.addColorStop(1,'#060e14');
+  cx.fillStyle=fl;cx.fillRect(0,H*.59,W,H*.41);
+  cx.textAlign='left';
+}
+
+function drawCourtroom(t){
+  cx.fillStyle='#08060a';cx.fillRect(0,0,W,H);
+  // wood paneling
+  for(let i=0;i<22;i++){
+    cx.fillStyle=i%2?'#281a0c':'#221608';
+    cx.fillRect(i*W/22,0,W/22,H*.58);
+    cx.strokeStyle='#140a04';cx.lineWidth=.4;cx.strokeRect(i*W/22,0,W/22,H*.58);
+  }
+  // header banner
+  cx.fillStyle='#3a2808';cx.fillRect(0,0,W,H*.065);
+  cx.fillStyle='#d4af37';cx.font=`${H*.022}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText('COURT OF STATISTICAL EVIDENCE — IN DATA WE TRUST',W/2,H*.044);
+  // judge bench
+  const jx=W*.22,jy=H*.24,jw=W*.56,jh=H*.22;
+  cx.fillStyle='#3a2810';cx.fillRect(jx,jy,jw,jh);
+  cx.fillStyle='#28180a';cx.fillRect(jx+5,jy+5,jw-10,jh-10);
+  cx.strokeStyle='#d4af3740';cx.lineWidth=2;cx.strokeRect(jx,jy,jw,jh);
+  // H₀ vs Hₐ balance
+  const bx=W*.5,by=H*.18;
+  cx.strokeStyle='#d4af37';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(bx,by);cx.lineTo(bx,by+H*.06);cx.stroke();
+  cx.beginPath();cx.moveTo(bx-W*.08,by+H*.03);cx.lineTo(bx+W*.08,by+H*.03);cx.stroke();
+  cx.beginPath();cx.arc(bx-W*.08,by+H*.06,W*.03,0,Math.PI);cx.stroke();
+  cx.beginPath();cx.arc(bx+W*.08,by+H*.06,W*.03,0,Math.PI);cx.stroke();
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.028}px 'Share Tech Mono',monospace`;
+  cx.fillText('H₀ vs Hₐ',bx,jy+jh*.55);
+  // pews
+  [[.03,.52,.38],[.59,.52,.38]].forEach(([px,py,pw])=>{
+    cx.fillStyle='#1c1208';cx.fillRect(W*px,H*py,W*pw,H*.12);
+    cx.fillStyle='#281a0c';cx.fillRect(W*px,H*py,W*pw,H*.018);
+  });
+  // gavel
+  cx.save();cx.translate(W*.88,H*.28);cx.rotate(Math.sin(t*.04)*.18);
+  cx.fillStyle='#5a3620';cx.fillRect(-4,-H*.07,8,H*.07);
+  cx.fillRect(-W*.024,-H*.08,W*.048,H*.032);cx.restore();
+  let fl=cx.createLinearGradient(0,H*.6,0,H);
+  fl.addColorStop(0,'#1c1008');fl.addColorStop(1,'#100804');
+  cx.fillStyle=fl;cx.fillRect(0,H*.6,W,H*.4);cx.textAlign='left';
+}
+
+function drawNewsroom(t){
+  cx.fillStyle='#0a0a0c';cx.fillRect(0,0,W,H);
+  for(let i=0;i<12;i++) for(let j=0;j<4;j++){
+    cx.fillStyle=i*j%2?'#0e0e10':'#0c0c0e';cx.fillRect(i*W/12,j*H*.075,W/12-1,H*.075-1);
+  }
+  for(let i=0;i<4;i++){
+    const lx=W*(.13+i*.24);
+    cx.fillStyle='#fffce0';cx.fillRect(lx-W*.04,H*.01,W*.08,H*.008);
+    const lg=cx.createRadialGradient(lx,H*.2,3,lx,H*.2,H*.32);
+    lg.addColorStop(0,'rgba(255,240,190,.1)');lg.addColorStop(1,'transparent');
+    cx.fillStyle=lg;cx.fillRect(0,0,W,H*.5);
+  }
+  [[.02,.4,.28],[.34,.4,.28],[.66,.4,.28]].forEach(([dx,dy,dw])=>{
+    const x=W*dx,y=H*dy,w=W*dw;
+    cx.fillStyle='#282420';cx.fillRect(x,y,w,H*.065);
+    const mx=x+w*.22,my=y-H*.22,mw=w*.56,mh=H*.2;
+    cx.fillStyle='#181820';cx.fillRect(mx,my,mw,mh);
+    cx.fillStyle='#030308';cx.fillRect(mx+3,my+3,mw-6,mh-6);
+    cx.fillStyle='#d4af37';cx.font=`${H*.013}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+    cx.fillText('USC UPSTATE HERALD',mx+mw/2,my+H*.023);
+    cx.fillStyle='#888';cx.font=`${H*.012}px 'Share Tech Mono',monospace`;
+    ['SURVEY: n=250','x̄=3.2 hrs/day','σ=0.78','OUTLIER?'].forEach((s,i)=>cx.fillText(s,mx+mw/2,my+H*.06+i*H*.032));
+    cx.fillStyle='#1e1c18';cx.fillRect(mx+mw/2-4,my+mh,8,H*.04);
+    cx.fillRect(mx+mw/2-14,my+mh+H*.04,28,H*.012);
+  });
+  cx.fillStyle='#1a0000';cx.fillRect(W*.08,H*.04,W*.84,H*.11);
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.04}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText('USC UPSTATE HERALD — LIVE DATA INVESTIGATION',W/2,H*.104);
+  let fl=cx.createLinearGradient(0,H*.6,0,H);
+  fl.addColorStop(0,'#161414');fl.addColorStop(1,'#0c0c0c');
+  cx.fillStyle=fl;cx.fillRect(0,H*.6,W,H*.4);cx.textAlign='left';
+}
+
+const SCENES={dorm:drawDorm,dataLab:drawDataLab,classroom:drawClassroom,
+  researchLab:drawResearchLab,arena:drawArena,clinic:drawClinic,
+  courtroom:drawCourtroom,newsroom:drawNewsroom};
+
+// ── PROBLEM CANVAS RENDERERS ──
+let probFrame=0; // separate counter reset per problem
+
+function drawProbCanvas(pd,t){
+  cx.fillStyle='#030310';cx.fillRect(0,0,W,H);
+  if(!pd) return;
+  switch(pd.viz){
+    case 'barchart': drawVizBar(pd,t); break;
+    case 'scatter':  drawVizScatter(pd,t); break;
+    case 'bellcurve':drawVizBell(pd,t); break;
+    case 'numberline':drawVizLine(pd,t); break;
+    case 'distributions':drawVizDists(pd,t); break;
+    case 'probviz':  drawVizProb(pd,t); break;
+    case 'classify': drawVizClassify(pd,t); break;
+    case 'hypothesis':drawVizHyp(pd,t); break;
+    case 'boxplot':  drawVizBox(pd,t); break;
+    default: drawDataLab(t);
+  }
+  // data stream overlay
+  cx.fillStyle='rgba(0,200,100,.03)';
+  for(let i=0;i<6;i++){
+    const y=(t*1.2+i*H/6)%H;
+    cx.fillRect(0,y,W,1);
+  }
+}
+
+function drawVizBar(pd,t){
+  const data=pd.vizData.values, n=data.length;
+  const maxV=Math.max(...data)*1.1;
+  const cX=W*.08,cY=H*.06,cW=W*.84,cH=H*.48;
+  // background grid
+  cx.strokeStyle='#111a22';cx.lineWidth=1;
+  for(let g=1;g<=5;g++){
+    const gy=cY+cH-g*(cH/5);
+    cx.beginPath();cx.moveTo(cX,gy);cx.lineTo(cX+cW,gy);cx.stroke();
+    cx.fillStyle='#334';cx.font=`${H*.014}px 'Share Tech Mono',monospace`;cx.textAlign='right';
+    cx.fillText(Math.round(maxV*.2*g),cX-6,gy+4);
+  }
+  const barW=cW/n*.72, gap=cW/n*.28;
+  data.forEach((v,i)=>{
+    const bx=cX+i*(cW/n)+gap/2;
+    const fullH=(v/maxV)*cH;
+    const animH=Math.min(fullH,fullH*Math.min((t-10)/50,1));
+    const by=cY+cH-animH;
+    const isHL=pd.vizData.highlight===i;
+    // bar gradient
+    const bg=cx.createLinearGradient(bx,by,bx+barW,by);
+    bg.addColorStop(0,isHL?'#d4af37':'#73000A');
+    bg.addColorStop(1,isHL?'#a08020':'#400006');
+    cx.fillStyle=bg;cx.fillRect(bx,by,barW,animH);
+    // top shine
+    cx.fillStyle=isHL?'rgba(255,230,100,.4)':'rgba(200,80,80,.3)';cx.fillRect(bx,by,barW,3);
+    // value
+    if(t>40){
+      cx.fillStyle=isHL?'#f0cc50':'#d4af37';
+      cx.font=`bold ${H*.022}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+      cx.fillText(v+(pd.unit||''),bx+barW/2,by-8);
+    }
+    // x label
+    cx.fillStyle='#666';cx.font=`${H*.016}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+    cx.fillText(pd.vizData.labels?pd.vizData.labels[i]:`x${i+1}`,bx+barW/2,cY+cH+H*.032);
+    // click region
+    if(pd.interactive){
+      pd.clickRegions[i]={x:bx,y:cY,w:barW,h:cH,idx:i,type:'bar'};
+    }
+  });
+  // axes
+  cx.strokeStyle='#334';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(cX,cY);cx.lineTo(cX,cY+cH);cx.lineTo(cX+cW,cY+cH);cx.stroke();
+  // title
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.024}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText(pd.vizData.title||'DATASET',W/2,H*.045);
+  cx.textAlign='left';
+}
+
+function drawVizScatter(pd,t){
+  const pts=pd.vizData.points;
+  const cX=W*.1,cY=H*.06,cW=W*.8,cH=H*.5;
+  cx.strokeStyle='#111a22';cx.lineWidth=1;
+  for(let g=0;g<5;g++){
+    const gx=cX+g*cW/4; cx.beginPath();cx.moveTo(gx,cY);cx.lineTo(gx,cY+cH);cx.stroke();
+    const gy=cY+g*cH/4; cx.beginPath();cx.moveTo(cX,gy);cx.lineTo(cX+cW,gy);cx.stroke();
+  }
+  cx.strokeStyle='#222a34';cx.lineWidth=2;
+  cx.strokeRect(cX,cY,cW,cH);
+  const appear=Math.min(pts.length,Math.floor((t-5)/3));
+  pts.forEach((p,i)=>{
+    if(i>appear) return;
+    const px=cX+p.nx*cW, py=cY+p.ny*cH;
+    pd.clickRegions[i]={x:px,y:py,r:14,idx:i,type:'point'};
+    const isOut=p.outlier;
+    const pulse=isOut?(1+.3*Math.sin(t*.08)):1;
+    // glow
+    const gg=cx.createRadialGradient(px,py,1,px,py,10*pulse);
+    gg.addColorStop(0,isOut?'rgba(255,80,80,.4)':'rgba(80,180,255,.3)');
+    gg.addColorStop(1,'transparent');
+    cx.fillStyle=gg;cx.beginPath();cx.arc(px,py,12*pulse,0,Math.PI*2);cx.fill();
+    cx.beginPath();cx.arc(px,py,5*pulse,0,Math.PI*2);
+    cx.fillStyle=isOut?'#ff4444':'#4ab8ff';cx.fill();
+    cx.strokeStyle=isOut?'#ff888888':'#4ab8ff44';cx.lineWidth=1.5;cx.stroke();
+  });
+  // trend line (faint)
+  if(t>60){
+    cx.strokeStyle='rgba(212,175,55,.35)';cx.lineWidth=1.5;cx.setLineDash([6,6]);
+    cx.beginPath();cx.moveTo(cX+cW*.05,cY+cH*.88);cx.lineTo(cX+cW*.95,cY+cH*.12);cx.stroke();
+    cx.setLineDash([]);
+  }
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.024}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText('SCATTER PLOT — Click the Outlier',W/2,H*.044);
+  cx.fillStyle='#666';cx.font=`${H*.015}px 'Share Tech Mono',monospace`;
+  cx.fillText('← lower values',cX+20,cY+cH+H*.032);
+  cx.textAlign='right';cx.fillText('higher values →',cX+cW-4,cY+cH+H*.032);
+  cx.textAlign='left';
+}
+
+function drawVizBell(pd,t){
+  const cX=W*.08,cY=H*.06,cW=W*.84,cH=H*.52;
+  const zVal=pd.vizData.zVal;
+  const mu=pd.vizData.mu, sig=pd.vizData.sigma;
+  // shaded regions for empirical rule if needed
+  if(pd.vizData.shade){
+    const shade=pd.vizData.shade; // {from, to, col}
+    cx.beginPath();
+    const x0=cX+((shade.from+3)/6)*cW;
+    const x1=cX+((shade.to+3)/6)*cW;
+    cx.moveTo(x0,cY+cH);
+    for(let x=x0;x<=x1;x+=2){
+      const z=((x-cX)/cW)*6-3;
+      cx.lineTo(x,cY+cH*.9-Math.exp(-.5*z*z)*cH*.75);
+    }
+    cx.lineTo(x1,cY+cH);cx.closePath();
+    cx.fillStyle=shade.col||'rgba(115,0,10,.35)';cx.fill();
+  }
+  // bell curve fill
+  cx.beginPath();
+  for(let x=0;x<=cW;x+=2){
+    const z=(x/cW)*6-3;
+    const y=cY+cH*.9-Math.exp(-.5*z*z)*cH*.75;
+    x===0?cx.moveTo(cX+x,y):cx.lineTo(cX+x,y);
+  }
+  cx.lineTo(cX+cW,cY+cH);cx.lineTo(cX,cY+cH);cx.closePath();
+  const fg=cx.createLinearGradient(0,cY,0,cY+cH);
+  fg.addColorStop(0,'rgba(115,0,10,.3)');fg.addColorStop(1,'rgba(115,0,10,.04)');
+  cx.fillStyle=fg;cx.fill();
+  // bell curve stroke
+  cx.strokeStyle='#d4af37';cx.lineWidth=2.5;cx.beginPath();
+  for(let x=0;x<=cW;x+=2){
+    const z=(x/cW)*6-3;
+    const y=cY+cH*.9-Math.exp(-.5*z*z)*cH*.75;
+    x===0?cx.moveTo(cX+x,y):cx.lineTo(cX+x,y);
+  }cx.stroke();
+  // axis
+  cx.strokeStyle='#334';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(cX,cY+cH);cx.lineTo(cX+cW,cY+cH);cx.stroke();
+  // sigma markers
+  [-3,-2,-1,0,1,2,3].forEach(z=>{
+    const x=cX+(z+3)/6*cW;
+    cx.strokeStyle='#334';cx.lineWidth=1;
+    cx.beginPath();cx.moveTo(x,cY+cH-4);cx.lineTo(x,cY+cH+6);cx.stroke();
+    cx.fillStyle='#666';cx.font=`${H*.013}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+    cx.fillText(z===0?`μ=${mu}`:`${z}σ`,x,cY+cH+H*.032);
+  });
+  // z marker if provided
+  if(zVal!==undefined && t>40){
+    const zx=cX+(zVal+3)/6*cW;
+    cx.strokeStyle='#00dd66';cx.lineWidth=2;cx.setLineDash([5,5]);
+    cx.beginPath();cx.moveTo(zx,cY);cx.lineTo(zx,cY+cH);cx.stroke();cx.setLineDash([]);
+    const zy=cY+cH*.9-Math.exp(-.5*zVal*zVal)*cH*.75;
+    const gg=cx.createRadialGradient(zx,zy,2,zx,zy,18);
+    gg.addColorStop(0,'rgba(0,220,100,.5)');gg.addColorStop(1,'transparent');
+    cx.fillStyle=gg;cx.beginPath();cx.arc(zx,zy,18,0,Math.PI*2);cx.fill();
+    cx.fillStyle='#00dd66';cx.font=`bold ${H*.018}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+    cx.fillText(`x=${pd.vizData.x}`,zx,cY-H*.01);
+  }
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.024}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText(pd.vizData.title||'NORMAL DISTRIBUTION',W/2,H*.044);
+  cx.textAlign='left';
+}
+
+function drawVizLine(pd,t){
+  const data=[...pd.vizData.values].sort((a,b)=>a-b);
+  const n=data.length, min=data[0], max=data[n-1];
+  const cX=W*.1,cY=H*.28,cW=W*.8;
+  // line
+  cx.strokeStyle='#334';cx.lineWidth=3;
+  cx.beginPath();cx.moveTo(cX,cY);cx.lineTo(cX+cW,cY);cx.stroke();
+  // ticks
+  const appear=Math.min(n,Math.floor((t-10)/5));
+  data.forEach((v,i)=>{
+    if(i>=appear) return;
+    const nx=(v-min)/(max-min||1);
+    const px=cX+nx*cW;
+    const isMedian=pd.vizData.medianIdx!==undefined&&(i===pd.vizData.medianIdx||(n%2===0&&(i===pd.vizData.medianIdx||i===pd.vizData.medianIdx-1)));
+    const gg=cx.createRadialGradient(px,cY,1,px,cY,isMedian?20:12);
+    gg.addColorStop(0,isMedian?'rgba(0,220,100,.5)':'rgba(212,175,55,.35)');
+    gg.addColorStop(1,'transparent');
+    cx.fillStyle=gg;cx.beginPath();cx.arc(px,cY,isMedian?18:12,0,Math.PI*2);cx.fill();
+    cx.beginPath();cx.arc(px,cY,isMedian?8:5,0,Math.PI*2);
+    cx.fillStyle=isMedian?'#00dd66':'#d4af37';cx.fill();
+    cx.fillStyle=isMedian?'#00dd66':'#d4af37';
+    cx.font=`${isMedian?H*.018:H*.015}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+    cx.fillText(v+(pd.unit||''),px,cY-16);
+  });
+  // sorted label
+  if(t>20){
+    cx.fillStyle='#666';cx.font=`${H*.014}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+    cx.fillText(`Sorted: ${data.join('  ')}`,W/2,cY+H*.06);
+    if(pd.vizData.rangeVal!==undefined){
+      cx.fillStyle='#4a9fd4';
+      cx.fillText(`Range = ${max} − ${min} = ${pd.vizData.rangeVal}`,W/2,cY+H*.1);
+    }
+  }
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.024}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText(pd.vizData.title||'NUMBER LINE',W/2,H*.14);
+  cx.textAlign='left';
+}
+
+function drawVizDists(pd,t){
+  // Three distribution shapes - user clicks the right one
+  const dists=[
+    {label:'Left Skew',type:'left'},
+    {label:'Symmetric',type:'symmetric'},
+    {label:'Right Skew',type:'right'},
+  ];
+  const w3=W*.26,h3=H*.4,gap=W*.04,startX=W*.07;
+  dists.forEach((d,i)=>{
+    const sx=startX+i*(w3+gap),sy=H*.1;
+    // background
+    const isTarget=pd.vizData.correctIdx===i;
+    cx.fillStyle=isTarget?'rgba(115,0,10,.12)':'rgba(20,20,40,.5)';
+    cx.fillRect(sx,sy,w3,h3);
+    cx.strokeStyle=isTarget?'#d4af3755':'#252545';cx.lineWidth=2;cx.strokeRect(sx,sy,w3,h3);
+    // distribution shape
+    cx.strokeStyle='#d4af37';cx.lineWidth=2.5;cx.beginPath();
+    for(let x=0;x<w3-4;x++){
+      const nx=x/(w3-4);
+      let y;
+      if(d.type==='symmetric'){
+        const z=nx*6-3; y=Math.exp(-.5*z*z);
+      } else if(d.type==='right'){
+        y=nx<.15?nx/.15*.15:Math.exp(-((nx-.15)/.25)*1.5)*.85+.15*(1-nx/.15);
+        y=Math.exp(-Math.pow((nx-.1)*.7,2)*3)*.2+Math.exp(-Math.pow((nx-.18)*.5,2)*3)*.9*(1-nx*.6);
+        y=Math.max(0,Math.exp(-Math.pow(nx-.08,.8)*4));
+      } else {
+        y=Math.max(0,Math.exp(-Math.pow((1-nx)-.08,.8)*4));
+      }
+      const py=sy+h3*.9-y*h3*.75;
+      x===0?cx.moveTo(sx+x+2,py):cx.lineTo(sx+x+2,py);
+    }cx.stroke();
+    // fill
+    cx.beginPath();
+    for(let x=0;x<w3-4;x++){
+      const nx=x/(w3-4);
+      let y;
+      if(d.type==='symmetric'){const z=nx*6-3;y=Math.exp(-.5*z*z);}
+      else if(d.type==='right'){y=Math.max(0,Math.exp(-Math.pow(nx-.08,.8)*4));}
+      else{y=Math.max(0,Math.exp(-Math.pow((1-nx)-.08,.8)*4));}
+      const py=sy+h3*.9-y*h3*.75;
+      x===0?cx.moveTo(sx+x+2,py):cx.lineTo(sx+x+2,py);
+    }
+    cx.lineTo(sx+w3-2,sy+h3*.9);cx.lineTo(sx+2,sy+h3*.9);cx.closePath();
+    cx.fillStyle='rgba(115,0,10,.18)';cx.fill();
+    // label
+    cx.fillStyle='#d4af37';cx.font=`${H*.02}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+    cx.fillText(d.label.toUpperCase(),sx+w3/2,sy+h3+H*.035);
+    // click region
+    pd.clickRegions[i]={x:sx,y:sy,w:w3,h:h3,idx:i,type:'rect'};
+  });
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.024}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText('Click the Distribution Shape that Matches',W/2,H*.044);
+  cx.textAlign='left';
+}
+
+function drawVizProb(pd,t){
+  const items=pd.vizData.items;
+  const cols={'Garnet':'#73000A','Gold':'#d4af37','Black':'#333344','Blue':'#4a9fd4','Green':'#00aa44','Purple':'#9a4aff'};
+  const total=items.reduce((a,b)=>a+b.count,0);
+  // grid of colored circles
+  const cellSize=Math.min(W*.06,H*.08);
+  const perRow=Math.ceil(Math.sqrt(total*1.6));
+  let idx=0;
+  const startX=W/2-(perRow*cellSize)/2;
+  const startY=H*.12;
+  const appear=Math.min(total,Math.floor((t-10)/2));
+  items.forEach(it=>{
+    for(let c=0;c<it.count;c++){
+      if(idx>=appear){idx++;return;}
+      const row=Math.floor(idx/perRow), col=idx%perRow;
+      const px=startX+col*cellSize+cellSize/2;
+      const py=startY+row*cellSize+cellSize/2;
+      const col2=cols[it.color]||'#888';
+      const gg=cx.createRadialGradient(px-cellSize*.15,py-cellSize*.15,1,px,py,cellSize*.4);
+      gg.addColorStop(0,col2+'ff');gg.addColorStop(1,col2+'88');
+      cx.beginPath();cx.arc(px,py,cellSize*.38,0,Math.PI*2);
+      cx.fillStyle=gg;cx.fill();
+      cx.strokeStyle='rgba(255,255,255,.2)';cx.lineWidth=1;cx.stroke();
+      idx++;
+    }
+  });
+  // legend
+  let ly=H*.65;
+  items.forEach(it=>{
+    const col2=cols[it.color]||'#888';
+    cx.beginPath();cx.arc(W*.2,ly,7,0,Math.PI*2);cx.fillStyle=col2;cx.fill();
+    cx.fillStyle='#ccc';cx.font=`${H*.018}px 'Share Tech Mono',monospace`;
+    cx.fillText(`${it.color}: ${it.count}`,W*.22,ly+5);
+    ly+=H*.04;
+  });
+  cx.fillStyle='#d4af37';cx.font=`${H*.018}px 'Share Tech Mono',monospace`;cx.textAlign='right';
+  cx.fillText(`Total: ${total} items`,W*.88,H*.65);
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.024}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText('PROBABILITY VISUALIZATION',W/2,H*.044);
+  cx.textAlign='left';
+}
+
+function drawVizClassify(pd,t){
+  // Show the variable with icon, animate in
+  const icons={'Quantitative — Ratio':'📏','Quantitative — Interval':'🌡️',
+    'Qualitative — Nominal':'🏷️','Qualitative — Ordinal':'📊'};
+  const v=pd.vizData.variable;
+  const tree=[
+    {x:.5,y:.1,w:.5,label:'Categorical\n(Qualitative)',col:'#4a9fd4'},
+    {x:.15,y:.1,w:.5,label:'Numerical\n(Quantitative)',col:'#d4af37'},
+  ];
+  // classification tree visual
+  const cx2=W*.5,cy2=H*.08;
+  cx.fillStyle='rgba(212,175,55,.1)';cx.fillRect(W*.04,H*.07,W*.92,H*.5);
+  cx.strokeStyle='rgba(212,175,55,.2)';cx.lineWidth=1;cx.strokeRect(W*.04,H*.07,W*.92,H*.5);
+  // levels
+  const levels=[
+    [{label:'DATA',col:'#888',y:.1,x:.5,w:.18}],
+    [{label:'QUALITATIVE\n(Categories)',col:'#4a9fd4',y:.22,x:.28,w:.22},{label:'QUANTITATIVE\n(Numbers)',col:'#d4af37',y:.22,x:.72,w:.22}],
+    [{label:'NOMINAL\n(No order)',col:'#4a9fd4aa',y:.38,x:.17,w:.2},{label:'ORDINAL\n(Ordered)',col:'#4a9fd4cc',y:.38,x:.38,w:.2},{label:'INTERVAL\n(No true 0)',col:'#d4af37aa',y:.38,x:.6,w:.2},{label:'RATIO\n(True zero)',col:'#d4af37',y:.38,x:.82,w:.2}],
+  ];
+  levels.forEach((row,ri)=>{
+    row.forEach(n=>{
+      const nx=W*n.x,ny=H*n.y,nw=W*n.w;
+      cx.fillStyle=n.col+'33';cx.fillRect(nx-nw/2,ny-H*.025,nw,H*.05);
+      cx.strokeStyle=n.col;cx.lineWidth=1.5;cx.strokeRect(nx-nw/2,ny-H*.025,nw,H*.05);
+      cx.fillStyle=n.col;cx.font=`${H*.014}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+      n.label.split('\n').forEach((ln,li)=>cx.fillText(ln,nx,ny-H*.005+li*H*.018));
+      if(ri<2){
+        levels[ri+1]&&levels[ri+1].filter((_,ci)=>{
+          if(ri===0) return true;
+          return (n.x<.5&&ci<2)||(n.x>.5&&ci>=2);
+        }).forEach(ch=>{
+          cx.strokeStyle='#33344488';cx.lineWidth=1;
+          cx.beginPath();cx.moveTo(nx,ny+H*.025);cx.lineTo(W*ch.x,H*ch.y-H*.025);cx.stroke();
+        });
+      }
+    });
+  });
+  // Show the variable in a spotlight
+  cx.fillStyle='rgba(212,175,55,.15)';cx.fillRect(W*.1,H*.54,W*.8,H*.1);
+  cx.strokeStyle='#d4af3766';cx.lineWidth=2;cx.strokeRect(W*.1,H*.54,W*.8,H*.1);
+  cx.fillStyle='#fff';cx.font=`bold ${H*.026}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText(`"${v}"`,W*.5,H*.604);
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.022}px 'Cinzel',serif`;cx.fillText('CLASSIFICATION CHALLENGE',W*.5,H*.044);
+  cx.textAlign='left';
+}
+
+function drawVizHyp(pd,t){
+  // Balance scale visual
+  const bx=W*.5,by=H*.25;
+  const tilt=Math.sin(t*.03)*.05;
+  // stand
+  cx.strokeStyle='#d4af37';cx.lineWidth=3;
+  cx.beginPath();cx.moveTo(bx,by+H*.25);cx.lineTo(bx,by);cx.stroke();
+  // beam
+  cx.save();cx.translate(bx,by);cx.rotate(tilt);
+  cx.beginPath();cx.moveTo(-W*.22,0);cx.lineTo(W*.22,0);cx.stroke();
+  // left pan (H₀)
+  cx.strokeStyle='#4a9fd4';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(-W*.22,0);cx.lineTo(-W*.22,H*.1);cx.stroke();
+  cx.fillStyle='rgba(74,159,212,.15)';cx.strokeStyle='#4a9fd4';
+  cx.beginPath();cx.arc(-W*.22,H*.1,W*.06,0,Math.PI);cx.fill();cx.stroke();
+  cx.fillStyle='#4a9fd4';cx.font=`bold ${H*.022}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText('H₀',-W*.22,H*.14);
+  cx.font=`${H*.014}px 'Share Tech Mono',monospace`;cx.fillStyle='#4a9fd4aa';
+  cx.fillText('(null)',-W*.22,H*.16);
+  // right pan (Hₐ)
+  cx.strokeStyle='#d4af37';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(W*.22,0);cx.lineTo(W*.22,H*.1);cx.stroke();
+  cx.fillStyle='rgba(212,175,55,.15)';cx.strokeStyle='#d4af37';
+  cx.beginPath();cx.arc(W*.22,H*.1,W*.06,0,Math.PI);cx.fill();cx.stroke();
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.022}px 'Cinzel',serif`;
+  cx.fillText('Hₐ',W*.22,H*.14);
+  cx.font=`${H*.014}px 'Share Tech Mono',monospace`;cx.fillStyle='#d4af37aa';
+  cx.fillText('(alternative)',W*.22,H*.16);
+  cx.restore();
+  // p-value bar
+  if(t>30){
+    cx.fillStyle='rgba(212,175,55,.08)';cx.fillRect(W*.15,H*.5,W*.7,H*.06);
+    cx.strokeStyle='#d4af3755';cx.strokeRect(W*.15,H*.5,W*.7,H*.06);
+    const pv=0.05;
+    cx.fillStyle='#73000A88';cx.fillRect(W*.15,H*.5,W*.7*pv*4,H*.06);
+    cx.strokeStyle='#dd3333';cx.lineWidth=2;
+    cx.beginPath();cx.moveTo(W*.15+W*.7*pv*4,H*.5);cx.lineTo(W*.15+W*.7*pv*4,H*.56);cx.stroke();
+    cx.fillStyle='#dd3333';cx.font=`${H*.014}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+    cx.fillText('α = 0.05',W*.15+W*.7*pv*4,H*.584);
+    cx.fillStyle='#888';cx.fillText('p-value scale',W*.5,H*.584);
+  }
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.024}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText('HYPOTHESIS TESTING',W/2,H*.044);
+  cx.textAlign='left';
+}
+
+function drawVizBox(pd,t){
+  const d=pd.vizData;
+  const cX=W*.08,cY=H*.22,cW=W*.84,cH=H*.2;
+  const rng=d.max-d.min;
+  const toX=v=>cX+(v-d.min)/rng*cW;
+  const q1x=toX(d.q1),q3x=toX(d.q3),medx=toX(d.median),minx=toX(d.min),maxx=toX(d.max);
+  // whiskers
+  if(t>20){
+    cx.strokeStyle='#d4af37';cx.lineWidth=2;
+    cx.beginPath();cx.moveTo(minx,cY+cH/2);cx.lineTo(q1x,cY+cH/2);cx.stroke();
+    cx.beginPath();cx.moveTo(minx,cY+cH*.25);cx.lineTo(minx,cY+cH*.75);cx.stroke();
+    cx.beginPath();cx.moveTo(q3x,cY+cH/2);cx.lineTo(maxx,cY+cH/2);cx.stroke();
+    cx.beginPath();cx.moveTo(maxx,cY+cH*.25);cx.lineTo(maxx,cY+cH*.75);cx.stroke();
+  }
+  // box
+  if(t>35){
+    const bg=cx.createLinearGradient(q1x,cY,q3x,cY);
+    bg.addColorStop(0,'rgba(115,0,10,.4)');bg.addColorStop(1,'rgba(115,0,10,.15)');
+    cx.fillStyle=bg;cx.fillRect(q1x,cY,q3x-q1x,cH);
+    cx.strokeStyle='#d4af37';cx.lineWidth=2;cx.strokeRect(q1x,cY,q3x-q1x,cH);
+  }
+  // median line
+  if(t>50){
+    cx.strokeStyle='#00dd66';cx.lineWidth=3;
+    cx.beginPath();cx.moveTo(medx,cY);cx.lineTo(medx,cY+cH);cx.stroke();
+  }
+  // labels animate in
+  if(t>20){
+    const lbls=[{v:d.min,x:minx,l:'Min'},{v:d.q1,x:q1x,l:'Q1'},{v:d.median,x:medx,l:'Q2\n(Median)'},{v:d.q3,x:q3x,l:'Q3'},{v:d.max,x:maxx,l:'Max'}];
+    lbls.forEach(lb=>{
+      cx.fillStyle=lb.l.includes('Median')?'#00dd66':'#d4af37';
+      cx.font=`${H*.016}px 'Share Tech Mono',monospace`;cx.textAlign='center';
+      cx.fillText(lb.l.split('\n')[0],lb.x,cY-H*.04);
+      if(lb.l.includes('\n')) cx.fillText(lb.l.split('\n')[1],lb.x,cY-H*.02);
+      cx.fillStyle='#aaa';cx.fillText(lb.v,lb.x,cY+cH+H*.03);
+    });
+  }
+  cx.fillStyle='#d4af37';cx.font=`bold ${H*.024}px 'Cinzel',serif`;cx.textAlign='center';
+  cx.fillText('BOX PLOT — FIVE NUMBER SUMMARY',W/2,H*.14);
+  cx.fillStyle='#666';cx.font=`${H*.015}px 'Share Tech Mono',monospace`;
+  cx.fillText(`IQR = Q3 − Q1 = ${d.q3} − ${d.q1} = ${d.q3-d.q1}`,W/2,H*.52);
+  cx.textAlign='left';
+}
+
+// ── PROBLEM GENERATORS ──
+function ri(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function r1(x){return Math.round(x*10)/10;}
+function r2(x){return Math.round(x*100)/100;}
+function rArr(n,lo,hi){return Array.from({length:n},()=>ri(lo,hi));}
+function shuf(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function makeOpts(correct,wrongs){
+  const pool=shuf([correct,...wrongs.filter(w=>typeof w==='number'?Math.abs(w-correct)>.05:w!==correct).slice(0,3)]);
+  while(pool.length<4)pool.push(typeof correct==='number'?r1(correct+pool.length*3):wrongs[pool.length%wrongs.length]||'Other');
+  return{options:pool.slice(0,4),correctIdx:pool.slice(0,4).indexOf(correct)};
+}
+
+const GEN={
+
+classify_data:()=>{
+  const items=[
+    {v:'Number of siblings a student has',lvl:'Quantitative — Ratio',why:'Has a true zero (0 siblings). Ratios are meaningful.'},
+    {v:'Letter grade (A, B, C, D, F)',lvl:'Qualitative — Ordinal',why:'Categories with a natural order, but unequal gaps between grades.'},
+    {v:'Blood type (A, B, AB, O)',lvl:'Qualitative — Nominal',why:'Categories with no natural order — you cannot rank blood types.'},
+    {v:'Temperature in Celsius',lvl:'Quantitative — Interval',why:'Equal intervals, but 0°C is not "no temperature" — no true zero.'},
+    {v:'Student ID number',lvl:'Qualitative — Nominal',why:'Numbers used as labels only. Arithmetic is meaningless.'},
+    {v:'Pain level rated 1–10',lvl:'Qualitative — Ordinal',why:'Ordered, but the gap between 3 and 4 ≠ gap between 7 and 8.'},
+    {v:'Weight of a newborn in pounds',lvl:'Quantitative — Ratio',why:'True zero exists. 8 lbs is exactly twice 4 lbs.'},
+    {v:'Year of birth',lvl:'Quantitative — Interval',why:'Equal intervals but no absolute zero — year 0 is not "no time."'},
+    {v:'Zip code',lvl:'Qualitative — Nominal',why:'Numbers as location labels. Math on zip codes is meaningless.'},
+    {v:'Military rank (Private, Corporal…)',lvl:'Qualitative — Ordinal',why:'Clear order, but the gap between ranks is not numerically equal.'},
+  ];
+  const it=items[ri(0,items.length-1)];
+  const all=['Qualitative — Nominal','Qualitative — Ordinal','Quantitative — Interval','Quantitative — Ratio'];
+  const {options,correctIdx}=makeOpts(it.lvl,shuf(all.filter(l=>l!==it.lvl)));
+  return{
+    icon:'🔬',tag:'DATA CLASSIFICATION',title:'Level of Measurement',
+    viz:'classify',vizData:{variable:it.v},interactive:false,clickRegions:[],
+    ctx:`SIGMA flagged an unclassified variable: "${it.v}"`,
+    q:`How should "${it.v}" be classified?`,
+    options,correctIdx,unit:'',
+    steps:[`Variable: "${it.v}"`,`Step 1: Is it numeric with meaning, or just a label/category?`,`Step 2: Is there a natural order? Equal intervals? A true zero?`,it.why,`✓ Level: ${it.lvl}`]
+  };
+},
+
+mean:()=>{
+  const ctxs=[
+    {c:'A nursing cohort recorded resting heart rates (bpm) during their first clinical rotation:',u:'bpm'},
+    {c:'MATH 102 quiz scores for a group of students:',u:'pts'},
+    {c:'The Spartans basketball team points per game over recent games:',u:'pts'},
+    {c:'Daily study hours logged by Exercise Science students:',u:'hrs'},
+  ];
+  const {c,u}=ctxs[ri(0,ctxs.length-1)];
+  const n=ri(5,8);const data=rArr(n,62,96);
+  const sum=data.reduce((a,b)=>a+b,0);const mean=r1(sum/n);
+  const {options,correctIdx}=makeOpts(mean,[r1(mean+ri(2,6)),r1(mean-ri(2,5)),r1(mean+ri(8,15)),r1(data[0])]);
+  return{
+    icon:'📊',tag:'MEASURES OF CENTER',title:'Calculate the Mean',
+    viz:'barchart',vizData:{values:data,title:'DATASET — Calculate the Mean',labels:data.map((_,i)=>`x${i+1}`)},
+    interactive:false,clickRegions:[],ctx:c,unit:u,
+    q:`What is the mean (x̄) of this dataset? Round to 1 decimal place.`,
+    options:options.map(v=>`${v} ${u}`),correctIdx,
+    steps:[`Formula: x̄ = Σx / n`,`Step 1: Add all values`,`${data.join(' + ')} = ${sum}`,`Step 2: Divide by n = ${n}`,`x̄ = ${sum} ÷ ${n} = ${mean} ${u}`,`✓ Mean = ${mean} ${u}`]
+  };
+},
+
+median:()=>{
+  const ctxs=[
+    {c:'Patient ages (yrs) admitted to the USC Upstate Health Clinic:',u:'yrs'},
+    {c:'MATH 102 exam scores for a sample of students:',u:'pts'},
+    {c:'Weekly hours of exercise recorded by nursing students:',u:'hrs'},
+  ];
+  const {c,u}=ctxs[ri(0,ctxs.length-1)];
+  const n=ri(5,9);const data=rArr(n,55,98);
+  const sorted=[...data].sort((a,b)=>a-b);
+  let median,note,midIdx;
+  if(n%2===1){
+    midIdx=Math.floor(n/2);median=sorted[midIdx];
+    note=`n=${n} (odd) → middle at position ${midIdx+1} = ${median} ${u}`;
+  } else {
+    midIdx=n/2;const lo=sorted[midIdx-1],hi=sorted[midIdx];
+    median=r1((lo+hi)/2);note=`n=${n} (even) → average middle two: (${lo}+${hi})÷2 = ${median} ${u}`;
+  }
+  const mn=r1(data.reduce((a,b)=>a+b,0)/n);
+  const {options,correctIdx}=makeOpts(median,[r1(median+ri(2,5)),r1(median-ri(2,4)),mn]);
+  return{
+    icon:'📊',tag:'MEASURES OF CENTER',title:'Find the Median',
+    viz:'numberline',vizData:{values:data,title:'Find the Middle Value',medianIdx:Math.floor(n/2),unit:u},
+    interactive:false,clickRegions:[],ctx:c,unit:u,
+    q:`What is the median of this dataset?`,
+    options:options.map(v=>`${v} ${u}`),correctIdx,
+    steps:[`Step 1: Sort ascending`,`Sorted: ${sorted.join(', ')}`,`Step 2: Find middle value`,note,`✓ Median = ${median} ${u}`]
+  };
+},
+
+mode:()=>{
+  const ctxs=[
+    {c:'Students rated course difficulty (1–10) on an exit survey:',u:'/10'},
+    {c:'Number of office hour visits per student this semester:',u:'visits'},
+  ];
+  const {c,u}=ctxs[ri(0,ctxs.length-1)];
+  const modeVal=ri(3,9);const n=ri(7,10);
+  let data=rArr(n,1,10);
+  for(let i=0;i<ri(2,3);i++)data[ri(0,n-1)]=modeVal;
+  const freq={};data.forEach(v=>freq[v]=(freq[v]||0)+1);
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+  const mode=parseInt(sorted[0][0]);
+  const freqStr=sorted.map(([k,v])=>`${k}(×${v})`).join(' | ');
+  const hlIdx=data.indexOf(mode);
+  const wrongs=[...new Set(data.filter(v=>v!==mode))].slice(0,3);
+  const{options,correctIdx}=makeOpts(mode,wrongs);
+  return{
+    icon:'📊',tag:'MEASURES OF CENTER',title:'Find the Mode — Click the Tallest Bar',
+    viz:'barchart',
+    vizData:{values:data.map(v=>freq[v]||0),labels:data.map(v=>String(v)),title:'FREQUENCY — Click the Mode (Tallest Bar)',
+      highlight:data.map(v=>freq[v]).indexOf(Math.max(...data.map(v=>freq[v])))},
+    interactive:true,clickRegions:[],ctx:c,unit:u,
+    clickCorrectIdx:data.map(v=>freq[v]).indexOf(Math.max(...data.map(v=>freq[v]))),
+    q:`Which value appears most often (the mode)? Click its bar in the chart above.`,
+    options:options.map(v=>`Mode = ${v} ${u}`),correctIdx,isClickProblem:true,
+    steps:[`Step 1: Count how often each value appears`,`Frequencies: ${freqStr}`,`Step 2: The mode is the most frequent value`,`${mode} appears ${sorted[0][1]} times — more than any other`,`✓ Mode = ${mode} ${u}`]
+  };
+},
+
+range:()=>{
+  const ctxs=[
+    {c:'Systolic blood pressure (mmHg) readings from the campus clinic:',u:'mmHg'},
+    {c:'Final exam scores from a PSYC 101 section:',u:'pts'},
+  ];
+  const{c,u}=ctxs[ri(0,ctxs.length-1)];
+  const n=ri(5,8);const data=rArr(n,58,98);
+  const sorted=[...data].sort((a,b)=>a-b);
+  const mn=sorted[0],mx=sorted[n-1],range=mx-mn;
+  const{options,correctIdx}=makeOpts(range,[range+ri(2,7),range-ri(1,5),mx,mn]);
+  return{
+    icon:'📐',tag:'MEASURES OF SPREAD',title:'Calculate the Range',
+    viz:'numberline',vizData:{values:data,title:'Range = Max − Min',rangeVal:range,unit:u},
+    interactive:false,clickRegions:[],ctx:c,unit:u,
+    q:`What is the range of this dataset?`,
+    options:options.map(v=>`${v} ${u}`),correctIdx,
+    steps:[`Formula: Range = Maximum − Minimum`,`Sorted: ${sorted.join(', ')}`,`Max = ${mx} ${u}   Min = ${mn} ${u}`,`Range = ${mx} − ${mn} = ${range} ${u}`,`✓ Range = ${range} ${u}`]
+  };
+},
+
+stddev:()=>{
+  const ctxs=[
+    {c:'Hours of sleep per night for a sample of nursing students:',u:'hrs'},
+    {c:'Reaction times (×0.1s) from a psychology experiment:',u:'×0.1s'},
+  ];
+  const{c,u}=ctxs[ri(0,ctxs.length-1)];
+  const n=ri(4,5);const data=Array.from({length:n},()=>ri(5,11));
+  const mean=r2(data.reduce((a,b)=>a+b,0)/n);
+  const sq=data.map(v=>r2((v-mean)**2));
+  const variance=r2(sq.reduce((a,b)=>a+b,0)/n);
+  const sd=r2(Math.sqrt(variance));
+  const{options,correctIdx}=makeOpts(sd,[variance,r2(sd+.4),r2(Math.abs(sd-.3)),mean]);
+  return{
+    icon:'📐',tag:'MEASURES OF SPREAD',title:'Standard Deviation',
+    viz:'bellcurve',vizData:{mu:mean,sigma:sd,title:'SPREAD AROUND THE MEAN',zVal:undefined},
+    interactive:false,clickRegions:[],ctx:c,unit:u,
+    q:`What is the population standard deviation (σ)? Round to 2 decimal places.\nDataset: [${data.join(', ')}]`,
+    options:options.map(v=>`σ = ${v} ${u}`),correctIdx,
+    steps:[`Formula: σ = √(Σ(xᵢ−μ)²/N)`,`Step 1: Mean μ = ${mean} ${u}`,`Step 2: Squared deviations: `+sq.map((d,i)=>`(${data[i]}−${mean})²=${d}`).join(' | '),`Step 3: Variance σ² = ${variance}`,`Step 4: σ = √${variance} = ${sd} ${u}`,`✓ σ = ${sd} ${u}`]
+  };
+},
+
+probability:()=>{
+  const scenarios=[
+    ()=>{const g=ri(3,7),go=ri(2,5),b=ri(1,4);return{items:[{color:'Garnet',count:g},{color:'Gold',count:go},{color:'Black',count:b}],event:'a Garnet marble',favorable:g};},
+    ()=>{const r=ri(4,8),b=ri(3,7),g=ri(2,5);return{items:[{color:'Blue',count:b},{color:'Green',count:g},{color:'Purple',count:r}],event:'a Blue item',favorable:b};},
+    ()=>{const y=ri(3,6),r=ri(2,5),w=ri(1,4);return{items:[{color:'Gold',count:y},{color:'Garnet',count:r},{color:'Black',count:w}],event:'a Gold item',favorable:y};},
+  ];
+  const s=scenarios[ri(0,scenarios.length-1)]();
+  const total=s.items.reduce((a,b)=>a+b.count,0);
+  const prob=r2(s.favorable/total);
+  const comp=r2(1-prob);
+  const w2=r2(s.favorable/(total+ri(2,4)));
+  const w3=r2((s.favorable+ri(1,2))/total);
+  const{options,correctIdx}=makeOpts(prob,[comp,w2,w3]);
+  return{
+    icon:'🎲',tag:'PROBABILITY',title:'Calculate P(event)',
+    viz:'probviz',vizData:{items:s.items,title:'PROBABILITY VISUALIZATION'},
+    interactive:false,clickRegions:[],ctx:'A collection of colored items is used in a probability demonstration at USC Upstate.',unit:'',
+    q:`If one item is selected at random, what is P(${s.event})?`,
+    options:options.map(v=>`P = ${v}`),correctIdx,
+    steps:[`Formula: P(event) = Favorable / Total`,`Favorable (${s.event}): ${s.favorable}`,`Total items: ${total}`,`P = ${s.favorable}/${total} = ${prob}`,`As a percentage: ${Math.round(prob*100)}%`,`✓ P(${s.event}) = ${prob}`]
+  };
+},
+
+zscore:()=>{
+  const ctxs=[
+    {c:'A student\'s score on a nursing entrance exam is compared to the class average.'},
+    {c:'A patient\'s heart rate is evaluated against the population norm.'},
+    {c:'An athlete\'s sprint time is compared to the team average.'},
+  ];
+  const{c}=ctxs[ri(0,ctxs.length-1)];
+  const mu=ri(65,82),sigma=ri(4,12);
+  const x=ri(mu-2*sigma,mu+2*sigma);
+  const z=r2((x-mu)/sigma);
+  const w1=r2((mu-x)/sigma),w2=r2((x-mu)/(sigma+ri(2,3))),w3=r2(z+ri(1,3)*.25*(Math.random()<.5?1:-1));
+  const{options,correctIdx}=makeOpts(z,[w1,w2,w3]);
+  return{
+    icon:'🔔',tag:'NORMAL DISTRIBUTION',title:'Calculate a Z-Score',
+    viz:'bellcurve',vizData:{mu,sigma,x,zVal:z,title:`Z-SCORE: μ=${mu}, σ=${sigma}, x=${x}`},
+    interactive:false,clickRegions:[],ctx:c,unit:'',
+    q:`Given: x = ${x}, μ = ${mu}, σ = ${sigma}. What is the z-score?`,
+    options:options.map(v=>`z = ${v}`),correctIdx,
+    steps:[`Formula: z = (x − μ) / σ`,`x = ${x}  |  μ = ${mu}  |  σ = ${sigma}`,`z = (${x} − ${mu}) / ${sigma}`,`z = ${x-mu} / ${sigma}`,`✓ z = ${z}`]
+  };
+},
+
+skewness:()=>{
+  const scenarios=[
+    {ctx:'Income data often has a few extremely high earners pulling the tail.',correct:2,label:'Right Skew'},
+    {ctx:'Test scores where most students score very high, but a few fail badly.',correct:0,label:'Left Skew'},
+    {ctx:'Heights of adult women in a large random sample.',correct:1,label:'Symmetric'},
+    {ctx:'Age at retirement — most retire around 65, but a few retire very early.',correct:0,label:'Left Skew'},
+    {ctx:'Time to finish a 5K race — most runners cluster early, but some take much longer.',correct:2,label:'Right Skew'},
+  ];
+  const s=scenarios[ri(0,scenarios.length-1)];
+  const labels=['Left Skewed','Symmetric (Normal)','Right Skewed'];
+  const{options,correctIdx}=makeOpts(labels[s.correct],[labels[(s.correct+1)%3],labels[(s.correct+2)%3]]);
+  return{
+    icon:'〰️',tag:'DISTRIBUTION SHAPE',title:'Identify the Skewness — Click the Shape',
+    viz:'distributions',vizData:{correctIdx:s.correct,title:'Click the Matching Distribution'},
+    interactive:true,clickRegions:[],ctx:s.ctx,unit:'',isClickProblem:true,
+    clickCorrectIdx:s.correct,
+    q:`Based on this scenario, which distribution shape is most likely? Click it above.`,
+    options:options,correctIdx,
+    steps:[`Scenario: ${s.ctx}`,`Right Skew: tail extends RIGHT — mean > median`,`Left Skew: tail extends LEFT — mean < median`,`Symmetric: bell shape, mean ≈ median`,`✓ This describes a ${s.label} distribution`]
+  };
+},
+
+hypothesis:()=>{
+  const studies=[
+    {ctx:'A USC Upstate researcher claims nursing students study MORE than 3 hours/day on average.',
+     H0:'H₀: μ = 3 hrs (study time equals 3 hours)',Ha:'Hₐ: μ > 3 hrs',w1:'H₀: μ > 3 hrs',w2:'H₀: μ ≠ 3 hrs',w3:'H₀: Study time is unmeasurable'},
+    {ctx:'A health study tests whether mean resting heart rate DIFFERS from the national average of 72 bpm.',
+     H0:'H₀: μ = 72 bpm (equals national average)',Ha:'Hₐ: μ ≠ 72 bpm',w1:'H₀: μ > 72 bpm',w2:'H₀: μ ≠ 72 bpm',w3:'H₀: Heart rate has no mean'},
+    {ctx:'An exercise scientist claims a training program REDUCES average sprint time below 12 seconds.',
+     H0:'H₀: μ = 12 sec (sprint time equals 12 seconds)',Ha:'Hₐ: μ < 12 sec',w1:'H₀: μ < 12 sec',w2:'H₀: The program has no effect on anything',w3:'H₀: μ ≠ 12 sec'},
+  ];
+  const s=studies[ri(0,studies.length-1)];
+  const{options,correctIdx}=makeOpts(s.H0,[s.w1,s.w2,s.w3]);
+  return{
+    icon:'⚖️',tag:'HYPOTHESIS TESTING',title:'Identify the Null Hypothesis',
+    viz:'hypothesis',vizData:{title:'HYPOTHESIS TESTING FRAMEWORK'},
+    interactive:false,clickRegions:[],ctx:s.ctx,unit:'',
+    q:`Which correctly states the null hypothesis (H₀) for this study?`,
+    options,correctIdx,
+    steps:[`H₀ always states NO effect — the parameter EQUALS a specific value.`,`H₀ uses "=" — never ">" "<" or "≠"`,`The researcher tries to DISPROVE H₀ with evidence.`,`Hₐ (alternative) captures what the researcher is trying to prove.`,`✓ ${s.H0}`]
+  };
+},
+
+outlier:()=>{
+  // Build a cluster + 1 outlier
+  const n=ri(7,10);
+  const cX=ri(35,55),cY=ri(35,60); // cluster center (% of chart)
+  const pts=Array.from({length:n},()=>({
+    nx:Math.max(.05,Math.min(.95,(cX+ri(-12,12))/100)),
+    ny:Math.max(.05,Math.min(.95,(cY+ri(-12,12))/100)),
+    outlier:false
+  }));
+  // Add outlier far away
+  const outX=cX>50?ri(5,15):ri(80,90);
+  const outY=cY>50?ri(5,15):ri(80,90);
+  const outIdx=ri(0,n-1);
+  pts[outIdx]={nx:outX/100,ny:outY/100,outlier:true};
+  const{options,correctIdx}=makeOpts('Point '+outIdx,pts.filter(p=>!p.outlier).slice(0,3).map((_,i)=>'Point '+((outIdx+i+1)%n)));
+  return{
+    icon:'🔍',tag:'OUTLIER IDENTIFICATION',title:'Click the Outlier',
+    viz:'scatter',vizData:{points:pts,title:'SCATTER PLOT — Find the Outlier'},
+    interactive:true,clickRegions:[],ctx:'A dataset from the USC Upstate Exercise Science lab shows a suspicious reading.',unit:'',
+    isClickProblem:true,clickCorrectIdx:outIdx,
+    q:`One data point is far away from the cluster — the outlier. Click it in the scatter plot above.`,
+    options:options,correctIdx,
+    steps:[`An outlier is a data point that lies far from the rest of the data.`,`Outliers can result from: measurement error, natural variation, or a genuine anomaly.`,`Always investigate an outlier before removing it — it may be meaningful.`,`Visual inspection: look for the point separated from the main cluster.`,`✓ The outlier was Point ${outIdx} at (${Math.round(pts[outIdx].nx*100)}%, ${Math.round(pts[outIdx].ny*100)}%)`]
+  };
+},
+
+five_number:()=>{
+  const n=ri(8,14);const data=rArr(n,30,95);
+  const sorted=[...data].sort((a,b)=>a-b);
+  const mn=sorted[0],mx=sorted[n-1];
+  const q2=n%2===1?sorted[Math.floor(n/2)]:r1((sorted[n/2-1]+sorted[n/2])/2);
+  const lo=sorted.slice(0,Math.floor(n/2));
+  const hi=sorted.slice(Math.ceil(n/2));
+  const q1=lo.length%2===1?lo[Math.floor(lo.length/2)]:r1((lo[lo.length/2-1]+lo[lo.length/2])/2);
+  const q3=hi.length%2===1?hi[Math.floor(hi.length/2)]:r1((hi[hi.length/2-1]+hi[hi.length/2])/2);
+  const iqr=r1(q3-q1);
+  const ask=shuf(['min','q1','median','q3','max'])[0];
+  const vals={min:mn,q1,median:q2,q3,max:mx};
+  const correct=vals[ask];
+  const label={min:'Minimum',q1:'Q1 (First Quartile)',median:'Median (Q2)',q3:'Q3 (Third Quartile)',max:'Maximum'}[ask];
+  const wrongs=[mn,q1,q2,q3,mx].filter(v=>v!==correct).slice(0,3);
+  const{options,correctIdx}=makeOpts(correct,wrongs);
+  return{
+    icon:'📦',tag:'FIVE NUMBER SUMMARY',title:'Read the Box Plot',
+    viz:'boxplot',vizData:{min:mn,q1,median:q2,q3,max:mx},
+    interactive:false,clickRegions:[],ctx:'A box plot summarizes the distribution of MATH 102 student scores.',unit:'',
+    q:`Using the box plot above, what is the ${label}?`,
+    options:options.map(v=>`${v} pts`),correctIdx,
+    steps:[`Five Number Summary: Min, Q1, Median(Q2), Q3, Max`,`Min = ${mn}   Max = ${mx}`,`Q1 = ${q1}   Median = ${q2}   Q3 = ${q3}`,`IQR = Q3 − Q1 = ${q3} − ${q1} = ${iqr}`,`✓ ${label} = ${correct} pts`]
+  };
+},
+
+};// end GEN
+
+// ── CHAPTERS ──
+const CHAPTERS=[
+{title:'The Awakening',sub:'Chapter 0 · Activation',scene:'dorm',beats:[
+  {type:'n',spk:'NARRATOR',txt:'3:47 AM. Your phone screen shatters the dark with a single symbol — Σ — pulsing like a heartbeat.'},
+  {type:'n',spk:'SIGMA',txt:'Hello. I am SIGMA — Statistical Intelligence for Guided Mathematics and Analysis. A hostile algorithm called NULL is corrupting campus data systems. I need a qualified analyst.'},
+  {type:'n',spk:'{name}',txt:'...I\'m a MATH 102 student. I barely passed the first quiz.'},
+  {type:'n',spk:'SIGMA',txt:'NULL specifically targets statistical reasoning — replacing real data with misinformation. The first node requires classification. Every analysis begins by knowing WHAT you\'re measuring.'},
+  {type:'p',gen:'classify_data'},
+  {type:'n',spk:'SIGMA',txt:'Classification confirmed. NULL loses ground when data is properly identified. The Data Lab is next. Move quickly.'},
+  {type:'c',q:'You throw on your jacket. How do you approach this?',opts:[
+    {txt:'Go immediately. Data doesn\'t wait.',fb:'SIGMA: "Urgency is appropriate. NULL does not sleep."'},
+    {txt:'Grab your statistics notes first.',fb:'SIGMA: "Smart. Preparation amplifies ability. Let us go."'},
+  ]},
+]},
+{title:'NULL\'s First Strike',sub:'Chapter 1 · Measures of Center',scene:'dataLab',beats:[
+  {type:'n',spk:'NARRATOR',txt:'The Data Lab. Three massive monitors flicker with corrupted datasets. NULL\'s signature — red glitching text — is everywhere.'},
+  {type:'n',spk:'SIGMA',txt:'NULL has erased all summary statistics from the nursing department\'s clinical data. Without these, patient patterns are invisible. We reconstruct starting with the most fundamental: the mean.'},
+  {type:'p',gen:'mean'},
+  {type:'n',spk:'SIGMA',txt:'Mean recovered. The center of the distribution is restored. But NULL left another corruption in the median — the outlier-resistant measure. That\'s the next target.'},
+  {type:'p',gen:'median'},
+  {type:'n',spk:'SIGMA',txt:'Two nodes clear. NULL is retreating to the Lecture Hall systems. The spread data is still completely corrupted — that\'s more dangerous than it sounds.'},
+]},
+{title:'The Lecture Hall',sub:'Chapter 2 · Mode & Outliers',scene:'classroom',beats:[
+  {type:'n',spk:'NARRATOR',txt:'Prof. Chen\'s lecture equations still glow on the whiteboard — frozen mid-class by NULL\'s attack. The frequency data is scrambled.'},
+  {type:'n',spk:'SIGMA',txt:'NULL replaced all frequency tables with random noise. The mode — the most common value — is invisible. But we can reconstruct it visually. Look at the bar chart. Which bar is tallest?'},
+  {type:'p',gen:'mode'},
+  {type:'n',spk:'SIGMA',txt:'Good. NULL also planted a false data point in the Exercise Science dataset — an outlier designed to corrupt every calculation downstream. Find it.'},
+  {type:'p',gen:'outlier'},
+  {type:'c',q:'NULL sends a message across every screen: "Your statistics are lies. Mine are truth."',opts:[
+    {txt:'"Data doesn\'t lie. Misuse does. We\'re cleaning yours."',fb:'SIGMA: "Precisely. That is the correct frame. NULL hates precision."'},
+    {txt:'Ignore it and keep working.',fb:'SIGMA: "Focus. NULL wants you distracted. Well done."'},
+  ]},
+]},
+{title:'Measuring the Chaos',sub:'Chapter 3 · Spread & Variability',scene:'researchLab',beats:[
+  {type:'n',spk:'NARRATOR',txt:'The Research Lab. Dr. Patel\'s six-month Exercise Science study is here — corrupted at the variability layer. NULL knew what it was doing.'},
+  {type:'n',spk:'SIGMA',txt:'Range first — the simplest measure of spread. NULL deleted it across twelve research datasets. Without spread measures, everything looks more certain than it is. That\'s how misinformation thrives.'},
+  {type:'p',gen:'range'},
+  {type:'n',spk:'SIGMA',txt:'Now the standard deviation — the soul of statistics. It measures exactly how far values stray from the mean. Restore it.'},
+  {type:'p',gen:'stddev'},
+  {type:'n',spk:'SIGMA',txt:'Spread data restored. You\'ve recovered eight nodes. NULL is now attacking probability systems — the Athletics analytics suite. Move.'},
+]},
+{title:'The Probability Field',sub:'Chapter 4 · Probability',scene:'arena',beats:[
+  {type:'n',spk:'NARRATOR',txt:'Spartan Arena analytics. The coaching staff uses probability models to optimize every decision. NULL has replaced them all with fabricated "certainties."'},
+  {type:'n',spk:'SIGMA',txt:'NULL\'s greatest weapon isn\'t false data — it\'s false certainty. Real statistics quantify UNCERTAINTY. Probability is the language of honest uncertainty. Restore it.'},
+  {type:'p',gen:'probability'},
+  {type:'n',spk:'SIGMA',txt:'Probability node recovered. NULL is weakening. The distribution shape system — critical for recognizing patterns — is next. The Health Clinic depends on it.'},
+  {type:'p',gen:'skewness'},
+  {type:'c',q:'The Spartan head coach looks at the restored screen and asks what changed.',opts:[
+    {txt:'"The false certainties are gone. These are real probabilities."',fb:'Coach: "That\'s what I needed. Real information makes better decisions."'},
+    {txt:'"Statistics is back online. The math is clean now."',fb:'Coach nods. "Clean math. That\'s all I ask for."'},
+  ]},
+]},
+{title:'The Clinic & the Curve',sub:'Chapter 5 · Normal Distribution',scene:'clinic',beats:[
+  {type:'n',spk:'NARRATOR',txt:'The campus health clinic. NULL corrupted the z-score calculations — meaning nurses can no longer tell if a patient\'s reading is normal or alarming.'},
+  {type:'n',spk:'SIGMA',txt:'The z-score converts any individual data point into a universal scale: how many standard deviations from the mean? It\'s how we compare across different populations.'},
+  {type:'p',gen:'zscore'},
+  {type:'n',spk:'SIGMA',txt:'Z-scores restored. The clinic can now flag abnormal readings. But NULL also corrupted the box plot system used for summarizing patient cohort data.'},
+  {type:'p',gen:'five_number'},
+  {type:'n',spk:'SIGMA',txt:'Excellent. Two clinical nodes clean. Three remain. The Newsroom and Courtroom are still under NULL\'s control.'},
+]},
+{title:'The Newsroom',sub:'Chapter 6 · Data in Context',scene:'newsroom',beats:[
+  {type:'n',spk:'NARRATOR',txt:'The Herald newsroom. Student journalists were analyzing a campus survey on study habits. NULL replaced their analysis with invented statistics. The article goes to press in one hour.'},
+  {type:'n',spk:'SIGMA',txt:'Survey data is powerful and dangerous. NULL loves attacking surveys because sample statistics are trusted by the public. Restore the true measures of center.'},
+  {type:'p',gen:'mean'},
+  {type:'n',spk:'SIGMA',txt:'NULL is now cornered. Only one node remains — the Courtroom, where hypothesis testing lives. This is the final confrontation. Data versus misinformation. Evidence versus assertion.'},
+  {type:'c',q:'The editor offers you a credit in tomorrow\'s paper.',opts:[
+    {txt:'"Yes — Data verified and restored by MATH 102 student."',fb:'Your first published credit. Stats saves the day.'},
+    {txt:'"Just make sure it\'s right. That\'s the only credit I need."',fb:'SIGMA: "Integrity without ego. A true analyst."'},
+  ]},
+]},
+{title:'The Final Proof',sub:'Chapter 7 · Hypothesis Testing',scene:'courtroom',beats:[
+  {type:'n',spk:'NARRATOR',txt:'The Courtroom of Statistical Evidence. NULL has made its last stand here, where data must be tested — not just observed.'},
+  {type:'n',spk:'NULL',txt:'You cannot defeat me. Statistics is arbitrary. Any conclusion can be claimed. The null hypothesis is always wrong. P-values are theater.'},
+  {type:'n',spk:'SIGMA',txt:'NULL exposes itself. That is what misinformation sounds like — the rejection of the testing framework itself. The null hypothesis exists precisely to prevent false certainty. Prove it.'},
+  {type:'p',gen:'hypothesis'},
+  {type:'n',spk:'SIGMA',txt:'The null hypothesis stands. NULL\'s framework — certainty without evidence — collapses. All campus nodes are restored. The data is clean.'},
+  {type:'n',spk:'NULL',txt:'...This is not over. Wherever statistics is ignored, I exist. Wherever data is misread, I return.'},
+  {type:'n',spk:'SIGMA',txt:'Which is why we train analysts. Not to defeat NULL once — but to recognize it everywhere, every time.'},
+  {type:'c',q:'SIGMA asks its final question: "What will you do with statistical thinking?"',opts:[
+    {txt:'"Use it. I see data everywhere now — and I can read it."',fb:'SIGMA: "Then I succeeded. The campus is in good hands."'},
+    {txt:'"Pass MATH 102. Start there."',fb:'SIGMA: "A worthy goal. But you have already begun to see beyond it."'},
+  ]},
+]},
+];
+
+// ── RENDER LOOP ──
+function loop(){
+  frame++;cx.clearRect(0,0,W,H);
+  if(gameMode==='scene'||gameMode==='choice'){
+    (SCENES[currentScene]||drawDataLab)(frame);
+  } else if(gameMode==='problem'){
+    probFrame++;
+    drawProbCanvas(activeProblem,probFrame);
+  }
+  drawSIGMA(frame);
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ── HUD UPDATE ──
+function updHUD(){
+  document.getElementById('h-score').textContent=ST.score;
+  document.getElementById('h-corr').textContent=ST.correct+'/'+ST.total;
+  document.getElementById('streak-val').textContent=ST.streak;
+  document.getElementById('streak-fire').textContent=ST.streak>=3?'🔥':ST.streak>=1?'⚡':'·';
+  const pct=ST.total>0?(ST.correct/ST.total)*100:0;
+  document.getElementById('mastery-fill').style.width=pct+'%';
+}
+
+// ── CANVAS CLICK HANDLER ──
+cv.addEventListener('click',e=>{
+  if(gameMode!=='problem'||!activeProblem||!activeProblem.isClickProblem||probAnswered) return;
+  const rect=cv.getBoundingClientRect();
+  const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+  // build click regions from current viz state
+  const regions=activeProblem.clickRegions;
+  for(let i=0;i<regions.length;i++){
+    const r=regions[i];
+    let hit=false;
+    if(r.type==='point') hit=Math.hypot(mx-r.x,my-r.y)<r.r;
+    else if(r.type==='bar') hit=mx>=r.x&&mx<=r.x+r.w&&my>=r.y&&my<=r.y+r.h;
+    else if(r.type==='rect') hit=mx>=r.x&&mx<=r.x+r.w&&my>=r.y&&my<=r.y+r.h;
+    if(hit){
+      const isCorrect=r.idx===activeProblem.clickCorrectIdx;
+      handleAnswer(isCorrect,r.idx);
+      return;
+    }
+  }
+});
+
+// ── PROBLEM ENGINE ──
+function showProblem(genKey){
+  const pd=GEN[genKey]();
+  activeProblem=pd;
+  probAnswered=false;
+  probFrame=0;
+  activeProblem.clickRegions=[];
+  ST.total++;updHUD();
+  gameMode='problem';
+  sigState('thinking');
+  cv.className=pd.isClickProblem?'clickable':'';
+  // populate panel
+  document.getElementById('pp-tag-icon').textContent=pd.icon;
+  document.getElementById('pp-tag-txt').textContent=pd.tag;
+  document.getElementById('pp-q').textContent=pd.q;
+  // options or click hint
+  const optsEl=document.getElementById('pp-opts');
+  optsEl.innerHTML='';
+  const hint=document.getElementById('pp-click-hint');
+  if(pd.isClickProblem){
+    optsEl.style.display='none';hint.style.display='block';
+    hint.textContent='☝ Click on the visualization above';
+    // also show MC as fallback after 5 seconds
+    setTimeout(()=>{
+      if(!probAnswered){
+        hint.textContent='☝ Click above — or choose below:';
+        optsEl.style.display='grid';
+        buildMCButtons(pd,optsEl);
+      }
+    },5000);
+  } else {
+    hint.style.display='none';optsEl.style.display='grid';
+    buildMCButtons(pd,optsEl);
+  }
+  document.getElementById('pp-res').style.display='none';
+  document.getElementById('pp-sol').style.display='none';
+  document.getElementById('pp-sol-steps').innerHTML='';
+  document.getElementById('pp-nxt').style.display='none';
+  document.getElementById('pp').classList.add('open');
+  document.getElementById('sp').style.display='none';
+  document.getElementById('cp').style.display='none';
+}
+
+function buildMCButtons(pd,el){
+  ['A','B','C','D'].forEach((ltr,i)=>{
+    if(i>=pd.options.length) return;
+    const btn=document.createElement('div');
+    btn.className='pob';
+    btn.innerHTML=`<div class="pob-l">${ltr}</div><div>${pd.options[i]}</div>`;
+    btn.onclick=()=>handleAnswer(i===pd.correctIdx,i);
+    el.appendChild(btn);
+  });
+}
+
+function handleAnswer(isCorrect,chosenIdx){
+  if(probAnswered) return;
+  probAnswered=true;
+  cv.className='';
+  // flash NULL or SIGMA react
+  if(isCorrect){
+    ST.score+=10+(ST.streak>=2?5:0);ST.correct++;ST.streak++;
+    if(ST.streak>ST.bestStreak)ST.bestStreak=ST.streak;
+    sigState('correct',90);
+  } else {
+    ST.streak=0;sigState('wrong',80);
+    const nf=document.getElementById('null-flash');
+    nf.style.display='block';setTimeout(()=>nf.style.display='none',500);
+  }
+  updHUD();
+  // color buttons
+  document.querySelectorAll('.pob').forEach((b,i)=>{
+    b.classList.add('answered');
+    if(i===activeProblem.correctIdx) b.classList.add(isCorrect?'correct':'missed');
+    else if(i===chosenIdx&&!isCorrect) b.classList.add('wrong');
+  });
+  // result line
+  const res=document.getElementById('pp-res');
+  res.textContent=isCorrect?`✓ CORRECT! +${10+(ST.streak>2?5:0)} pts`:'✗ Incorrect — review the solution below';
+  res.className=isCorrect?'ok':'bad';
+  res.style.display='block';
+  // animated solution
+  const solEl=document.getElementById('pp-sol');
+  solEl.style.display='block';
+  const steps=document.getElementById('pp-sol-steps');
+  steps.innerHTML='';
+  activeProblem.steps.forEach((s,i)=>{
+    setTimeout(()=>{
+      const d=document.createElement('div');
+      d.className='sol-line'+(i===activeProblem.steps.length-1?' final-line':'');
+      d.style.animationDelay='0ms';
+      d.textContent=s;
+      steps.appendChild(d);
+    },i*280);
+  });
+  setTimeout(()=>{
+    document.getElementById('pp-nxt').style.display='block';
+    document.getElementById('pp').scrollTop=999;
+  },activeProblem.steps.length*280+200);
+}
+
+function closeProblem(){
+  document.getElementById('pp').classList.remove('open');
+  document.getElementById('pp-click-hint').style.display='none';
+  gameMode='scene';
+  activeProblem=null;
+  cv.className='';
+  setTimeout(advanceStory,350);
+}
+
+// ── STORY ENGINE ──
+function showStory(spk,txt){
+  const sp=document.getElementById('sp');
+  document.getElementById('sp-spk').textContent=spk.replace('{name}',ST.name.toUpperCase());
+  document.getElementById('sp-txt').textContent=txt.replace(/{name}/g,ST.name);
+  sp.style.display='block';
+  document.getElementById('cp').style.display='none';
+}
+
+function showChoice(beat){
+  document.getElementById('sp').style.display='none';
+  document.getElementById('cp-q').textContent=beat.q;
+  const el=document.getElementById('cp-opts');el.innerHTML='';
+  beat.opts.forEach(opt=>{
+    const b=document.createElement('button');b.className='cob';b.textContent=opt.txt;
+    b.onclick=()=>{
+      beatIdx++;
+      showStory('SIGMA',opt.fb);
+      document.getElementById('cp').style.display='none';
+      setTimeout(()=>advanceStory(),60);
+    };
+    el.appendChild(b);
+  });
+  document.getElementById('cp').style.display='block';
+}
+
+function showCard(ch,idx){
+  document.getElementById('cc-n').textContent=`CHAPTER ${idx} OF ${CHAPTERS.length-1}`;
+  document.getElementById('cc-t').textContent=ch.title;
+  document.getElementById('cc-s').textContent=ch.sub;
+  document.getElementById('chcard').style.display='block';
+  document.getElementById('sp').style.display='none';
+  document.getElementById('cp').style.display='none';
+  currentScene=ch.scene||'dataLab';
+  gameMode='scene';
+  document.getElementById('hud-chapter').textContent=ch.sub.toUpperCase();
+}
+
+function dismissCard(){
+  document.getElementById('chcard').style.display='none';
+  document.getElementById('sp').style.display='block';
+  beatIdx=0;runBeat();
+}
+
+function runBeat(){
+  const ch=CHAPTERS[chIdx];
+  if(beatIdx>=ch.beats.length){
+    chIdx++;
+    if(chIdx>=CHAPTERS.length){showFinale();return;}
+    showCard(CHAPTERS[chIdx],chIdx);return;
+  }
+  const b=ch.beats[beatIdx];
+  if(b.type==='n') showStory(b.spk,b.txt);
+  else if(b.type==='p'){showProblem(b.gen);}
+  else if(b.type==='c'){gameMode='choice';showChoice(b);}
+}
+
+function advanceStory(){
+  const ch=CHAPTERS[chIdx];
+  if(beatIdx>=ch.beats.length) return;
+  const b=ch.beats[beatIdx];
+  if(b.type==='c'||b.type==='p') return;
+  beatIdx++;runBeat();
+}
+
+// ── FINALE ──
+function showFinale(){
+  document.getElementById('sp').style.display='none';
+  document.getElementById('cp').style.display='none';
+  document.getElementById('chcard').style.display='none';
+  const pct=ST.total>0?ST.correct/ST.total:0;
+  let grade,gc,title,msg;
+  if(pct>=.9){grade='A';gc='A';title='Master Data Detective';msg=`Flawless, ${ST.name}. ${ST.correct}/${ST.total} correct. NULL is fully defeated. SIGMA reports all campus data systems clean. You didn't just pass MATH 102 — you became its proof of concept.`;}
+  else if(pct>=.75){grade='B';gc='B';title='Senior Analyst';msg=`Strong performance, ${ST.name}. ${ST.correct}/${ST.total} correct. SIGMA is mostly restored. Your statistical reasoning is solid — the weak spots are exactly where to focus next.`;}
+  else if(pct>=.6){grade='C';gc='C';title='Junior Analyst';msg=`Decent work, ${ST.name}. ${ST.correct}/${ST.total} correct. The core systems are online, but NULL left marks. Go back to the chapters where you stumbled — the math is learnable.`;}
+  else if(pct>=.4){grade='D';gc='D';title='Data Apprentice';msg=`You completed the mission, ${ST.name}, but ${ST.correct}/${ST.total} correct means the corruption lingers. SIGMA recommends returning to fundamentals. NULL wins when we stop practicing.`;}
+  else{grade='F';gc='F';title='NULL Wins This Round';msg=`Only ${ST.correct}/${ST.total} correct, ${ST.name}. NULL has partially maintained control of the campus data systems. The data is still out there — and so is the fight. Try again.`;}
+  document.getElementById('f-badge').textContent='USC UPSTATE · MATH 102 · ELEMENTARY STATISTICS';
+  document.getElementById('f-title').textContent=title;
+  const fg=document.getElementById('f-grade');fg.textContent=grade;fg.className='f-grade '+gc;
+  document.getElementById('f-sc').textContent=`Score: ${ST.score} pts  |  ${ST.correct}/${ST.total} Correct  |  Best Streak: ${ST.bestStreak}`;
+  document.getElementById('f-msg').textContent=msg;
+  const fin=document.getElementById('fin');fin.style.display='flex';
+  sigState('correct',9999);gameMode='scene';
+}
+
+// ── INIT ──
+function startGame(){
+  const nm=document.getElementById('iname').value.trim();
+  ST.name=nm||'Detective';
+  document.getElementById('intro').style.display='none';
+  showCard(CHAPTERS[0],0);
+}
+document.getElementById('iname').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+</script>
+</body>
+</html>
+    

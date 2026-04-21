@@ -392,9 +392,9 @@ const BUILDINGS=[
    x:100,y:130,w:430,h:280, style:'modern', emoji:'🧬', soon:false,
    ex:315,ey:410,
    games:[
-     {name:'AnatomyQuest',   course:'BIO 243',file:'AnatomyQuest1_USC_FINAL.html',       q:324,z:7, type:'rpg'},
-     {name:'AnatomyQuest 2', course:'BIO 244',file:null, q:323,z:7, type:'rpg'},
-     {name:'PathoQuest',     course:'BIO 280',file:'PathoQuest_BIO280_USC_FINAL.html',   q:304,z:7, type:'rpg'},
+     {name:'AnatomyQuest',   course:'BIO 243',file:'AnatomyQuest1_USC_FINAL__14_.html',       q:324,z:7, type:'rpg'},
+     {name:'AnatomyQuest 2', course:'BIO 244',file:'AnatomyQuest2_BIO244_USC_FINAL__3_.html', q:323,z:7, type:'rpg'},
+     {name:'PathoQuest',     course:'BIO 280',file:'PathoQuest_BIO280_USC_FINAL__10_.html',   q:304,z:7, type:'rpg'},
      {name:'Medical Mystery',course:'BIO 280',file:'MedicalMystery_FinalBetaA.html',          q:0,  z:0, type:'mystery',badge:'CLINICAL ENGINE'},
    ]},
 
@@ -412,8 +412,8 @@ const BUILDINGS=[
    x:610,y:510,w:370,h:250, style:'brick', emoji:'🧠', soon:false,
    ex:795,ey:760,
    games:[
-     {name:'PsychQuest',course:'PSYC 101',file:null,q:479,z:8,type:'rpg'},
-     {name:'PsychLab',  course:'PSYC 101',file:null,   q:100,z:0,type:'lab',
+     {name:'PsychQuest',course:'PSYC 101',file:'PsychQuest_PSYCU101_USC_BETA1.html',q:479,z:8,type:'rpg'},
+     {name:'PsychLab',  course:'PSYC 101',file:'PsychLab_PSYC101_USC_BETA3.html',   q:100,z:0,type:'lab',
       badge:'STUDY HUB',statA:'100',lblA:'FLASH CARDS',statB:'12',lblB:'CATEGORIES'},
    ]},
 
@@ -430,8 +430,8 @@ const BUILDINGS=[
    x:70,y:960,w:360,h:280, style:'library', emoji:'📚', soon:false,
    ex:250,ey:1240,
    games:[
-     {name:'CompQuest',     course:'ENGL 101',file:null,q:170,z:7,type:'rpg'},
-     {name:"Editor's Desk", course:'ENGL 101',file:null,    q:0,  z:0,type:'writing',badge:'WRITING TOOL',
+     {name:'CompQuest',     course:'ENGL 101',file:'CompQuest_ENGL101_USC_BETA1__2_.html',q:170,z:7,type:'rpg'},
+     {name:"Editor's Desk", course:'ENGL 101',file:'EditorsDesk_ENGL101_USC__5_.html',    q:0,  z:0,type:'writing',badge:'WRITING TOOL',
       statA:'✍️',lblA:'PASSAGES',statB:'📝',lblB:'GRAMMAR+THESIS'},
    ]},
 
@@ -456,8 +456,8 @@ const BUILDINGS=[
    x:70,y:1390,w:440,h:260, style:'modern', emoji:'🫀', soon:false,
    ex:290,ey:1390,
    games:[
-     {name:'BodyQuest', course:'BIO 143', file:null,q:366,z:11,type:'rpg'},
-     {name:'MicroQuest',course:'BIOL 250',file:'PathoQuest_BIO280_USC_FINAL.html',                q:282,z:7, type:'rpg'},
+     {name:'BodyQuest', course:'BIO 143', file:'BodyQuest_BIO143_USC_Upstate_FINAL__1_.html',q:366,z:11,type:'rpg'},
+     {name:'MicroQuest',course:'BIOL 250',file:'BIOL250_MicroQuest_USC.html',                q:282,z:7, type:'rpg'},
    ]},
 
   {id:'safety', label:'UNIVERSITY\nPUBLIC SAFETY', dept:'Campus Police · Emergency Services',
@@ -6103,15 +6103,15 @@ function drawProfileCard(){
 let gargModeOpen = false;
 
 const GARG_COURSES = [
-  {name:'ANATOMYQUEST',   course:'BIO 243', file:'AnatomyQuest1_USC_FINAL.html',        q:324,z:7,  emoji:'🧬', col:'#00693e'},
-  {name:'ANATOMYQUEST 2', course:'BIO 244', file:null,  q:323,z:7,  emoji:'🧬', col:'#00693e'},
-  {name:'PATHOQUEST',     course:'BIO 280', file:'PathoQuest_BIO280_USC_FINAL.html',    q:304,z:7,  emoji:'🦠', col:'#8b0000'},
+  {name:'ANATOMYQUEST',   course:'BIO 243', file:'AnatomyQuest1_USC_FINAL__14_.html',        q:324,z:7,  emoji:'🧬', col:'#00693e'},
+  {name:'ANATOMYQUEST 2', course:'BIO 244', file:'AnatomyQuest2_BIO244_USC_FINAL__3_.html',  q:323,z:7,  emoji:'🧬', col:'#00693e'},
+  {name:'PATHOQUEST',     course:'BIO 280', file:'PathoQuest_BIO280_USC_FINAL__10_.html',    q:304,z:7,  emoji:'🦠', col:'#8b0000'},
   {name:'MED MYSTERY',    course:'BIO 280', file:'MedicalMystery_FinalBetaA.html',           q:0,  z:0,  emoji:'🏥', col:'#8b0000'},
-  {name:'BODYQUEST',      course:'BIO 143', file:null,q:366,z:11,emoji:'🫀', col:'#a85000'},
-  {name:'MICROQUEST',     course:'BIOL 250',file:'PathoQuest_BIO280_USC_FINAL.html',              q:282,z:7,  emoji:'🔬', col:'#006868'},
-  {name:'PSYCHQUEST',     course:'PSYC 101',file:null,       q:479,z:8,  emoji:'🧠', col:'#640080'},
-  {name:'PSYCHLAB',       course:'PSYC 101',file:null,         q:100,z:0,  emoji:'🧠', col:'#640080'},
-  {name:'COMPQUEST',      course:'ENGL 101',file:null,     q:170,z:7,  emoji:'✍️', col:'#1a4a8a'},
+  {name:'BODYQUEST',      course:'BIO 143', file:'BodyQuest_BIO143_USC_Upstate_FINAL__1_.html',q:366,z:11,emoji:'🫀', col:'#a85000'},
+  {name:'MICROQUEST',     course:'BIOL 250',file:'BIOL250_MicroQuest_USC.html',              q:282,z:7,  emoji:'🔬', col:'#006868'},
+  {name:'PSYCHQUEST',     course:'PSYC 101',file:'PsychQuest_PSYCU101_USC_BETA1.html',       q:479,z:8,  emoji:'🧠', col:'#640080'},
+  {name:'PSYCHLAB',       course:'PSYC 101',file:'PsychLab_PSYC101_USC_BETA3.html',         q:100,z:0,  emoji:'🧠', col:'#640080'},
+  {name:'COMPQUEST',      course:'ENGL 101',file:'CompQuest_ENGL101_USC_BETA1__2_.html',     q:170,z:7,  emoji:'✍️', col:'#1a4a8a'},
 ];
 
 function drawGargMode(){
@@ -7007,7 +7007,7 @@ const BLD_INT = {
       {name:'Dr. Kim Purdy',role:'Vice Provost & Assoc. Vice Chancellor for Academic Affairs'}
     ],
     courses:[
-      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:null,soon:true},
+      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html'},
       {num:'UNIV U102',title:'Freshmen Orientation',desc:'Successful transition into higher education through social, personal and academic development. Study skills, time management, goal setting, and careers.',file:null,soon:true},
       {num:'UNIV U201',title:'Leadership Development I',desc:'Various approaches to the definition of leadership and practical experience in building leadership skills.',file:null,soon:true},
       {num:'UNIV U202',title:'Introduction to Leadership II',desc:'Practical experience in building leadership skills within the context of community-based leadership.',file:null,soon:true},
@@ -7037,16 +7037,16 @@ const BLD_INT = {
       {name:'Dr. Anita Nag',role:'Assistant Professor of Chemistry'}
     ],
     courses:[
-      {num:'BIOL U101',title:'Introduction to Biology I',desc:'Cell biology, genetics, evolution, and ecology for science majors. Gateway to all biology programs.',file:null,soon:true},
-      {num:'BIOL U102',title:'Introduction to Biology II',desc:'Continuation of biological principles for science majors: ecology, physiology, and diversity of life.',file:null,soon:true},
+      {num:'BIOL U101',title:'Introduction to Biology I',desc:'Cell biology, genetics, evolution, and ecology for science majors. Gateway to all biology programs.',file:'AnatomyQuestGame.html',soon:false},
+      {num:'BIOL U102',title:'Introduction to Biology II',desc:'Continuation of biological principles for science majors: ecology, physiology, and diversity of life.',file:'AnatomyQuestGame.html',soon:false},
       {num:'BIOL U110',title:'General Biology',desc:'A survey of the major concepts of biology for non-science majors. No lab required.',file:null,soon:true},
-      {num:'BIOL U143',title:'Foundations of Human Physiology',desc:'Introduction to human physiology for non-majors: muscles, bones, organ systems, and homeostasis.',file:null,soon:true},
+      {num:'BIOL U143',title:'Foundations of Human Physiology',desc:'Introduction to human physiology for non-majors: muscles, bones, organ systems, and homeostasis.',file:'BodyQuestGame.html',soon:false},
       {num:'BIOL U206',title:'Genetics and Society',desc:'Principles of genetics and their social implications, including genetic technology and bioethics.',file:null,soon:true},
       {num:'BIOL U230',title:'Medical Terminology',desc:'Medically oriented terminology: roots, prefixes, suffixes, and common abbreviations used in health care.',file:null,soon:true},
       {num:'BIOL U240',title:'Human Biology and Society',desc:'Biological concepts as applied to human issues: reproduction, genetics, evolution, ecology, and health.',file:null,soon:true},
-      {num:'BIOL U243',title:'Human Anatomy & Physiology I',desc:'Skeletal, muscular, nervous, and endocrine systems. 4 credit hours with lab. Required for nursing.',file:'AnatomyQuest1_USC_FINAL.html',soon:false},
-      {num:'BIOL U244',title:'Human Anatomy & Physiology II',desc:'Cardiovascular, respiratory, digestive, and reproductive systems with lab. Continuation of A&P I.',file:null,soon:true},
-      {num:'BIOL U250',title:'Principles of Microbiology',desc:'Microbial structure, metabolism, genetics, and disease. Survey of bacteria, viruses, fungi, and parasites with laboratory.',file:null,soon:true},
+      {num:'BIOL U243',title:'Human Anatomy & Physiology I',desc:'Skeletal, muscular, nervous, and endocrine systems. 4 credit hours with lab. Required for nursing.',file:'AnatomyQuestGame.html',soon:false},
+      {num:'BIOL U244',title:'Human Anatomy & Physiology II',desc:'Cardiovascular, respiratory, digestive, and reproductive systems with lab. Continuation of A&P I.',file:'AnatomyQuestAP2.html',soon:false},
+      {num:'BIOL U250',title:'Principles of Microbiology',desc:'Pathogens, immunity, epidemiology, and antimicrobial resistance for non-microbiology majors.',file:'PathoQuest_BIO280_USC_FINAL.html',soon:false},
       {num:'BIOL U260',title:'Emerging Infectious Diseases',desc:'Biology and epidemiology of newly emerging and re-emerging infectious diseases.',file:null,soon:true},
       {num:'BIOL U270',title:'Environmental Science',desc:'Ecosystems, biodiversity, natural resources, pollution, and human impact on the environment.',file:null,soon:true},
       {num:'CHEM U101',title:'Fundamental Chemistry I',desc:'Introduction to chemistry for non-science majors: atomic structure, bonding, and basic reactions.',file:null,soon:true},
@@ -7175,7 +7175,7 @@ const BLD_INT = {
       {name:'Dr. Laura Jennings',role:'Associate Professor of Sociology'}
     ],
     courses:[
-      {num:'PSYC U101',title:'Introduction to Psychology',desc:'Behavior, brain, development, personality, and psychological disorders. Gateway to all psychology programs.',file:null,soon:true},
+      {num:'PSYC U101',title:'Introduction to Psychology',desc:'Behavior, brain, development, personality, and psychological disorders. Gateway to all psychology programs.',file:'PsychQuestGame.html',soon:false},
       {num:'PSYC U225',title:'Psychological Statistics',desc:'Descriptive and inferential statistics applied to psychological research. Required for psychology majors.',file:null,soon:true},
       {num:'SOCY U101',title:'Introduction to Sociology',desc:'Social structures, inequality, race, gender, culture, and institutions. Foundation of sociological thinking.',file:null,soon:true},
       {num:'SOCY U201',title:'Intro Statistics for Social Sciences',desc:'Statistical methods applied to social science research: data analysis, probability, and interpretation.',file:null,soon:true},
@@ -7272,7 +7272,7 @@ const BLD_INT = {
       {name:'Digital Collections Team',role:'Archives, Media Production & Digital Resources'}
     ],
     courses:[
-      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the individual student role within the university. Open to freshmen only.',file:null,soon:true},
+      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the individual student role within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html'},
       {num:'ENGL U101',title:'Composition I',desc:'Academic writing, critical reading, and research. Required for all USC Upstate students.',file:null,soon:true},
       {num:'ENGL U102',title:'Composition II',desc:'Continued composition: writing for specific audiences and synthesizing academic sources.',file:null,soon:true}
     ],
@@ -7335,7 +7335,7 @@ const BLD_INT = {
       {name:'Career Services Center',role:'Internships, Resumes & Employer Connections'}
     ],
     courses:[
-      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:null,soon:true},
+      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html'},
       {num:'UNIV U204',title:'Life Design',desc:'Career development using design thinking: self-awareness, values, strengths, and life-work balance planning.',file:null,soon:true},
       {num:'UNIV U205',title:'Personal Financial Literacy',desc:'Personal finance essentials: student debt, budgeting, saving, credit, and spending strategies.',file:null,soon:true}
     ],
@@ -7416,12 +7416,12 @@ const BLD_INT = {
     ],
     courses:[
       {num:'NURS U230',title:'Medical Terminology',desc:'Medically oriented terminology including roots, prefixes, suffixes, and abbreviations for anatomy, pathology, and pharmacology.',file:null,soon:true},
-      {num:'NURS U301',title:'Medical Mystery Challenge',desc:'Diagnose patients using clinical reasoning, symptom analysis, and nursing knowledge. Based on real case studies.',file:'MedicalMystery_FinalBetaA.html',soon:false},
       {num:'EXSC U270',title:'Introduction to Athletic Training',desc:'Safety precautions, injury prevention, laboratory experiences, and legal issues in athletics.',file:null,soon:true},
       {num:'EXSC U280',title:'Introduction to Exercise and Sport Science',desc:'Orientation to human movement science: overview, career opportunities, and current issues in the field.',file:null,soon:true},
       {num:'EXSC U290',title:'Functional Kinesiology I',desc:'Mechanisms of human movement and bioenergetic pathways of body systems with lab.',file:null,soon:true},
       {num:'EXSC U291',title:'Functional Kinesiology II',desc:'Structure and function of body systems and the impact of physical activity on each. Lab integrated.',file:null,soon:true},
-      {num:'BIOL U280',title:'Pathophysiology',desc:'Mechanisms of disease and altered physiology across body systems. Covers inflammation, infection, organ failure, and clinical correlations. Essential for nursing practice.',file:'PathoQuest_BIO280_USC_FINAL.html',soon:false}
+      {num:'BIOL U243',title:'Human Anatomy & Physiology I',desc:'Skeletal, muscular, nervous, and endocrine systems with lab. Required for nursing majors.',file:'AnatomyQuestGame.html',soon:false},
+      {num:'BIOL U244',title:'Human Anatomy & Physiology II',desc:'Cardiovascular, respiratory, digestive, and reproductive systems with lab.',file:'AnatomyQuestAP2.html',soon:false}
     ],
     mini:[{action:'swim',label:'🏊 SWIM RACE',sub:'Beat the CPU in the Spartan Pool\!'}]
   },
@@ -7656,4 +7656,3 @@ function drawCrossGameBadges(MX,MY,scX,scY) {
 
 </body>
 </html>
-                                                                                                                                                   

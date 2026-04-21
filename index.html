@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Dr. Garg's Academic Game Library — USC Upstate</title>
+<title>Spartan Campus — USC Upstate</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -331,8 +331,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a140a;font-family:
 
 <div id="title">
   <canvas id="tscv"></canvas>
-  <div class="tseal">⚔️</div>
-  <div class="tmain">DR. GARG'S<br>ACADEMIC<br>GAME LIBRARY</div>
+  <div class="tseal">🧬</div>
+  <div class="tmain">DR. GARG'S<br>SPARTAN<br>CAMPUS</div>
   <div class="tusc">UNIVERSITY OF SOUTH CAROLINA UPSTATE</div>
   <div class="tsub">EXPLORE CAMPUS &nbsp;·&nbsp; 9 GAMES &nbsp;·&nbsp; 2,269+ QUESTIONS</div>
   <div class="tpress">▶ CLICK OR PRESS ANY KEY TO ENTER CAMPUS</div>
@@ -378,7 +378,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a140a;font-family:
 // ─────────────────────────────────────────
 const WW=2600, WH=2100;
 const HUD=100, TICK=26;
-const G='#00693e', LG='#00a84f', DG='#003a10';
+const G='#00693e', LG='#7fffb0', DG='#003a10';
 const BRICK='#8b4a18', DBRICK='#5a2d0c', CREAM='#f5f0e8';
 
 const BUILDINGS=[
@@ -393,9 +393,8 @@ const BUILDINGS=[
    ex:315,ey:410,
    games:[
      {name:'AnatomyQuest',   course:'BIO 243',file:'AnatomyQuest1_USC_FINAL.html',       q:324,z:7, type:'rpg'},
-     {name:'AnatomyQuest 2', course:'BIO 244',file:null, q:323,z:7, type:'rpg'},
-     {name:'PathoQuest',     course:'BIO 280',file:'PathoQuest_BIO280_USC_FINAL.html',   q:304,z:7, type:'rpg'},
-     {name:'Medical Mystery',course:'BIO 280',file:'MedicalMystery_FinalBetaA.html',          q:0,  z:0, type:'mystery',badge:'CLINICAL ENGINE'},
+     {name:'AnatomyQuest 2', course:'BIO 244',file:'AnatomyQuest2_BIO244_USC_FINAL.html', q:323,z:7, type:'rpg'},
+     {name:'PathogenDefense',course:'BIOL U250',file:'PathogenDefense_BIOLU250_USC.html', q:18, z:8, type:'rpg'},
    ]},
 
   {id:'hodge', label:'G.B. HODGE CENTER\n& ARENA', dept:'Math · Computer Science · Basketball Arena',
@@ -404,24 +403,27 @@ const BUILDINGS=[
    games:[]},
 
   // ── ROW 2: UPPER-MID ─────────────────────────────────────────────
-  {id:'hpac', label:'HUMANITIES &\nPERFORMING ARTS CTR', dept:'450-seat Theater · Music · Performing Arts',
+  {id:'hpac', label:'HUMANITIES &\nPERFORMING ARTS CTR', dept:'English · Writing · Humanities · 450-seat Theater · Music · Performing Arts',
    x:100,y:540,w:370,h:250, style:'brick', emoji:'🎭', soon:false,
-   ex:285,ey:790, games:[]},
+   ex:285,ey:790, games:[
+     {name:'CompQuest',     course:'ENGL 101',file:'CompQuest_ENGL101_USC_BETA1.html',q:170,z:7,type:'rpg'},
+     {name:"Editor's Desk", course:'ENGL 101',file:'EditorsDesk_ENGL101_USC.html',    q:0,  z:0,type:'writing',badge:'WRITING TOOL',
+      statA:'✍️',lblA:'PASSAGES',statB:'📝',lblB:'GRAMMAR+THESIS'},
+   ]},
 
-  {id:'artsci', label:'ARTS & SCIENCES\nBUILDING', dept:'Psychology · Sociology · Criminal Justice · College Admin',
+  {id:'artsci', label:'ARTS & SCIENCES\nBUILDING', dept:'Psychology · Sociology · Criminal Justice',
    x:610,y:510,w:370,h:250, style:'brick', emoji:'🧠', soon:false,
    ex:795,ey:760,
    games:[
-     {name:'PsychQuest',course:'PSYC 101',file:null,q:479,z:8,type:'rpg'},
-     {name:'PsychLab',  course:'PSYC 101',file:null,   q:100,z:0,type:'lab',
+     {name:'PsychQuest',course:'PSYC 101',file:'PsychQuest_PSYCU101_USC_BETA1.html',q:479,z:8,type:'rpg'},
+     {name:'PsychLab',  course:'PSYC 101',file:'PsychLab_PSYC101_USC_BETA3.html',   q:100,z:0,type:'lab',
       badge:'STUDY HUB',statA:'100',lblA:'FLASH CARDS',statB:'12',lblB:'CATEGORIES'},
-     {name:'JusticeCity',course:'CRJU U101',file:'JusticeCity_CRJU101_USC.html',q:0,z:0,type:'rpg',
-      badge:'5 CASES',statA:'5',lblA:'FULL RPG CASES',statB:'23',lblB:'STUDY HUB CASES'},
+     {name:'JusticeCity',course:'CRJU 101',file:'JusticeCity_CRJU101_USC.html',q:0,z:0,type:'rpg',soon:false},
    ]},
 
   {id:'media', label:'MEDIA CENTER', dept:'History · Political Science · Sociology · WRET-TV',
    x:1620,y:510,w:370,h:250, style:'modern', emoji:'📺', soon:false,
-   ex:1805,ey:760, games:[]},
+   ex:1805,ey:760, games:[{name:'JusticeCity',course:'CRJU 101',file:'JusticeCity_CRJU101_USC.html',q:0,z:0,type:'rpg',soon:false}]},
 
   {id:'burroughs', label:'BURROUGHS\nBUILDING', dept:'Global Education · Honors Program · International Studies',
    x:2130,y:540,w:370,h:250, style:'brick', emoji:'🌍', soon:false,
@@ -431,11 +433,7 @@ const BUILDINGS=[
   {id:'library', label:'GEORGE DEAN\nJOHNSON LIBRARY', dept:'220,000+ Volumes · Tukey Theater · Archives',
    x:70,y:960,w:360,h:280, style:'library', emoji:'📚', soon:false,
    ex:250,ey:1240,
-   games:[
-     {name:'CompQuest',     course:'ENGL 101',file:null,q:170,z:7,type:'rpg'},
-     {name:"Editor's Desk", course:'ENGL 101',file:null,    q:0,  z:0,type:'writing',badge:'WRITING TOOL',
-      statA:'✍️',lblA:'PASSAGES',statB:'📝',lblB:'GRAMMAR+THESIS'},
-   ]},
+   games:[]},
 
   {id:'hicks', label:'P. KATHRYN HICKS\nVISUAL ARTS CTR', dept:'Drawing · Painting · Graphic Design · Digital Imaging',
    x:570,y:950,w:360,h:260, style:'brick', emoji:'🎨', soon:false,
@@ -458,33 +456,21 @@ const BUILDINGS=[
    x:70,y:1390,w:440,h:260, style:'modern', emoji:'🫀', soon:false,
    ex:290,ey:1390,
    games:[
-     {name:'BodyQuest', course:'BIO 143', file:null,q:366,z:11,type:'rpg'},
-     {name:'MicroQuest',course:'BIOL 250',file:'PathoQuest_BIO280_USC_FINAL.html',                q:282,z:7, type:'rpg'},
+     {name:'BodyQuest', course:'BIO 143', file:'BodyQuest_BIO143_USC_Upstate_FINAL.html',q:366,z:11,type:'rpg'},
+     {name:'MicroQuest',course:'BIOL 250',file:'MicroQuest_BIOL250_USC.html',                q:282,z:7, type:'rpg'},
+     {name:'PathoQuest', course:'BIO 280', file:'PathoQuest_BIO280_USC_FINAL.html',   q:304,z:7, type:'rpg'},
+     {name:'Medical Mystery',course:'BIO 280',file:'MedicalMystery_FinalBetaA.html',          q:0,  z:0, type:'mystery',badge:'CLINICAL ENGINE'},
    ]},
 
   {id:'safety', label:'UNIVERSITY\nPUBLIC SAFETY', dept:'Campus Police · Emergency Services',
    x:1740,y:1380,w:330,h:250, style:'brick', emoji:'🚔', soon:false,
    ex:1905,ey:1380, games:[]},
-];
+,
+  {id:'garg-lab', label:"DR. GARG'S\nINNOVATION LAB", dept:'Virtual Anatomy · 3D Medical Imaging · Health Sciences',
+   x:850,y:1380,w:480,h:270, style:'modern', emoji:'🧬', soon:false,
+   ex:1085,ey:1380, enterBuilding:true, games:[]},
+      {id:'bus-stop',label:"BUS STOP\nK-12 Campus",dept:'Catch the bus to Discovery Zone!',x:1430,y:1420,w:260,h:200,accent:'#FFD700',portal:'https://kashee12345.github.io/discovery-zone/',games:[],soon:true,ex:1560,ey:1520},
 
-const PATHS=[
-  // Central N-S spine
-  {x:1250,y:0,   w:100,h:WH},
-  // E-W horizontal rows
-  {x:0,   y:420, w:WW, h:55},  // row 1 bottom
-  {x:0,   y:780, w:WW, h:55},  // row 2 bottom
-  {x:0,   y:1240,w:WW, h:55},  // row 3 bottom
-  {x:0,   y:1640,w:WW, h:55},  // row 4 bottom
-  // Left vertical connector
-  {x:480, y:420, w:55, h:WH-420},
-  // Right vertical connector
-  {x:2065,y:420, w:55, h:WH-420},
-  // Mid-left vertical
-  {x:970, y:420, w:55, h:WH-420},
-  // Mid-right vertical
-  {x:1580,y:420, w:55, h:WH-420},
-  // Stockwell approach
-  {x:1250,y:350, w:100,h:430},
 ];
 
 const TREES=[];
@@ -1522,6 +1508,25 @@ function drawBG(t){
 // ─────────────────────────────────────────
 //  PATHS
 // ─────────────────────────────────────────
+const PATHS=[
+  // Central N-S spine
+  {x:1250,y:0,   w:100,h:WH},
+  // E-W horizontal rows
+  {x:0,   y:420, w:WW, h:55},  // row 1 bottom
+  {x:0,   y:780, w:WW, h:55},  // row 2 bottom
+  {x:0,   y:1240,w:WW, h:55},  // row 3 bottom
+  {x:0,   y:1640,w:WW, h:55},  // row 4 bottom
+  // Left vertical connector
+  {x:480, y:420, w:55, h:WH-420},
+  // Right vertical connector
+  {x:2065,y:420, w:55, h:WH-420},
+  // Mid-left vertical
+  {x:970, y:420, w:55, h:WH-420},
+  // Mid-right vertical
+  {x:1580,y:420, w:55, h:WH-420},
+  // Stockwell approach
+  {x:1250,y:350, w:100,h:430},
+];
 function drawPaths(){
   PATHS.forEach(p=>{
     const px=sx(p.x),py=sy(p.y);
@@ -1765,7 +1770,21 @@ function drawBuilding(b){
   cx.fill();
   cx.restore();
 
-  if(b.soon){
+  if(b.id==='spartan-plaza'&&b.soon){
+    cx.fillStyle='#3a8a45';cx.fillRect(bx,by,b.w,b.h);
+    cx.strokeStyle='rgba(30,120,50,0.25)';cx.lineWidth=1;
+    for(let gi=-b.h;gi<b.w+b.h;gi+=16){cx.beginPath();cx.moveTo(bx+Math.max(0,gi),by+Math.max(0,-gi));cx.lineTo(bx+Math.min(b.w,gi+b.h),by+Math.min(b.h,gi+b.h));cx.stroke();}
+    cx.fillStyle='#b0a070';cx.fillRect(bx+b.w/2-10,by,20,b.h);
+    cx.fillStyle='#3a8fd4';cx.beginPath();cx.arc(bx+b.w/2,by+b.h*0.42,14,0,Math.PI*2);cx.fill();
+    cx.fillStyle='rgba(120,200,255,0.6)';cx.beginPath();cx.arc(bx+b.w/2,by+b.h*0.42,8,0,Math.PI*2);cx.fill();
+    cx.fillStyle='#8b6914';cx.fillRect(bx+14,by+b.h*0.35,28,8);cx.fillRect(bx+b.w-42,by+b.h*0.35,28,8);
+    cx.fillStyle='rgba(0,60,20,0.9)';cx.fillRect(bx,by+b.h-28,b.w,28);
+    cx.fillStyle='#7fffb0';cx.font="5px 'Press Start 2P',monospace";cx.textAlign='center';
+    cx.fillText('SPARTAN PLAZA',bx+b.w/2,by+b.h-15);
+    cx.fillStyle='#aaaaaa';cx.font="3.5px 'Press Start 2P',monospace";
+    cx.fillText('COMING SOON',bx+b.w/2,by+b.h-5);
+    return;
+  } else if(b.soon){
     cx.fillStyle='#111a11';cx.fillRect(bx,by,b.w,b.h);
     cx.fillStyle='#0a120a';cx.fillRect(bx,by,b.w,20);
     cx.fillStyle='#1a2a1a';
@@ -1868,7 +1887,20 @@ function drawBuilding(b){
       cx.fillRect(bx+b.w*0.3+s*12,by+b.h+s*5,b.w*0.4-s*24,8);
     }
 
-  } else if(b.style==='modern'){
+  } else if(b.id==='garg-lab'){
+          const tealG=cx.createLinearGradient(bx,by,bx,by+b.h);
+          tealG.addColorStop(0,'#003d20');tealG.addColorStop(1,'#001a0f');
+          cx.fillStyle=tealG;cx.fillRect(bx,by,b.w,b.h);
+          cx.fillStyle='rgba(0,180,120,0.18)';
+          for(let row=0;row<4;row++)for(let col=0;col<5;col++){
+            cx.fillRect(bx+16+col*88,by+16+row*56,72,44);
+            cx.strokeStyle='rgba(0,212,120,0.5)';cx.lineWidth=1;
+            cx.strokeRect(bx+16+col*88,by+16+row*56,72,44);
+          }
+          cx.fillStyle='#00833E';cx.fillRect(bx,by,b.w,10);
+          cx.strokeStyle='rgba(0,180,80,0.7)';cx.lineWidth=3;
+          cx.strokeRect(bx+1,by+1,b.w-2,b.h-2);
+        } else if(b.style==='modern'){
     // ── MODERN — dark-band top, brick lower, glass panels
     // Lower brick body
     const brickG=cx.createLinearGradient(bx,by,bx+b.w,by);
@@ -2044,7 +2076,7 @@ function drawBuilding(b){
 
   // ── BUILDING SIGN (common to all live buildings)
   const signH=52, signY=by+b.h-signH-4;
-  cx.fillStyle='rgba(0,18,0,0.95)';
+  cx.fillStyle='rgba(0,100,50,0.97)';
   cx.fillRect(bx+6,signY,b.w-12,signH);
   cx.fillStyle=LG;
   cx.fillRect(bx+6,signY,b.w-12,3);
@@ -2056,6 +2088,18 @@ function drawBuilding(b){
     cx.font="bold 10px 'Press Start 2P',monospace";
     cx.fillStyle='#aafaaa';
     cx.fillText(signLines[0].slice(0,20), bx+b.w/2+12, signY+signH-14);
+  } else if(b.id==='bus-stop'){
+    cx.fillStyle='#1a1000';cx.fillRect(bx,by,b.w,b.h);
+    cx.fillStyle='#FFD700';cx.fillRect(bx,by,b.w,14);
+    cx.fillStyle='#cc9900';cx.fillRect(bx,by+12,b.w,3);
+    cx.fillStyle='#888';cx.fillRect(bx+12,by+14,7,b.h-14);cx.fillRect(bx+b.w-19,by+14,7,b.h-14);
+    cx.fillStyle='rgba(180,230,255,0.18)';cx.fillRect(bx+21,by+16,b.w-42,b.h-30);
+    cx.strokeStyle='rgba(180,230,255,0.5)';cx.lineWidth=1;cx.strokeRect(bx+21,by+16,b.w-42,b.h-30);
+    cx.fillStyle='#cc0000';cx.fillRect(bx+b.w/2-26,by+20,52,14);
+    cx.fillStyle='#fff';cx.font="4px 'Press Start 2P',monospace";cx.textAlign='center';
+    cx.fillText('ROUTE 1',bx+b.w/2,by+30);
+    cx.fillStyle='#8B6914';cx.fillRect(bx+24,by+b.h-20,b.w-48,8);
+    cx.fillRect(bx+24,by+b.h-28,6,10);cx.fillRect(bx+b.w-30,by+b.h-28,6,10);
   } else {
     cx.font="bold 9px 'Press Start 2P',monospace";
     cx.fillStyle='#aafaaa';
@@ -2276,7 +2320,7 @@ const FACTS=[
   "MicroQuest covers\n282 micro questions!",
   "CompQuest sharpens\nyour ENGL 101 skills!",
   "Play the games to\nboost your quiz grades!",
-  "Dr. Garg teaches at\n3 institutions! 💪",
+  "Dr. Garg teaches at\n3 institutions! 💪",  
 ];
 
 // ─────────────────────────────────────────
@@ -6106,15 +6150,14 @@ let gargModeOpen = false;
 
 const GARG_COURSES = [
   {name:'ANATOMYQUEST',   course:'BIO 243', file:'AnatomyQuest1_USC_FINAL.html',        q:324,z:7,  emoji:'🧬', col:'#00693e'},
-  {name:'ANATOMYQUEST 2', course:'BIO 244', file:null,  q:323,z:7,  emoji:'🧬', col:'#00693e'},
+  {name:'ANATOMYQUEST 2', course:'BIO 244', file:'AnatomyQuest2_BIO244_USC_FINAL.html',  q:323,z:7,  emoji:'🧬', col:'#00693e'},
   {name:'PATHOQUEST',     course:'BIO 280', file:'PathoQuest_BIO280_USC_FINAL.html',    q:304,z:7,  emoji:'🦠', col:'#8b0000'},
   {name:'MED MYSTERY',    course:'BIO 280', file:'MedicalMystery_FinalBetaA.html',           q:0,  z:0,  emoji:'🏥', col:'#8b0000'},
-  {name:'BODYQUEST',      course:'BIO 143', file:null,q:366,z:11,emoji:'🫀', col:'#a85000'},
-  {name:'MICROQUEST',     course:'BIOL 250',file:'PathoQuest_BIO280_USC_FINAL.html',              q:282,z:7,  emoji:'🔬', col:'#006868'},
-  {name:'PSYCHQUEST',     course:'PSYC 101',file:null,       q:479,z:8,  emoji:'🧠', col:'#640080'},
-  {name:'PSYCHLAB',       course:'PSYC 101',file:null,         q:100,z:0,  emoji:'🧠', col:'#640080'},
-  {name:'COMPQUEST',      course:'ENGL 101',file:null,     q:170,z:7,  emoji:'✍️', col:'#1a4a8a'},
-  {name:'JUSTICECITY',   course:'CRJU U101',file:'JusticeCity_CRJU101_USC.html', q:0,z:0, emoji:'⚖️', col:'#1a3a6c'},
+  {name:'BODYQUEST',      course:'BIO 143', file:'BodyQuest_BIO143_USC_Upstate_FINAL.html',q:366,z:11,emoji:'🫀', col:'#a85000'},
+  {name:'MICROQUEST',     course:'BIOL 250',file:'MicroQuest_BIOL250_USC.html',              q:282,z:7,  emoji:'🔬', col:'#006868'},
+  {name:'PSYCHQUEST',     course:'PSYC 101',file:'PsychQuest_PSYCU101_USC_BETA1.html',       q:479,z:8,  emoji:'🧠', col:'#640080'},
+  {name:'PSYCHLAB',       course:'PSYC 101',file:'PsychLab_PSYC101_USC_BETA3.html',         q:100,z:0,  emoji:'🧠', col:'#640080'},
+  {name:'COMPQUEST',      course:'ENGL 101',file:'CompQuest_ENGL101_USC_BETA1.html',     q:170,z:7,  emoji:'✍️', col:'#1a4a8a'},
 ];
 
 function drawGargMode(){
@@ -6640,6 +6683,7 @@ const INTRO_STEPS = [
 ];
 
 function startIntro(){
+  return; // skip intro - go straight to campus
   if(!isFirstVisit) return;
   INTRO.active = true;
   INTRO.step   = 0;
@@ -7010,7 +7054,7 @@ const BLD_INT = {
       {name:'Dr. Kim Purdy',role:'Vice Provost & Assoc. Vice Chancellor for Academic Affairs'}
     ],
     courses:[
-      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:null,soon:true},
+      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html',soon:false},
       {num:'UNIV U102',title:'Freshmen Orientation',desc:'Successful transition into higher education through social, personal and academic development. Study skills, time management, goal setting, and careers.',file:null,soon:true},
       {num:'UNIV U201',title:'Leadership Development I',desc:'Various approaches to the definition of leadership and practical experience in building leadership skills.',file:null,soon:true},
       {num:'UNIV U202',title:'Introduction to Leadership II',desc:'Practical experience in building leadership skills within the context of community-based leadership.',file:null,soon:true},
@@ -7043,13 +7087,13 @@ const BLD_INT = {
       {num:'BIOL U101',title:'Introduction to Biology I',desc:'Cell biology, genetics, evolution, and ecology for science majors. Gateway to all biology programs.',file:null,soon:true},
       {num:'BIOL U102',title:'Introduction to Biology II',desc:'Continuation of biological principles for science majors: ecology, physiology, and diversity of life.',file:null,soon:true},
       {num:'BIOL U110',title:'General Biology',desc:'A survey of the major concepts of biology for non-science majors. No lab required.',file:null,soon:true},
-      {num:'BIOL U143',title:'Foundations of Human Physiology',desc:'Introduction to human physiology for non-majors: muscles, bones, organ systems, and homeostasis.',file:null,soon:true},
+      {num:'BIOL U143',title:'Foundations of Human Physiology',desc:'Introduction to human physiology for non-majors: muscles, bones, organ systems, and homeostasis.',file:'BodyQuest_BIO143_USC_Upstate_FINAL.html',soon:false},
       {num:'BIOL U206',title:'Genetics and Society',desc:'Principles of genetics and their social implications, including genetic technology and bioethics.',file:null,soon:true},
       {num:'BIOL U230',title:'Medical Terminology',desc:'Medically oriented terminology: roots, prefixes, suffixes, and common abbreviations used in health care.',file:null,soon:true},
       {num:'BIOL U240',title:'Human Biology and Society',desc:'Biological concepts as applied to human issues: reproduction, genetics, evolution, ecology, and health.',file:null,soon:true},
       {num:'BIOL U243',title:'Human Anatomy & Physiology I',desc:'Skeletal, muscular, nervous, and endocrine systems. 4 credit hours with lab. Required for nursing.',file:'AnatomyQuest1_USC_FINAL.html',soon:false},
-      {num:'BIOL U244',title:'Human Anatomy & Physiology II',desc:'Cardiovascular, respiratory, digestive, and reproductive systems with lab. Continuation of A&P I.',file:null,soon:true},
-      {num:'BIOL U250',title:'Principles of Microbiology',desc:'Microbial structure, metabolism, genetics, and disease. Survey of bacteria, viruses, fungi, and parasites with laboratory.',file:null,soon:true},
+      {num:'BIOL U244',title:'Human Anatomy & Physiology II',desc:'Cardiovascular, respiratory, digestive, and reproductive systems with lab. Continuation of A&P I.',file:'AnatomyQuest2_BIO244_USC_FINAL.html',soon:false},
+      {num:'BIOL U250',title:'Principles of Microbiology',desc:'Pathogens, immunity, epidemiology, and antimicrobial resistance for non-microbiology majors.',file:null,soon:true},
       {num:'BIOL U260',title:'Emerging Infectious Diseases',desc:'Biology and epidemiology of newly emerging and re-emerging infectious diseases.',file:null,soon:true},
       {num:'BIOL U270',title:'Environmental Science',desc:'Ecosystems, biodiversity, natural resources, pollution, and human impact on the environment.',file:null,soon:true},
       {num:'CHEM U101',title:'Fundamental Chemistry I',desc:'Introduction to chemistry for non-science majors: atomic structure, bonding, and basic reactions.',file:null,soon:true},
@@ -7086,7 +7130,7 @@ const BLD_INT = {
       {name:'Spartan Athletics Staff',role:'Basketball, Intramurals & Recreation'}
     ],
     courses:[
-      {num:'MATH U102',title:'Elementary Statistics',desc:'Statistical reasoning: data collection, probability, hypothesis testing, and interpretation of results.',file:null,soon:true},
+      {num:'MATH U102',title:'Elementary Statistics',desc:'Statistical reasoning: data collection, probability, hypothesis testing, and interpretation of results.',file:'StatQuest_MATH102_USC.html',soon:false},
       {num:'MATH U120',title:'College Mathematics',desc:'Mathematics for non-STEM majors: logic, sets, probability, statistics, and financial mathematics.',file:null,soon:true},
       {num:'MATH U121',title:'College Algebra',desc:'Algebraic functions, equations, graphing, and modeling. Foundation for precalculus.',file:null,soon:true},
       {num:'MATH U122',title:'Calculus for Management & Social Sciences',desc:'Differential and integral calculus with applications in business, economics, and social science.',file:null,soon:true},
@@ -7178,11 +7222,11 @@ const BLD_INT = {
       {name:'Dr. Laura Jennings',role:'Associate Professor of Sociology'}
     ],
     courses:[
-      {num:'PSYC U101',title:'Introduction to Psychology',desc:'Behavior, brain, development, personality, and psychological disorders. Gateway to all psychology programs.',file:null,soon:true},
+      {num:'PSYC U101',title:'Introduction to Psychology',desc:'Behavior, brain, development, personality, and psychological disorders. Gateway to all psychology programs.',file:'PsychQuest_PSYCU101_USC_BETA1.html',soon:false},
       {num:'PSYC U225',title:'Psychological Statistics',desc:'Descriptive and inferential statistics applied to psychological research. Required for psychology majors.',file:null,soon:true},
       {num:'SOCY U101',title:'Introduction to Sociology',desc:'Social structures, inequality, race, gender, culture, and institutions. Foundation of sociological thinking.',file:null,soon:true},
       {num:'SOCY U201',title:'Intro Statistics for Social Sciences',desc:'Statistical methods applied to social science research: data analysis, probability, and interpretation.',file:null,soon:true},
-      {num:'CRJU U101',title:'Introduction to Criminal Justice',desc:'Survey of law enforcement, judicial, correctional, and juvenile systems and community relationships.',file:'JusticeCity_CRJU101_USC.html',soon:false},
+      {num:'CRJU U101',title:'Introduction to Criminal Justice',desc:'Survey of law enforcement, judicial, correctional, and juvenile systems and community relationships.',file:null,soon:true},
       {num:'CRJU U210',title:'Policing in America',desc:'Police organizations, recruitment, training, socialization, and the role of police in society.',file:null,soon:true},
       {num:'CRJU U220',title:'The Criminal Courts',desc:'Administration of criminal justice in American federal and state court systems and court personnel.',file:null,soon:true},
       {num:'CRJU U230',title:'Introduction to Corrections',desc:'Penology emphasizing history, philosophy, programs, and problems of correctional practice.',file:null,soon:true},
@@ -7275,7 +7319,7 @@ const BLD_INT = {
       {name:'Digital Collections Team',role:'Archives, Media Production & Digital Resources'}
     ],
     courses:[
-      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the individual student role within the university. Open to freshmen only.',file:null,soon:true},
+      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the individual student role within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html',soon:false},
       {num:'ENGL U101',title:'Composition I',desc:'Academic writing, critical reading, and research. Required for all USC Upstate students.',file:null,soon:true},
       {num:'ENGL U102',title:'Composition II',desc:'Continued composition: writing for specific audiences and synthesizing academic sources.',file:null,soon:true}
     ],
@@ -7338,7 +7382,7 @@ const BLD_INT = {
       {name:'Career Services Center',role:'Internships, Resumes & Employer Connections'}
     ],
     courses:[
-      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:null,soon:true},
+      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html',soon:false},
       {num:'UNIV U204',title:'Life Design',desc:'Career development using design thinking: self-awareness, values, strengths, and life-work balance planning.',file:null,soon:true},
       {num:'UNIV U205',title:'Personal Financial Literacy',desc:'Personal finance essentials: student debt, budgeting, saving, credit, and spending strategies.',file:null,soon:true}
     ],
@@ -7419,12 +7463,13 @@ const BLD_INT = {
     ],
     courses:[
       {num:'NURS U230',title:'Medical Terminology',desc:'Medically oriented terminology including roots, prefixes, suffixes, and abbreviations for anatomy, pathology, and pharmacology.',file:null,soon:true},
-      {num:'NURS U301',title:'Medical Mystery Challenge',desc:'Diagnose patients using clinical reasoning, symptom analysis, and nursing knowledge. Based on real case studies.',file:'MedicalMystery_FinalBetaA.html',soon:false},
       {num:'EXSC U270',title:'Introduction to Athletic Training',desc:'Safety precautions, injury prevention, laboratory experiences, and legal issues in athletics.',file:null,soon:true},
       {num:'EXSC U280',title:'Introduction to Exercise and Sport Science',desc:'Orientation to human movement science: overview, career opportunities, and current issues in the field.',file:null,soon:true},
       {num:'EXSC U290',title:'Functional Kinesiology I',desc:'Mechanisms of human movement and bioenergetic pathways of body systems with lab.',file:null,soon:true},
       {num:'EXSC U291',title:'Functional Kinesiology II',desc:'Structure and function of body systems and the impact of physical activity on each. Lab integrated.',file:null,soon:true},
-      {num:'BIOL U280',title:'Pathophysiology',desc:'Mechanisms of disease and altered physiology across body systems. Covers inflammation, infection, organ failure, and clinical correlations. Essential for nursing practice.',file:'PathoQuest_BIO280_USC_FINAL.html',soon:false}
+      {num:'BIOL U250',title:'Microbiology',desc:'Study of microorganisms including bacteria, viruses, fungi, and parasites. Lab included.',file:'MicroQuest_BIOL250_USC.html',soon:true},
+      {num:'BIOL U280',title:'Pathophysiology',desc:'Mechanisms of disease and their effects on body systems. Required for nursing majors.',file:'PathoQuest_BIO280_USC_FINAL.html',soon:false},
+      {num:'BIOL U280L',title:'Medical Mystery – Clinical Engine',desc:'Advanced clinical case-based diagnostic reasoning for pathophysiology.',file:'MedicalMystery_FinalBetaA.html',soon:false}
     ],
     mini:[{action:'swim',label:'🏊 SWIM RACE',sub:'Beat the CPU in the Spartan Pool\!'}]
   },
@@ -7448,10 +7493,29 @@ const BLD_INT = {
       {name:'Parking & Transportation Services',role:'Permits, Shuttles & Campus Mobility'}
     ],
     courses:[
-      {num:'CRJU U101',title:'Introduction to Criminal Justice',desc:'Survey of law enforcement, judicial, correctional, and juvenile systems and community interrelationships.',file:'JusticeCity_CRJU101_USC.html',soon:false},
+      {num:'CRJU U101',title:'Introduction to Criminal Justice',desc:'Survey of law enforcement, judicial, correctional, and juvenile systems and community interrelationships.',file:null,soon:true},
       {num:'CRJU U210',title:'Policing in America',desc:'Police organizations, recruitment, training, and the role of police in society. Critical issues examined.',file:null,soon:true},
       {num:'CRJU U272',title:'Foundations of Crime Analysis',desc:'Overview of crime analysis: theoretical, methodological, and ethical foundations of the discipline.',file:null,soon:true}
     ],
+    mini:[]
+  },
+  'garg-lab': {
+    name:"Dr. Garg's Innovation Lab",
+    school:'Department of Biology · Health Sciences · Anatomy',
+    dept:'Virtual Anatomy & 3D Medical Imaging',
+    established:2026,
+    tagline:'"Explore the Human Body in 3D"',
+    accentColor:'#00833E',
+    anatomyUrl:'https://kashee12345.github.io/anatomy-classroom/',
+    facts:[
+      {emoji:'🧬', text:'Home to 122 interactive 3D anatomical models spanning 10 body systems.'},
+      {emoji:'🏆', text:"A flagship resource of USC Upstate's Virtual Learning Initiative."},
+      {emoji:'💡', text:'Students explore the human body using Sketchfab 3D technology.'}
+    ],
+    courses:[
+      {num:'ANAT 301', title:'Virtual Human Anatomy', desc:'Explore all 122 interactive 3D models — organized by body system.', file:'https://kashee12345.github.io/anatomy-classroom/', soon:false}
+    ],
+    faculty:[],
     mini:[]
   }
 };
@@ -7460,8 +7524,10 @@ const BLD_INT = {
 //  BUILDING INTERIOR FUNCTIONS
 // ─────────────────────────────────────────
 function openBldInt(b) {
+  if(b.portal){window.location.href=b.portal;return;}
   const data = BLD_INT[b.id];
   if (!data) return;
+  if (data.anatomyUrl) { showAnatomyOverlay(data.anatomyUrl); return; }
   bldIntBld = b;
   bldIntOpen = true;
 
@@ -7657,5 +7723,18 @@ function drawCrossGameBadges(MX,MY,scX,scY) {
   </div>
 </div>
 
+
+<div id="anatomy-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:#0a1f0f;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:#00833E;border-bottom:2px solid #00B189">
+    <img src="https://uscupstate.edu/wp-content/uploads/2023/09/cropped-uscupstate-logo.png" alt="USC Upstate" style="height:36px;filter:brightness(0) invert(1)">
+    <span style="color:#fff;font-weight:700;font-size:15px;letter-spacing:1px">DR. GARG'S INNOVATION LAB — Virtual Anatomy Classroom</span>
+    <button id="anatomy-close-btn" onclick="closeAnatomyOverlay()" style="margin-left:auto;background:#fff;color:#00833E;border:none;padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">← Back to Campus</button>
+  </div>
+  <iframe id="anatomy-iframe" src="" style="flex:1;width:100%;border:none" allowfullscreen></iframe>
+</div>
+<script>
+function showAnatomyOverlay(url){var ov=document.getElementById('anatomy-overlay');document.getElementById('anatomy-iframe').src=url;ov.style.display='flex';document.body.style.overflow='hidden';}
+function closeAnatomyOverlay(){document.getElementById('anatomy-overlay').style.display='none';document.getElementById('anatomy-iframe').src='';document.body.style.overflow='';}
+</script>
 </body>
 </html>
