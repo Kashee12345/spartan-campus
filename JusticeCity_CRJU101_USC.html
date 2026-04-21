@@ -510,11 +510,14 @@ function showDlg(speaker,lines,portraitFn,onDone){
   GS.phase='dialogue';
   nextLine();
 }
+let _dlgAutoTimer=null;
 function nextLine(){
   if(dlgQueue.length===0){closeDlg();return;}
   document.getElementById('dlg-spk').textContent=dlgSpeaker.toUpperCase();
   document.getElementById('dlg-txt').textContent=dlgQueue.shift();
   if(dlgPortraitFn)drawPortrait(dlgPortraitFn);
+  if(_dlgAutoTimer)clearTimeout(_dlgAutoTimer);
+  _dlgAutoTimer=setTimeout(()=>{if(dlgOpen)advDlg();},4000);
 }
 function advDlg(){
   if(!dlgOpen)return;
@@ -530,6 +533,7 @@ function closeDlg(){
   if(dlgCallback){const cb=dlgCallback;dlgCallback=null;cb();}
 }
 document.getElementById('dlg').addEventListener('click',advDlg);
+document.getElementById('c').addEventListener('click',()=>{if(dlgOpen)advDlg();});
 // Draw NPC portrait on small canvas
 function drawPortrait(fn){
   const c=document.getElementById('dlg-face'),ctx=c.getContext('2d');
@@ -2029,22 +2033,22 @@ function drawObjectiveArrow(){
   const ax=W/2+Math.cos(angle)*R;
   const ay=H/2+Math.sin(angle)*R;
   const pulse=0.6+0.4*Math.sin(Date.now()/400);
-  CTX.save();
-  CTX.globalAlpha=pulse;
-  CTX.fillStyle='#ffe066';
-  CTX.strokeStyle='#aa8800';
-  CTX.lineWidth=2;
-  CTX.translate(ax,ay);
-  CTX.rotate(angle);
-  CTX.beginPath();
-  CTX.moveTo(14,0);
-  CTX.lineTo(-8,7);
-  CTX.lineTo(-5,0);
-  CTX.lineTo(-8,-7);
-  CTX.closePath();
-  CTX.fill();
-  CTX.stroke();
-  CTX.restore();
+  ctx.save();
+  ctx.globalAlpha=pulse;
+  ctx.fillStyle='#ffe066';
+  ctx.strokeStyle='#aa8800';
+  ctx.lineWidth=2;
+  ctx.translate(ax,ay);
+  ctx.rotate(angle);
+  ctx.beginPath();
+  ctx.moveTo(14,0);
+  ctx.lineTo(-8,7);
+  ctx.lineTo(-5,0);
+  ctx.lineTo(-8,-7);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
 }
 
 // ── WEB AUDIO ENGINE ──
@@ -2543,11 +2547,11 @@ drawObjectiveArrow = function(){
     const R=Math.min(W,H)*.38;
     const ax=W/2+Math.cos(angle)*R,ay=H/2+Math.sin(angle)*R;
     const pulse=0.6+0.4*Math.sin(Date.now()/400);
-    CTX.save();CTX.globalAlpha=pulse;
-    CTX.fillStyle='#ffe066';CTX.strokeStyle='#aa8800';CTX.lineWidth=2;
-    CTX.translate(ax,ay);CTX.rotate(angle);
-    CTX.beginPath();CTX.moveTo(14,0);CTX.lineTo(-8,7);CTX.lineTo(-5,0);CTX.lineTo(-8,-7);
-    CTX.closePath();CTX.fill();CTX.stroke();CTX.restore();
+    ctx.save();ctx.globalAlpha=pulse;
+    ctx.fillStyle='#ffe066';ctx.strokeStyle='#aa8800';ctx.lineWidth=2;
+    ctx.translate(ax,ay);ctx.rotate(angle);
+    ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(-8,7);ctx.lineTo(-5,0);ctx.lineTo(-8,-7);
+    ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
     return;
   }
   _dOA0();
