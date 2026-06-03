@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Spartan Campus — USC Upstate</title>
+<title>Dr. Garg's Academic Game Library — USC Upstate</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;overflow:hidden;background:#0a140a;font-family:'Press Start 2P',monospace;user-select:none;}
+/* Premium readable companion fonts loaded for the polish layer */
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Cinzel+Decorative:wght@700;900&display=swap');
 #c{display:block;position:fixed;top:26px;left:0;}
 
 /* TITLE */
@@ -325,14 +327,684 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a140a;font-family:
   margin-top:3px;
 }
 
+/* ════════════════════════════════════════════════════════════════════════
+   ░░░  THE BEACON · POLISH LAYER  ░░░
+   Theme-driven via the BEACON_THEME JS object below.
+   Every animation/overlay added here references the institution palette.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ---- Global tokens ----------------------------------------------------- */
+:root{
+  --bcn-pri:#00693e; --bcn-lt:#00a84f; --bcn-dk:#003a10;
+  --bcn-bg:#0a1e0a; --bcn-bg-deep:#050e05;
+  --bcn-ink:#fff; --bcn-soft:#aaccaa; --bcn-dim:#5aaa5a; --bcn-faint:#1a3a1a;
+  --font-pixel:'Press Start 2P',"Courier New",monospace;
+  --font-read:'VT323','Press Start 2P',monospace;
+  --font-disp:'Cinzel Decorative','Press Start 2P',serif;
+}
+
+/* ---- Typography readability bumps -------------------------------------- */
+#hud-loc,#hud-desc,#hud-ctrl,#mb,#mco,.msl,.tcopy,
+#ti,.tsub,.tusc{font-family:var(--font-read)!important;letter-spacing:.04em}
+#hud-loc{font-size:15px!important;line-height:1.5!important;color:#cfecd0!important}
+#hud-desc{font-size:14px!important;line-height:1.5!important;color:#9bbf99!important}
+#hud-ctrl{font-size:12px!important;line-height:1.5!important;color:#5a8a52!important}
+#mb{font-size:13px!important;letter-spacing:.18em!important;color:#5aaa5a!important}
+#mco{font-size:14px!important;color:#7da57b!important}
+.msl{font-size:11px!important;letter-spacing:.18em!important;color:#5a8a52!important}
+.msv{font-size:22px!important}
+.tcopy{font-size:12px!important;color:#3a6a3a!important;line-height:2!important}
+#ti{font-size:14px!important;color:#00ff70!important;letter-spacing:.04em}
+.hbtn{font-size:11px!important;line-height:1.4!important}
+.hbtn small{font-size:10px!important}
+.tsub{font-size:13px!important}
+.tusc{font-size:14px!important}
+.tpress{font-size:15px!important}
+
+/* ---- Title screen — cinematic ambient layer ---------------------------- */
+.beacon-title-fx{position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden}
+.beacon-title-fx .btf-aurora{
+  position:absolute;inset:-10%;pointer-events:none;
+  background:
+    radial-gradient(ellipse 50% 30% at 25% 25%, rgba(0,168,79,.18), transparent 70%),
+    radial-gradient(ellipse 60% 40% at 75% 75%, rgba(0,200,90,.14), transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(255,224,128,.06), transparent 70%);
+  animation:bcnAuroraDrift 22s ease-in-out infinite alternate;
+  filter:blur(40px);
+}
+@keyframes bcnAuroraDrift{
+  0%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(4%,-3%) scale(1.08)}
+  100%{transform:translate(-3%,2%) scale(.95)}
+}
+.beacon-title-fx .btf-rays{
+  position:absolute;inset:0;
+  background:repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(0,168,79,.06) 8deg, transparent 16deg);
+  animation:bcnRays 60s linear infinite;
+  mix-blend-mode:screen;opacity:.5;
+}
+@keyframes bcnRays{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.beacon-title-fx .btf-vignette{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 60% at 50% 50%, transparent 30%, rgba(0,0,0,.45) 100%);
+  pointer-events:none;
+}
+.beacon-title-fx .btf-leaves{position:absolute;inset:0}
+.beacon-title-fx .btf-leaves span{
+  position:absolute;width:14px;height:14px;
+  background:radial-gradient(ellipse, #ff8030 30%, #c84020 70%, transparent);
+  border-radius:50% 0 50% 0;
+  animation:bcnLeafFall 14s linear infinite;
+  opacity:.7;
+}
+.beacon-title-fx .btf-leaves span:nth-child(1){left:8%;animation-delay:0s;background:radial-gradient(ellipse,#ffb060,#c87030 70%,transparent)}
+.beacon-title-fx .btf-leaves span:nth-child(2){left:18%;animation-delay:1.5s;background:radial-gradient(ellipse,#ff6040,#a02020 70%,transparent)}
+.beacon-title-fx .btf-leaves span:nth-child(3){left:30%;animation-delay:3s;background:radial-gradient(ellipse,#fff080,#c0a020 70%,transparent)}
+.beacon-title-fx .btf-leaves span:nth-child(4){left:42%;animation-delay:4.5s}
+.beacon-title-fx .btf-leaves span:nth-child(5){left:55%;animation-delay:6s;background:radial-gradient(ellipse,#fff0a0,#80c050 70%,transparent)}
+.beacon-title-fx .btf-leaves span:nth-child(6){left:68%;animation-delay:7.5s}
+.beacon-title-fx .btf-leaves span:nth-child(7){left:78%;animation-delay:9s;background:radial-gradient(ellipse,#ff8030,#a04020 70%,transparent)}
+.beacon-title-fx .btf-leaves span:nth-child(8){left:88%;animation-delay:10.5s}
+.beacon-title-fx .btf-leaves span:nth-child(9){left:50%;animation-delay:12s;background:radial-gradient(ellipse,#fff080,#c0a020 70%,transparent)}
+.beacon-title-fx .btf-leaves span:nth-child(10){left:70%;animation-delay:13s}
+@keyframes bcnLeafFall{
+  0%{top:-30px;opacity:0;transform:rotate(0)}
+  10%{opacity:.8}
+  100%{top:110%;opacity:0;transform:rotate(720deg)}
+}
+
+/* Title text upgrades */
+.tseal{
+  font-family:var(--font-disp)!important;
+  filter:drop-shadow(0 0 32px rgba(0,168,79,.6)) drop-shadow(0 0 60px rgba(0,168,79,.4)) drop-shadow(0 6px 0 #003a10)!important;
+  animation:bcnSealPulse 3s ease-in-out infinite;
+}
+@keyframes bcnSealPulse{
+  0%,100%{transform:scale(1) rotate(-2deg)}
+  50%{transform:scale(1.05) rotate(2deg)}
+}
+.tmain{
+  font-family:var(--font-disp)!important;
+  font-weight:900!important;
+  letter-spacing:.04em!important;
+  background:linear-gradient(180deg,#fff 0%,#dff0d8 40%,#7fc05e 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 20px rgba(0,168,79,.5)) drop-shadow(4px 4px 0 #003a10);
+  animation:bcnMainReveal 1.4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes bcnMainReveal{
+  0%{opacity:0;transform:translateY(-30px) scale(.85);filter:blur(8px)}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:drop-shadow(0 0 20px rgba(0,168,79,.5)) drop-shadow(4px 4px 0 #003a10)}
+}
+.tusc{
+  text-shadow:0 0 16px rgba(0,168,79,.6),0 2px 0 #003a10;
+  animation:bcnTextRise 1s cubic-bezier(.16,1,.3,1) .8s both;
+}
+@keyframes bcnTextRise{from{opacity:0;letter-spacing:.5em}to{opacity:1;letter-spacing:.16em}}
+.tsub{animation:bcnTextRise 1s cubic-bezier(.16,1,.3,1) 1s both}
+.tpress{
+  animation:bl 1s steps(1) infinite, bcnPressGlow 2s ease-in-out infinite;
+  text-shadow:0 0 12px rgba(0,168,79,.6);
+}
+@keyframes bcnPressGlow{
+  0%,100%{filter:brightness(1) drop-shadow(0 0 8px rgba(0,168,79,.4))}
+  50%{filter:brightness(1.3) drop-shadow(0 0 24px rgba(0,168,79,.8))}
+}
+
+/* Title bar utility buttons (Stats, Install, Tour) */
+.beacon-tbar{
+  position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
+  display:flex;gap:10px;z-index:5;
+}
+.beacon-tbar-btn{
+  background:linear-gradient(180deg,rgba(0,105,62,.4),rgba(0,58,16,.6));
+  border:2px solid rgba(0,168,79,.5);
+  color:#dfe8d8;padding:9px 16px;cursor:pointer;border-radius:4px;
+  font-family:var(--font-pixel);font-size:11px;letter-spacing:.12em;
+  box-shadow:0 4px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1);
+  transition:transform .15s,border-color .15s,color .15s;
+}
+.beacon-tbar-btn:hover{
+  transform:translateY(-2px);
+  border-color:#00a84f;color:#fff;
+  box-shadow:0 6px 20px rgba(0,168,79,.5),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.beacon-install-btn{display:none}
+.beacon-install-btn.show{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(180deg,#00a84f,#00693e);color:#fff;border-color:#7ed85a}
+
+/* ---- Welcome greeting -------------------------------------------------- */
+.beacon-greeting{
+  position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-20px);
+  z-index:9000;pointer-events:none;
+  animation:bcnGreetIn .6s cubic-bezier(.16,1,.3,1) forwards,bcnGreetOut .6s ease-in 4.4s forwards;
+  font-family:var(--font-pixel);
+}
+@keyframes bcnGreetIn{from{transform:translateX(-50%) translateY(-30px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+@keyframes bcnGreetOut{from{transform:translateX(-50%) translateY(0);opacity:1}to{transform:translateX(-50%) translateY(-30px);opacity:0}}
+.beacon-greeting .bg-shadow{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,rgba(0,168,79,.3),transparent 70%);
+  filter:blur(20px);
+}
+.beacon-greeting .bg-text{
+  position:relative;
+  background:linear-gradient(180deg,rgba(0,40,16,.95),rgba(0,20,8,.98));
+  border:2px solid #00a84f;border-radius:8px;
+  padding:14px 28px;text-align:center;
+  box-shadow:0 0 0 1px rgba(0,168,79,.4),0 12px 32px rgba(0,0,0,.7),0 0 60px rgba(0,168,79,.2);
+}
+.beacon-greeting .bg-line{
+  font-family:var(--font-disp);font-size:22px;font-weight:900;
+  background:linear-gradient(180deg,#fff,#dff0d8 50%,#7fc05e 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:.02em;
+}
+.beacon-greeting .bg-sub{
+  font-family:var(--font-read);font-size:14px;color:#aac8a4;
+  margin-top:4px;letter-spacing:.04em;
+}
+
+/* ---- Building hover detail cards --------------------------------------- */
+.beacon-bld-card{
+  position:fixed;z-index:9100;pointer-events:none;
+  display:flex;align-items:flex-start;gap:14px;
+  background:linear-gradient(180deg,rgba(0,40,16,.95),rgba(0,20,8,.98));
+  border:2px solid #00a84f;border-radius:8px;
+  padding:14px 16px;width:340px;
+  box-shadow:0 0 0 1px rgba(0,168,79,.4),0 16px 40px rgba(0,0,0,.7),0 0 32px rgba(0,168,79,.25);
+  animation:bcnCardIn .25s cubic-bezier(.16,1,.3,1);
+}
+@keyframes bcnCardIn{from{opacity:0;transform:translate(-6px,-6px) scale(.97)}to{opacity:1;transform:translate(0,0) scale(1)}}
+.beacon-bld-card .bbc-icon{
+  font-size:38px;line-height:1;flex-shrink:0;
+  filter:drop-shadow(0 0 12px rgba(0,168,79,.6));
+}
+.beacon-bld-card .bbc-body{flex:1;min-width:0}
+.beacon-bld-card .bbc-name{
+  font-family:var(--font-pixel);font-size:12px;color:#fff;letter-spacing:.04em;
+  line-height:1.4;margin-bottom:4px;
+  text-shadow:0 0 8px rgba(0,168,79,.5);
+}
+.beacon-bld-card .bbc-dept{
+  font-family:var(--font-read);font-size:13px;color:#aacfaa;
+  margin-bottom:10px;letter-spacing:.02em;
+}
+.beacon-bld-card .bbc-games{display:flex;flex-direction:column;gap:6px}
+.beacon-bld-card .bbc-game{
+  background:rgba(0,0,0,.4);border-left:2px solid #00a84f;
+  padding:6px 9px;border-radius:0 4px 4px 0;
+}
+.beacon-bld-card .bbc-g-name{
+  font-family:var(--font-pixel);font-size:10px;color:#7ed85a;letter-spacing:.02em;
+  display:block;margin-bottom:2px;
+}
+.beacon-bld-card .bbc-g-meta{
+  font-family:var(--font-read);font-size:13px;color:#9bbf99;letter-spacing:.02em;
+}
+.beacon-bld-card .bbc-total{
+  font-family:var(--font-pixel);font-size:9px;color:#f0c840;letter-spacing:.16em;
+  text-align:right;margin-top:6px;
+  text-shadow:0 0 8px rgba(240,200,64,.5);
+}
+.beacon-bld-card .bbc-empty{
+  font-family:var(--font-read);font-size:13px;color:#5a8a52;font-style:italic;
+}
+
+/* ---- Onboarding tour --------------------------------------------------- */
+.beacon-tour{position:fixed;inset:0;z-index:9500;pointer-events:auto}
+.bt-mask{position:absolute;inset:0;background:rgba(0,5,0,.7);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.bt-spot{
+  position:absolute;border-radius:8px;pointer-events:none;
+  box-shadow:0 0 0 9999px rgba(0,5,0,.7),0 0 0 3px #00a84f,0 0 32px rgba(0,168,79,.5);
+  transition:all .35s cubic-bezier(.16,1,.3,1);
+}
+.bt-card{
+  position:absolute;
+  background:linear-gradient(180deg,#0a1e0a,#050e05);
+  border:2px solid #00a84f;border-radius:8px;
+  padding:18px 22px;width:340px;
+  box-shadow:0 16px 48px rgba(0,0,0,.7),0 0 32px rgba(0,168,79,.2);
+  animation:bcnTourIn .4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes bcnTourIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.bt-step{font-family:var(--font-pixel);font-size:9px;color:#00a84f;letter-spacing:.18em}
+.bt-title{font-family:var(--font-disp);font-size:22px;font-weight:900;color:#fff;margin:8px 0 4px;letter-spacing:-.01em}
+.bt-body{font-family:var(--font-read);font-size:16px;line-height:1.45;color:#dfe8d8;margin-bottom:14px}
+.bt-actions{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-top:12px}
+.bt-dots{display:flex;gap:5px}
+.bt-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2)}
+.bt-dot.on{background:#00a84f;box-shadow:0 0 8px rgba(0,168,79,.7)}
+.bt-skip{
+  background:rgba(255,255,255,.05);color:#aac8a4;
+  border:1px solid rgba(255,255,255,.15);
+  padding:8px 12px;border-radius:4px;cursor:pointer;
+  font-family:var(--font-read);font-size:14px;
+}
+.bt-skip:hover{background:rgba(255,255,255,.1);color:#fff}
+.bt-next{
+  background:linear-gradient(180deg,#00a84f,#00693e);
+  color:#fff;border:1px solid #7ed85a;
+  padding:8px 14px;border-radius:4px;cursor:pointer;
+  font-family:var(--font-pixel);font-size:11px;font-weight:700;letter-spacing:.06em;
+  box-shadow:0 0 0 1px rgba(0,168,79,.4),0 4px 12px rgba(0,168,79,.4),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.bt-next:hover{transform:translateY(-1px);box-shadow:0 0 0 1px rgba(0,168,79,.5),0 8px 20px rgba(0,168,79,.5)}
+
+/* ---- Attract mode ------------------------------------------------------ */
+.beacon-attract{
+  position:fixed;inset:0;z-index:9400;pointer-events:none;
+  background:linear-gradient(180deg,#020410 0%,#040810 50%,#020408 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--font-pixel);
+  animation:bcnAttFade .5s ease-out;
+}
+@keyframes bcnAttFade{from{opacity:0}to{opacity:1}}
+.beacon-attract .ba-bg{
+  position:absolute;inset:0;
+  background-image:
+    radial-gradient(2px 2px at 12% 22%, #00a84f 50%, transparent 55%),
+    radial-gradient(1.5px 1.5px at 28% 65%, #ffd460 50%, transparent 55%),
+    radial-gradient(1.5px 1.5px at 47% 18%, #ffffff 50%, transparent 55%),
+    radial-gradient(2px 2px at 64% 78%, #00a84f 50%, transparent 55%),
+    radial-gradient(1px 1px at 78% 42%, #ffd460 50%, transparent 55%),
+    radial-gradient(1.5px 1.5px at 88% 88%, #aacfaa 50%, transparent 55%);
+  background-size:160% 160%;
+  animation:bcnAttStars 14s linear infinite;
+  mix-blend-mode:screen;opacity:.6;
+}
+@keyframes bcnAttStars{0%{background-position:0 0}100%{background-position:-30% 25%}}
+.beacon-attract .ba-banner{
+  position:absolute;top:30px;left:50%;transform:translateX(-50%);
+  font-size:13px;color:#00a84f;letter-spacing:.4em;
+  text-shadow:0 0 12px #00a84f;
+  animation:bcnAttBlink 1.4s ease-in-out infinite;
+}
+@keyframes bcnAttBlink{0%,100%{opacity:.5}50%{opacity:1}}
+.beacon-attract .ba-stage{
+  width:90vw;max-width:680px;min-height:340px;
+  background:linear-gradient(180deg,#0a1e0a,#040810);
+  border:2px solid #00a84f;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 1px rgba(0,168,79,.4),0 16px 48px rgba(0,0,0,.7),inset 0 0 80px rgba(0,168,79,.15);
+}
+.beacon-attract .ba-press{
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  font-size:14px;color:#f0c840;letter-spacing:.3em;
+  text-shadow:0 0 12px rgba(240,200,64,.6);
+  animation:bcnAttPress 1s ease-in-out infinite;
+}
+@keyframes bcnAttPress{0%,100%{opacity:.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.05)}}
+.beacon-attract .ba-scene{
+  text-align:center;padding:20px 30px;
+  animation:bcnAttSceneIn .4s ease-out;
+}
+@keyframes bcnAttSceneIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.beacon-attract .ba-icon{
+  font-size:80px;margin-bottom:14px;
+  filter:drop-shadow(0 0 24px rgba(0,168,79,.6));
+  animation:bcnAttIcon 1.4s ease-in-out infinite;
+}
+@keyframes bcnAttIcon{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.beacon-attract .ba-game{
+  font-family:var(--font-disp);font-size:36px;font-weight:900;
+  color:#fff;letter-spacing:.04em;margin-bottom:8px;
+  text-shadow:0 0 16px rgba(0,168,79,.5),0 0 32px rgba(0,168,79,.3);
+}
+.beacon-attract .ba-meta{
+  font-family:var(--font-read);font-size:16px;color:#aacfaa;
+  letter-spacing:.04em;margin-bottom:12px;
+}
+.beacon-attract .ba-badge{
+  font-family:var(--font-pixel);font-size:11px;
+  background:rgba(0,168,79,.2);color:#7ed85a;
+  border:1px solid #00a84f;border-radius:4px;
+  padding:5px 12px;display:inline-block;
+  letter-spacing:.18em;
+  text-shadow:0 0 6px rgba(0,168,79,.5);
+}
+.beacon-attract .ba-cta{
+  font-family:var(--font-read);font-size:14px;color:#5a8a52;
+  margin-top:18px;letter-spacing:.06em;
+}
+
+/* ---- Launch cinematic -------------------------------------------------- */
+.beacon-launch-cin{
+  position:fixed;inset:0;z-index:9600;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.92);
+  font-family:var(--font-pixel);
+  animation:bcnLcMain 1.4s ease-out forwards;
+}
+@keyframes bcnLcMain{0%{opacity:0}10%{opacity:1}90%{opacity:1}100%{opacity:0}}
+.beacon-launch-cin .blc-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%, rgba(0,168,79,.2), transparent 70%);
+  animation:bcnLcBg 1.4s ease-out;
+}
+@keyframes bcnLcBg{0%{opacity:0;transform:scale(.5)}30%{opacity:1;transform:scale(1)}100%{opacity:.5;transform:scale(1.3)}}
+.beacon-launch-cin .blc-icon{
+  font-size:96px;margin-bottom:18px;
+  filter:drop-shadow(0 0 32px rgba(0,168,79,.6));
+  animation:bcnLcIcon 1.4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes bcnLcIcon{
+  0%{opacity:0;transform:scale(.3) rotate(-10deg)}
+  40%{opacity:1;transform:scale(1.15) rotate(0)}
+  100%{opacity:1;transform:scale(1) rotate(0)}
+}
+.beacon-launch-cin .blc-launching{
+  font-size:13px;color:#00a84f;letter-spacing:.5em;
+  text-shadow:0 0 12px #00a84f;
+  margin-bottom:14px;
+}
+.beacon-launch-cin .blc-title{
+  font-family:var(--font-disp);font-size:42px;font-weight:900;
+  color:#fff;letter-spacing:.04em;
+  text-shadow:0 0 20px rgba(0,168,79,.7),0 0 40px rgba(0,168,79,.4),4px 4px 0 #003a10;
+  margin-bottom:6px;
+  animation:bcnLcTitle 1.4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes bcnLcTitle{from{opacity:0;letter-spacing:.4em}to{opacity:1;letter-spacing:.04em}}
+.beacon-launch-cin .blc-course{
+  font-family:var(--font-read);font-size:16px;color:#aacfaa;
+  letter-spacing:.06em;margin-bottom:24px;
+}
+.beacon-launch-cin .blc-bar{
+  width:280px;height:4px;background:rgba(0,168,79,.2);
+  border-radius:2px;overflow:hidden;
+  border:1px solid rgba(0,168,79,.4);
+}
+.beacon-launch-cin .blc-bar-fill{
+  height:100%;width:0;
+  background:linear-gradient(90deg,#00693e,#00a84f,#7ed85a);
+  box-shadow:0 0 12px #00a84f;
+  animation:bcnLcBar 1.2s ease-out forwards;
+}
+@keyframes bcnLcBar{from{width:0}to{width:100%}}
+
+/* ---- Stats dashboard --------------------------------------------------- */
+.beacon-dashboard{position:fixed;inset:0;z-index:9700;display:flex;align-items:center;justify-content:center;font-family:var(--font-pixel);animation:bcnDashFade .35s ease-out}
+@keyframes bcnDashFade{from{opacity:0}to{opacity:1}}
+.beacon-dashboard .bd-shade{position:absolute;inset:0;background:rgba(0,5,0,.85);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);cursor:pointer}
+.beacon-dashboard .bd-card{
+  position:relative;
+  background:linear-gradient(180deg,#0a1e0a,#040810);
+  border:2px solid #00a84f;border-radius:12px;
+  padding:32px 36px;max-width:520px;width:90%;
+  box-shadow:0 0 0 1px rgba(0,168,79,.4),0 24px 64px rgba(0,0,0,.8),inset 0 0 80px rgba(0,168,79,.1);
+  animation:bcnDashIn .4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes bcnDashIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.beacon-dashboard .bd-close{
+  position:absolute;top:14px;right:14px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);
+  color:#aacfaa;padding:6px 10px;cursor:pointer;border-radius:4px;
+  font-size:12px;
+}
+.beacon-dashboard .bd-close:hover{background:rgba(255,255,255,.1);color:#fff}
+.beacon-dashboard .bd-title{
+  font-family:var(--font-disp);font-size:32px;font-weight:900;color:#fff;
+  letter-spacing:.04em;text-align:center;
+  text-shadow:0 0 16px rgba(0,168,79,.5);
+}
+.beacon-dashboard .bd-sub{
+  font-family:var(--font-read);font-size:13px;color:#aacfaa;
+  text-align:center;letter-spacing:.18em;margin:6px 0 22px;
+}
+.beacon-dashboard .bd-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+  margin-bottom:18px;
+}
+.beacon-dashboard .bd-stat{
+  background:rgba(0,40,16,.4);border:1px solid rgba(0,168,79,.25);
+  border-radius:6px;padding:14px;text-align:center;
+}
+.beacon-dashboard .bd-num{
+  font-family:var(--font-disp);font-size:36px;font-weight:900;
+  color:#00a84f;line-height:1;
+  text-shadow:0 0 12px rgba(0,168,79,.5);
+}
+.beacon-dashboard .bd-num-sm{font-size:24px}
+.beacon-dashboard .bd-lbl{
+  font-family:var(--font-pixel);font-size:9px;color:#7da57b;
+  letter-spacing:.18em;margin-top:6px;
+}
+.beacon-dashboard .bd-fav{
+  background:rgba(240,200,64,.08);border:1px solid rgba(240,200,64,.3);
+  border-radius:6px;padding:14px;text-align:center;margin-bottom:18px;
+}
+.beacon-dashboard .bd-fav-lbl{
+  font-family:var(--font-pixel);font-size:9px;color:#f0c840;
+  letter-spacing:.2em;margin-bottom:6px;
+}
+.beacon-dashboard .bd-fav-name{
+  font-family:var(--font-disp);font-size:18px;font-weight:900;color:#fff;
+  text-shadow:0 0 10px rgba(240,200,64,.5);
+}
+.beacon-dashboard .bd-action{
+  display:block;width:100%;
+  background:linear-gradient(180deg,#00a84f,#00693e);
+  color:#fff;border:1px solid #7ed85a;
+  padding:14px;border-radius:6px;cursor:pointer;
+  font-family:var(--font-pixel);font-size:12px;letter-spacing:.18em;
+  box-shadow:0 0 0 1px rgba(0,168,79,.4),0 6px 18px rgba(0,168,79,.4),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.beacon-dashboard .bd-action:hover{transform:translateY(-1px);box-shadow:0 0 0 1px rgba(0,168,79,.5),0 12px 28px rgba(0,168,79,.5)}
+
+/* ---- Always-visible LIVE BANNER (top center, post-title) -------------- */
+.beacon-live-banner{
+  position:fixed;top:30px;left:50%;transform:translateX(-50%);
+  z-index:14;
+  display:flex;align-items:center;gap:14px;
+  background:linear-gradient(180deg,rgba(0,40,16,.92),rgba(0,20,8,.96));
+  border:2px solid rgba(0,168,79,.55);
+  border-radius:8px;
+  padding:10px 18px;
+  box-shadow:0 4px 24px rgba(0,0,0,.5),0 0 32px rgba(0,168,79,.25),inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  font-family:var(--font-pixel);
+  transition:opacity .4s,transform .3s;
+  opacity:0;
+  animation:bcnLbPulse 3s ease-in-out infinite;
+}
+@keyframes bcnLbPulse{
+  0%,100%{box-shadow:0 4px 24px rgba(0,0,0,.5),0 0 32px rgba(0,168,79,.25),inset 0 1px 0 rgba(255,255,255,.08)}
+  50%{box-shadow:0 4px 28px rgba(0,0,0,.6),0 0 48px rgba(0,168,79,.4),inset 0 1px 0 rgba(255,255,255,.12)}
+}
+.beacon-live-banner .blb-icon{
+  font-size:32px;line-height:1;flex-shrink:0;
+  filter:drop-shadow(0 0 12px rgba(0,168,79,.7));
+}
+.beacon-live-banner .blb-body{flex:1;min-width:0}
+.beacon-live-banner .blb-title{
+  font-family:var(--font-disp);font-size:18px;font-weight:900;
+  background:linear-gradient(180deg,#fff,#dff0d8 50%,#7fc05e 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:.04em;
+}
+.beacon-live-banner .blb-sub{
+  font-family:var(--font-read);font-size:13px;color:#aacfaa;
+  letter-spacing:.06em;margin-top:2px;
+}
+.beacon-live-banner .blb-stats{
+  display:flex;gap:12px;padding-left:14px;
+  border-left:1px solid rgba(0,168,79,.3);
+}
+.beacon-live-banner .blb-stat{text-align:center;min-width:48px}
+.beacon-live-banner .blb-stat-num{
+  font-family:var(--font-disp);font-size:18px;font-weight:900;
+  color:#00a84f;line-height:1;
+  text-shadow:0 0 8px rgba(0,168,79,.5);
+}
+.beacon-live-banner .blb-stat-lbl{
+  font-family:var(--font-pixel);font-size:8px;color:#7da57b;
+  letter-spacing:.16em;margin-top:3px;
+}
+
+/* Hide live banner on small screens to avoid covering controls */
+@media(max-width:600px){
+  .beacon-live-banner{transform:translateX(-50%) scale(.78);transform-origin:top center;top:30px}
+  .beacon-live-banner .blb-stats{display:none}
+}
+
+/* Overlay canvas — placed above the game canvas, below modals */
+#beacon-overlay-cv{pointer-events:none}
+
+/* ---- Building visit achievement toast ---------------------------------- */
+.beacon-visit-ach{
+  position:fixed;top:90px;right:20px;
+  z-index:9300;pointer-events:none;
+  display:flex;align-items:flex-start;gap:14px;
+  background:linear-gradient(180deg,#0a1e0a 0%,#1a3a18 50%,#0a2008 100%);
+  border:2px solid #f0c840;border-radius:8px;
+  padding:14px 20px;width:340px;max-width:calc(100vw - 2rem);
+  box-shadow:0 0 0 1px rgba(240,200,64,.5),0 16px 40px rgba(0,0,0,.7),0 0 60px rgba(240,200,64,.3) inset;
+  animation:bcnVaIn .55s cubic-bezier(.16,1,.3,1),bcnVaOut .55s ease-in 4.7s forwards;
+  font-family:var(--font-pixel);
+}
+@keyframes bcnVaIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes bcnVaOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(40px)}}
+.beacon-visit-ach::before{
+  content:"";position:absolute;left:-2px;top:-2px;right:-2px;bottom:-2px;border-radius:8px;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,224,128,.4) 50%,transparent 70%);
+  background-size:200% 200%;
+  animation:bcnVaSheen 2.6s ease-in-out infinite;
+  pointer-events:none;mix-blend-mode:screen;
+}
+@keyframes bcnVaSheen{0%,100%{background-position:-100% -100%}50%{background-position:100% 100%}}
+.bva-icon{
+  font-size:38px;line-height:1;flex-shrink:0;
+  filter:drop-shadow(0 0 14px rgba(240,200,64,.6)) drop-shadow(0 2px 0 #5a3a08);
+  animation:bcnVaIcon 2s ease-in-out infinite;
+}
+@keyframes bcnVaIcon{
+  0%,100%{transform:rotate(-6deg) scale(1)}
+  50%{transform:rotate(6deg) scale(1.08)}
+}
+.bva-label{
+  font-size:10px;color:#f0c840;letter-spacing:.18em;
+  text-shadow:0 0 8px rgba(240,200,64,.6);
+  margin-bottom:5px;
+}
+.bva-name{
+  font-family:var(--font-disp);font-size:18px;font-weight:900;color:#fff;
+  letter-spacing:.02em;line-height:1.2;
+  text-shadow:0 0 14px rgba(240,200,64,.5),2px 2px 0 #1a1402;
+  margin-bottom:5px;
+}
+.bva-progress{
+  font-family:var(--font-read);font-size:13px;color:#aacfaa;
+  letter-spacing:.04em;
+}
+
+/* ---- Dr. Garg fortune toast ------------------------------------------- */
+.beacon-garg-fortune{
+  position:fixed;bottom:120px;left:50%;transform:translateX(-50%) translateY(20px);
+  z-index:9300;pointer-events:none;
+  display:flex;align-items:center;gap:14px;
+  background:linear-gradient(180deg,#3a2010,#1a0c04);
+  border:2px solid #f0c840;border-radius:8px;
+  padding:14px 22px;max-width:480px;
+  box-shadow:0 0 0 1px rgba(240,200,64,.5),0 16px 40px rgba(0,0,0,.7),0 0 60px rgba(240,200,64,.3) inset;
+  animation:bcnGfIn .55s cubic-bezier(.16,1,.3,1) forwards,bcnGfOut .55s ease-in 5.4s forwards;
+  font-family:var(--font-pixel);
+}
+@keyframes bcnGfIn{from{transform:translateX(-50%) translateY(40px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+@keyframes bcnGfOut{from{opacity:1}to{opacity:0;transform:translateX(-50%) translateY(20px)}}
+.bgf-icon{font-size:38px;line-height:1;animation:bcnGfWobble 1.6s ease-in-out infinite}
+@keyframes bcnGfWobble{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.bgf-label{font-size:10px;color:#f0c840;letter-spacing:.18em;margin-bottom:5px;text-shadow:0 0 8px rgba(240,200,64,.5)}
+.bgf-text{font-family:var(--font-read);font-size:18px;color:#fff;font-style:italic;letter-spacing:.02em;line-height:1.4}
+
+/* ---- Konami unlock toast ---------------------------------------------- */
+.beacon-konami{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+  z-index:9500;pointer-events:none;text-align:center;
+  background:linear-gradient(180deg,#1a0040,#400060,#000020);
+  border:3px solid #ff60ff;border-radius:12px;
+  padding:24px 36px;
+  box-shadow:0 0 0 1px rgba(255,96,255,.5),0 24px 60px rgba(0,0,0,.8),0 0 80px rgba(255,96,255,.4);
+  animation:bcnKIn .4s cubic-bezier(.16,1,.3,1) forwards,bcnKOut .55s ease-in 4.4s forwards;
+  font-family:var(--font-pixel);
+}
+@keyframes bcnKIn{from{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(-15deg)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes bcnKOut{from{opacity:1}to{opacity:0;transform:translate(-50%,-50%) scale(.8)}}
+.bk-text{
+  font-size:24px;letter-spacing:.18em;
+  background:linear-gradient(180deg,#fff,#ff60ff,#60c0ff);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 16px rgba(255,96,255,.7));
+  margin-bottom:8px;
+}
+.bk-sub{font-family:var(--font-read);font-size:14px;color:#e0c0ff;letter-spacing:.06em}
+
+/* ---- /HELP cheat sheet overlay ---------------------------------------- */
+.beacon-help{
+  position:fixed;inset:0;z-index:9700;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-pixel);
+  animation:bcnHelpFade .35s ease-out;
+}
+@keyframes bcnHelpFade{from{opacity:0}to{opacity:1}}
+.bh-shade{position:absolute;inset:0;background:rgba(0,5,0,.85);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);cursor:pointer}
+.bh-card{
+  position:relative;
+  background:linear-gradient(180deg,#0a1e0a,#040810);
+  border:2px solid #00a84f;border-radius:12px;
+  padding:30px 32px;max-width:680px;width:92%;max-height:85vh;overflow-y:auto;
+  box-shadow:0 0 0 1px rgba(0,168,79,.4),0 24px 64px rgba(0,0,0,.8),inset 0 0 80px rgba(0,168,79,.1);
+  animation:bcnHelpIn .4s cubic-bezier(.16,1,.3,1);
+}
+@keyframes bcnHelpIn{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+.bh-close{
+  position:absolute;top:12px;right:12px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);
+  color:#aacfaa;padding:6px 11px;cursor:pointer;border-radius:4px;font-size:12px;
+}
+.bh-close:hover{background:rgba(255,255,255,.1);color:#fff}
+.bh-title{font-family:var(--font-disp);font-size:32px;font-weight:900;color:#fff;letter-spacing:.04em;text-align:center;text-shadow:0 0 16px rgba(0,168,79,.5)}
+.bh-sub{font-family:var(--font-read);font-size:13px;color:#aacfaa;text-align:center;letter-spacing:.18em;margin:6px 0 22px}
+.bh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-bottom:22px}
+.bh-section h4{font-family:var(--font-pixel);font-size:11px;color:#f0c840;letter-spacing:.18em;margin-bottom:10px}
+.bh-row{display:flex;gap:10px;align-items:center;margin-bottom:8px;font-family:var(--font-read);font-size:14px;color:#aacfaa}
+.bh-row kbd{background:rgba(0,168,79,.15);border:1px solid #00a84f;border-radius:3px;padding:3px 7px;font-family:var(--font-pixel);font-size:9px;color:#7ed85a;flex-shrink:0;min-width:60px;text-align:center;letter-spacing:.06em}
+.bh-action{display:block;width:100%;background:linear-gradient(180deg,#00a84f,#00693e);color:#fff;border:1px solid #7ed85a;padding:12px;border-radius:6px;cursor:pointer;font-family:var(--font-pixel);font-size:11px;letter-spacing:.18em;box-shadow:0 0 0 1px rgba(0,168,79,.4),0 6px 18px rgba(0,168,79,.4),inset 0 1px 0 rgba(255,255,255,.2)}
+.bh-action:hover{transform:translateY(-1px)}
+
+/* ---- Institution name unlock celebration ------------------------------ */
+.beacon-inst-unlock{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+  z-index:9600;pointer-events:none;text-align:center;
+  font-family:var(--font-pixel);
+  animation:bcnIuIn .5s cubic-bezier(.16,1,.3,1) forwards,bcnIuOut .55s ease-in 4.95s forwards;
+}
+@keyframes bcnIuIn{from{opacity:0;transform:translate(-50%,-50%) scale(0)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes bcnIuOut{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(-50%,-50%) scale(.8)}}
+.biu-banner{
+  font-family:var(--font-disp);font-size:48px;font-weight:900;
+  background:linear-gradient(180deg,#fff 0%,#f0c840 40%,#00a84f 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 32px rgba(240,200,64,.7));
+  margin-bottom:10px;
+  animation:bcnIuPulse 1.2s ease-in-out infinite;
+}
+@keyframes bcnIuPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.biu-sub{font-family:var(--font-disp);font-size:20px;font-weight:700;color:#fff;letter-spacing:.04em;margin-bottom:8px}
+.biu-motto{font-family:var(--font-read);font-size:18px;color:#aacfaa;font-style:italic;letter-spacing:.04em}
+
+/* ---- Reduced-motion respect ------------------------------------------- */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+
 </style>
 </head>
 <body>
 
 <div id="title">
   <canvas id="tscv"></canvas>
-  <div class="tseal">🧬</div>
-  <div class="tmain">DR. GARG'S<br>SPARTAN<br>CAMPUS</div>
+  <div class="tseal">⚔️</div>
+  <div class="tmain">DR. GARG'S<br>ACADEMIC<br>GAME LIBRARY</div>
   <div class="tusc">UNIVERSITY OF SOUTH CAROLINA UPSTATE</div>
   <div class="tsub">EXPLORE CAMPUS &nbsp;·&nbsp; 9 GAMES &nbsp;·&nbsp; 2,269+ QUESTIONS</div>
   <div class="tpress">▶ CLICK OR PRESS ANY KEY TO ENTER CAMPUS</div>
@@ -378,7 +1050,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a140a;font-family:
 // ─────────────────────────────────────────
 const WW=2600, WH=2100;
 const HUD=100, TICK=26;
-const G='#00693e', LG='#7fffb0', DG='#003a10';
+const G='#00693e', LG='#00a84f', DG='#003a10';
 const BRICK='#8b4a18', DBRICK='#5a2d0c', CREAM='#f5f0e8';
 
 const BUILDINGS=[
@@ -392,11 +1064,10 @@ const BUILDINGS=[
    x:100,y:130,w:430,h:280, style:'modern', emoji:'🧬', soon:false,
    ex:315,ey:410,
    games:[
-     {name:'AnatomyQuest',   course:'BIO 243',file:'AnatomyQuest1_USC_FINAL.html',       q:324,z:7, type:'rpg'},
-     {name:'AnatomyQuest 2', course:'BIO 244',file:'AnatomyQuest2_BIO244_USC_FINAL.html', q:323,z:7, type:'rpg'},
-     {name:'PathogenDefense',course:'BIOL U250',file:'PathogenDefense_BIOLU250_USC.html', q:18, z:8, type:'rpg'},
-     {name:'Anatomy Chase',  course:'BIOL U128',file:'AnatomyChase_BIOLU128_USC.html',    q:300,z:8, type:'rpg'},
-     {name:'Physiology Chase',course:'BIOL U129',file:'PhysiologyChase_BIOLU129_USC.html', q:300,z:8, type:'rpg'},
+     {name:'AnatomyQuest',   course:'BIO 243',file:'AnatomyQuest1_USC_FINAL__14_.html',       q:324,z:7, type:'rpg'},
+     {name:'AnatomyQuest 2', course:'BIO 244',file:'AnatomyQuest2_BIO244_USC_FINAL__3_.html', q:323,z:7, type:'rpg'},
+     {name:'PathoQuest',     course:'BIO 280',file:'PathoQuest_BIO280_USC_FINAL__10_.html',   q:304,z:7, type:'rpg'},
+     {name:'Medical Mystery',course:'BIO 280',file:'MedicalMystery_FinalBetaA.html',          q:0,  z:0, type:'mystery',badge:'CLINICAL ENGINE'},
    ]},
 
   {id:'hodge', label:'G.B. HODGE CENTER\n& ARENA', dept:'Math · Computer Science · Basketball Arena',
@@ -405,27 +1076,22 @@ const BUILDINGS=[
    games:[]},
 
   // ── ROW 2: UPPER-MID ─────────────────────────────────────────────
-  {id:'hpac', label:'HUMANITIES &\nPERFORMING ARTS CTR', dept:'English · Writing · Humanities · 450-seat Theater · Music · Performing Arts',
+  {id:'hpac', label:'HUMANITIES &\nPERFORMING ARTS CTR', dept:'450-seat Theater · Music · Performing Arts',
    x:100,y:540,w:370,h:250, style:'brick', emoji:'🎭', soon:false,
-   ex:285,ey:790, games:[
-     {name:'CompQuest',     course:'ENGL 101',file:'CompQuest_ENGL101_USC_BETA1.html',q:170,z:7,type:'rpg'},
-     {name:"Editor's Desk", course:'ENGL 101',file:'EditorsDesk_ENGL101_USC.html',    q:0,  z:0,type:'writing',badge:'WRITING TOOL',
-      statA:'✍️',lblA:'PASSAGES',statB:'📝',lblB:'GRAMMAR+THESIS'},
-   ]},
+   ex:285,ey:790, games:[]},
 
-  {id:'artsci', label:'ARTS & SCIENCES\nBUILDING', dept:'Psychology · Sociology · Criminal Justice',
+  {id:'artsci', label:'ARTS & SCIENCES\nBUILDING', dept:'Psychology · Sociology · College Admin',
    x:610,y:510,w:370,h:250, style:'brick', emoji:'🧠', soon:false,
    ex:795,ey:760,
    games:[
      {name:'PsychQuest',course:'PSYC 101',file:'PsychQuest_PSYCU101_USC_BETA1.html',q:479,z:8,type:'rpg'},
      {name:'PsychLab',  course:'PSYC 101',file:'PsychLab_PSYC101_USC_BETA3.html',   q:100,z:0,type:'lab',
       badge:'STUDY HUB',statA:'100',lblA:'FLASH CARDS',statB:'12',lblB:'CATEGORIES'},
-     {name:'JusticeCity',course:'CRJU 101',file:'JusticeCity_CRJU101_USC.html',q:0,z:0,type:'rpg',soon:false},
    ]},
 
   {id:'media', label:'MEDIA CENTER', dept:'History · Political Science · Sociology · WRET-TV',
    x:1620,y:510,w:370,h:250, style:'modern', emoji:'📺', soon:false,
-   ex:1805,ey:760, games:[{name:'JusticeCity',course:'CRJU 101',file:'JusticeCity_CRJU101_USC.html',q:0,z:0,type:'rpg',soon:false}]},
+   ex:1805,ey:760, games:[]},
 
   {id:'burroughs', label:'BURROUGHS\nBUILDING', dept:'Global Education · Honors Program · International Studies',
    x:2130,y:540,w:370,h:250, style:'brick', emoji:'🌍', soon:false,
@@ -435,7 +1101,11 @@ const BUILDINGS=[
   {id:'library', label:'GEORGE DEAN\nJOHNSON LIBRARY', dept:'220,000+ Volumes · Tukey Theater · Archives',
    x:70,y:960,w:360,h:280, style:'library', emoji:'📚', soon:false,
    ex:250,ey:1240,
-   games:[]},
+   games:[
+     {name:'CompQuest',     course:'ENGL 101',file:'CompQuest_ENGL101_USC_BETA1__2_.html',q:170,z:7,type:'rpg'},
+     {name:"Editor's Desk", course:'ENGL 101',file:'EditorsDesk_ENGL101_USC__5_.html',    q:0,  z:0,type:'writing',badge:'WRITING TOOL',
+      statA:'✍️',lblA:'PASSAGES',statB:'📝',lblB:'GRAMMAR+THESIS'},
+   ]},
 
   {id:'hicks', label:'P. KATHRYN HICKS\nVISUAL ARTS CTR', dept:'Drawing · Painting · Graphic Design · Digital Imaging',
    x:570,y:950,w:360,h:260, style:'brick', emoji:'🎨', soon:false,
@@ -458,21 +1128,33 @@ const BUILDINGS=[
    x:70,y:1390,w:440,h:260, style:'modern', emoji:'🫀', soon:false,
    ex:290,ey:1390,
    games:[
-     {name:'BodyQuest', course:'BIO 143', file:'BodyQuest_BIO143_USC_Upstate_FINAL.html',q:366,z:11,type:'rpg'},
-     {name:'MicroQuest',course:'BIOL 250',file:'MicroQuest_BIOL250_USC.html',                q:282,z:7, type:'rpg'},
-     {name:'PathoQuest', course:'BIO 280', file:'PathoQuest_BIO280_USC_FINAL.html',   q:304,z:7, type:'rpg'},
-     {name:'Medical Mystery',course:'BIO 280',file:'MedicalMystery_FinalBetaA.html',          q:0,  z:0, type:'mystery',badge:'CLINICAL ENGINE'},
+     {name:'BodyQuest', course:'BIO 143', file:'BodyQuest_BIO143_USC_Upstate_FINAL__1_.html',q:366,z:11,type:'rpg'},
+     {name:'MicroQuest',course:'BIOL 250',file:'BIOL250_MicroQuest_USC.html',                q:282,z:7, type:'rpg'},
    ]},
 
   {id:'safety', label:'UNIVERSITY\nPUBLIC SAFETY', dept:'Campus Police · Emergency Services',
    x:1740,y:1380,w:330,h:250, style:'brick', emoji:'🚔', soon:false,
    ex:1905,ey:1380, games:[]},
-,
-  {id:'garg-lab', label:"DR. GARG'S\nINNOVATION LAB", dept:'Virtual Anatomy · 3D Medical Imaging · Health Sciences',
-   x:850,y:1380,w:480,h:270, style:'modern', emoji:'🧬', soon:false,
-   ex:1085,ey:1380, enterBuilding:true, games:[]},
-      {id:'bus-stop',label:"BUS STOP\nK-12 Campus",dept:'Catch the bus to Discovery Zone!',x:1430,y:1420,w:260,h:200,accent:'#FFD700',portal:'https://kashee12345.github.io/discovery-zone/',games:[],soon:true,ex:1560,ey:1520},
+];
 
+const PATHS=[
+  // Central N-S spine
+  {x:1250,y:0,   w:100,h:WH},
+  // E-W horizontal rows
+  {x:0,   y:420, w:WW, h:55},  // row 1 bottom
+  {x:0,   y:780, w:WW, h:55},  // row 2 bottom
+  {x:0,   y:1240,w:WW, h:55},  // row 3 bottom
+  {x:0,   y:1640,w:WW, h:55},  // row 4 bottom
+  // Left vertical connector
+  {x:480, y:420, w:55, h:WH-420},
+  // Right vertical connector
+  {x:2065,y:420, w:55, h:WH-420},
+  // Mid-left vertical
+  {x:970, y:420, w:55, h:WH-420},
+  // Mid-right vertical
+  {x:1580,y:420, w:55, h:WH-420},
+  // Stockwell approach
+  {x:1250,y:350, w:100,h:430},
 ];
 
 const TREES=[];
@@ -1510,25 +2192,6 @@ function drawBG(t){
 // ─────────────────────────────────────────
 //  PATHS
 // ─────────────────────────────────────────
-const PATHS=[
-  // Central N-S spine
-  {x:1250,y:0,   w:100,h:WH},
-  // E-W horizontal rows
-  {x:0,   y:420, w:WW, h:55},  // row 1 bottom
-  {x:0,   y:780, w:WW, h:55},  // row 2 bottom
-  {x:0,   y:1240,w:WW, h:55},  // row 3 bottom
-  {x:0,   y:1640,w:WW, h:55},  // row 4 bottom
-  // Left vertical connector
-  {x:480, y:420, w:55, h:WH-420},
-  // Right vertical connector
-  {x:2065,y:420, w:55, h:WH-420},
-  // Mid-left vertical
-  {x:970, y:420, w:55, h:WH-420},
-  // Mid-right vertical
-  {x:1580,y:420, w:55, h:WH-420},
-  // Stockwell approach
-  {x:1250,y:350, w:100,h:430},
-];
 function drawPaths(){
   PATHS.forEach(p=>{
     const px=sx(p.x),py=sy(p.y);
@@ -1772,21 +2435,7 @@ function drawBuilding(b){
   cx.fill();
   cx.restore();
 
-  if(b.id==='spartan-plaza'&&b.soon){
-    cx.fillStyle='#3a8a45';cx.fillRect(bx,by,b.w,b.h);
-    cx.strokeStyle='rgba(30,120,50,0.25)';cx.lineWidth=1;
-    for(let gi=-b.h;gi<b.w+b.h;gi+=16){cx.beginPath();cx.moveTo(bx+Math.max(0,gi),by+Math.max(0,-gi));cx.lineTo(bx+Math.min(b.w,gi+b.h),by+Math.min(b.h,gi+b.h));cx.stroke();}
-    cx.fillStyle='#b0a070';cx.fillRect(bx+b.w/2-10,by,20,b.h);
-    cx.fillStyle='#3a8fd4';cx.beginPath();cx.arc(bx+b.w/2,by+b.h*0.42,14,0,Math.PI*2);cx.fill();
-    cx.fillStyle='rgba(120,200,255,0.6)';cx.beginPath();cx.arc(bx+b.w/2,by+b.h*0.42,8,0,Math.PI*2);cx.fill();
-    cx.fillStyle='#8b6914';cx.fillRect(bx+14,by+b.h*0.35,28,8);cx.fillRect(bx+b.w-42,by+b.h*0.35,28,8);
-    cx.fillStyle='rgba(0,60,20,0.9)';cx.fillRect(bx,by+b.h-28,b.w,28);
-    cx.fillStyle='#7fffb0';cx.font="5px 'Press Start 2P',monospace";cx.textAlign='center';
-    cx.fillText('SPARTAN PLAZA',bx+b.w/2,by+b.h-15);
-    cx.fillStyle='#aaaaaa';cx.font="3.5px 'Press Start 2P',monospace";
-    cx.fillText('COMING SOON',bx+b.w/2,by+b.h-5);
-    return;
-  } else if(b.soon){
+  if(b.soon){
     cx.fillStyle='#111a11';cx.fillRect(bx,by,b.w,b.h);
     cx.fillStyle='#0a120a';cx.fillRect(bx,by,b.w,20);
     cx.fillStyle='#1a2a1a';
@@ -1889,20 +2538,7 @@ function drawBuilding(b){
       cx.fillRect(bx+b.w*0.3+s*12,by+b.h+s*5,b.w*0.4-s*24,8);
     }
 
-  } else if(b.id==='garg-lab'){
-          const tealG=cx.createLinearGradient(bx,by,bx,by+b.h);
-          tealG.addColorStop(0,'#003d20');tealG.addColorStop(1,'#001a0f');
-          cx.fillStyle=tealG;cx.fillRect(bx,by,b.w,b.h);
-          cx.fillStyle='rgba(0,180,120,0.18)';
-          for(let row=0;row<4;row++)for(let col=0;col<5;col++){
-            cx.fillRect(bx+16+col*88,by+16+row*56,72,44);
-            cx.strokeStyle='rgba(0,212,120,0.5)';cx.lineWidth=1;
-            cx.strokeRect(bx+16+col*88,by+16+row*56,72,44);
-          }
-          cx.fillStyle='#00833E';cx.fillRect(bx,by,b.w,10);
-          cx.strokeStyle='rgba(0,180,80,0.7)';cx.lineWidth=3;
-          cx.strokeRect(bx+1,by+1,b.w-2,b.h-2);
-        } else if(b.style==='modern'){
+  } else if(b.style==='modern'){
     // ── MODERN — dark-band top, brick lower, glass panels
     // Lower brick body
     const brickG=cx.createLinearGradient(bx,by,bx+b.w,by);
@@ -2078,7 +2714,7 @@ function drawBuilding(b){
 
   // ── BUILDING SIGN (common to all live buildings)
   const signH=52, signY=by+b.h-signH-4;
-  cx.fillStyle='rgba(0,100,50,0.97)';
+  cx.fillStyle='rgba(0,18,0,0.95)';
   cx.fillRect(bx+6,signY,b.w-12,signH);
   cx.fillStyle=LG;
   cx.fillRect(bx+6,signY,b.w-12,3);
@@ -2090,18 +2726,6 @@ function drawBuilding(b){
     cx.font="bold 10px 'Press Start 2P',monospace";
     cx.fillStyle='#aafaaa';
     cx.fillText(signLines[0].slice(0,20), bx+b.w/2+12, signY+signH-14);
-  } else if(b.id==='bus-stop'){
-    cx.fillStyle='#1a1000';cx.fillRect(bx,by,b.w,b.h);
-    cx.fillStyle='#FFD700';cx.fillRect(bx,by,b.w,14);
-    cx.fillStyle='#cc9900';cx.fillRect(bx,by+12,b.w,3);
-    cx.fillStyle='#888';cx.fillRect(bx+12,by+14,7,b.h-14);cx.fillRect(bx+b.w-19,by+14,7,b.h-14);
-    cx.fillStyle='rgba(180,230,255,0.18)';cx.fillRect(bx+21,by+16,b.w-42,b.h-30);
-    cx.strokeStyle='rgba(180,230,255,0.5)';cx.lineWidth=1;cx.strokeRect(bx+21,by+16,b.w-42,b.h-30);
-    cx.fillStyle='#cc0000';cx.fillRect(bx+b.w/2-26,by+20,52,14);
-    cx.fillStyle='#fff';cx.font="4px 'Press Start 2P',monospace";cx.textAlign='center';
-    cx.fillText('ROUTE 1',bx+b.w/2,by+30);
-    cx.fillStyle='#8B6914';cx.fillRect(bx+24,by+b.h-20,b.w-48,8);
-    cx.fillRect(bx+24,by+b.h-28,6,10);cx.fillRect(bx+b.w-30,by+b.h-28,6,10);
   } else {
     cx.font="bold 9px 'Press Start 2P',monospace";
     cx.fillStyle='#aafaaa';
@@ -2322,7 +2946,7 @@ const FACTS=[
   "MicroQuest covers\n282 micro questions!",
   "CompQuest sharpens\nyour ENGL 101 skills!",
   "Play the games to\nboost your quiz grades!",
-  "Dr. Garg teaches at\n3 institutions! 💪",  
+  "Dr. Garg teaches at\n3 institutions! 💪",
 ];
 
 // ─────────────────────────────────────────
@@ -6151,17 +6775,15 @@ function drawProfileCard(){
 let gargModeOpen = false;
 
 const GARG_COURSES = [
-  {name:'ANATOMYQUEST',   course:'BIO 243', file:'AnatomyQuest1_USC_FINAL.html',        q:324,z:7,  emoji:'🧬', col:'#00693e'},
-  {name:'ANATOMYQUEST 2', course:'BIO 244', file:'AnatomyQuest2_BIO244_USC_FINAL.html',  q:323,z:7,  emoji:'🧬', col:'#00693e'},
-  {name:'PATHOQUEST',     course:'BIO 280', file:'PathoQuest_BIO280_USC_FINAL.html',    q:304,z:7,  emoji:'🦠', col:'#8b0000'},
+  {name:'ANATOMYQUEST',   course:'BIO 243', file:'AnatomyQuest1_USC_FINAL__14_.html',        q:324,z:7,  emoji:'🧬', col:'#00693e'},
+  {name:'ANATOMYQUEST 2', course:'BIO 244', file:'AnatomyQuest2_BIO244_USC_FINAL__3_.html',  q:323,z:7,  emoji:'🧬', col:'#00693e'},
+  {name:'PATHOQUEST',     course:'BIO 280', file:'PathoQuest_BIO280_USC_FINAL__10_.html',    q:304,z:7,  emoji:'🦠', col:'#8b0000'},
   {name:'MED MYSTERY',    course:'BIO 280', file:'MedicalMystery_FinalBetaA.html',           q:0,  z:0,  emoji:'🏥', col:'#8b0000'},
-  {name:'BODYQUEST',      course:'BIO 143', file:'BodyQuest_BIO143_USC_Upstate_FINAL.html',q:366,z:11,emoji:'🫀', col:'#a85000'},
-  {name:'MICROQUEST',     course:'BIOL 250',file:'MicroQuest_BIOL250_USC.html',              q:282,z:7,  emoji:'🔬', col:'#006868'},
+  {name:'BODYQUEST',      course:'BIO 143', file:'BodyQuest_BIO143_USC_Upstate_FINAL__1_.html',q:366,z:11,emoji:'🫀', col:'#a85000'},
+  {name:'MICROQUEST',     course:'BIOL 250',file:'BIOL250_MicroQuest_USC.html',              q:282,z:7,  emoji:'🔬', col:'#006868'},
   {name:'PSYCHQUEST',     course:'PSYC 101',file:'PsychQuest_PSYCU101_USC_BETA1.html',       q:479,z:8,  emoji:'🧠', col:'#640080'},
   {name:'PSYCHLAB',       course:'PSYC 101',file:'PsychLab_PSYC101_USC_BETA3.html',         q:100,z:0,  emoji:'🧠', col:'#640080'},
-  {name:'COMPQUEST',      course:'ENGL 101',file:'CompQuest_ENGL101_USC_BETA1.html',     q:170,z:7,  emoji:'✍️', col:'#1a4a8a'},
-  {name:'ANATOMY CHASE',  course:'BIOL U128',file:'AnatomyChase_BIOLU128_USC.html',      q:300,z:8,  emoji:'🧬', col:'#0f766e'},
-  {name:'PHYSIOLOGY CHASE',course:'BIOL U129',file:'PhysiologyChase_BIOLU129_USC.html',  q:300,z:8,  emoji:'🫀', col:'#1d4ed8'},
+  {name:'COMPQUEST',      course:'ENGL 101',file:'CompQuest_ENGL101_USC_BETA1__2_.html',     q:170,z:7,  emoji:'✍️', col:'#1a4a8a'},
 ];
 
 function drawGargMode(){
@@ -6687,7 +7309,6 @@ const INTRO_STEPS = [
 ];
 
 function startIntro(){
-  return; // skip intro - go straight to campus
   if(!isFirstVisit) return;
   INTRO.active = true;
   INTRO.step   = 0;
@@ -7058,7 +7679,7 @@ const BLD_INT = {
       {name:'Dr. Kim Purdy',role:'Vice Provost & Assoc. Vice Chancellor for Academic Affairs'}
     ],
     courses:[
-      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html',soon:false},
+      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html'},
       {num:'UNIV U102',title:'Freshmen Orientation',desc:'Successful transition into higher education through social, personal and academic development. Study skills, time management, goal setting, and careers.',file:null,soon:true},
       {num:'UNIV U201',title:'Leadership Development I',desc:'Various approaches to the definition of leadership and practical experience in building leadership skills.',file:null,soon:true},
       {num:'UNIV U202',title:'Introduction to Leadership II',desc:'Practical experience in building leadership skills within the context of community-based leadership.',file:null,soon:true},
@@ -7088,16 +7709,16 @@ const BLD_INT = {
       {name:'Dr. Anita Nag',role:'Assistant Professor of Chemistry'}
     ],
     courses:[
-      {num:'BIOL U101',title:'Introduction to Biology I',desc:'Cell biology, genetics, evolution, and ecology for science majors. Gateway to all biology programs.',file:null,soon:true},
-      {num:'BIOL U102',title:'Introduction to Biology II',desc:'Continuation of biological principles for science majors: ecology, physiology, and diversity of life.',file:null,soon:true},
+      {num:'BIOL U101',title:'Introduction to Biology I',desc:'Cell biology, genetics, evolution, and ecology for science majors. Gateway to all biology programs.',file:'AnatomyQuestGame.html',soon:false},
+      {num:'BIOL U102',title:'Introduction to Biology II',desc:'Continuation of biological principles for science majors: ecology, physiology, and diversity of life.',file:'AnatomyQuestGame.html',soon:false},
       {num:'BIOL U110',title:'General Biology',desc:'A survey of the major concepts of biology for non-science majors. No lab required.',file:null,soon:true},
-      {num:'BIOL U143',title:'Foundations of Human Physiology',desc:'Introduction to human physiology for non-majors: muscles, bones, organ systems, and homeostasis.',file:'BodyQuest_BIO143_USC_Upstate_FINAL.html',soon:false},
+      {num:'BIOL U143',title:'Foundations of Human Physiology',desc:'Introduction to human physiology for non-majors: muscles, bones, organ systems, and homeostasis.',file:'BodyQuestGame.html',soon:false},
       {num:'BIOL U206',title:'Genetics and Society',desc:'Principles of genetics and their social implications, including genetic technology and bioethics.',file:null,soon:true},
       {num:'BIOL U230',title:'Medical Terminology',desc:'Medically oriented terminology: roots, prefixes, suffixes, and common abbreviations used in health care.',file:null,soon:true},
       {num:'BIOL U240',title:'Human Biology and Society',desc:'Biological concepts as applied to human issues: reproduction, genetics, evolution, ecology, and health.',file:null,soon:true},
-      {num:'BIOL U243',title:'Human Anatomy & Physiology I',desc:'Skeletal, muscular, nervous, and endocrine systems. 4 credit hours with lab. Required for nursing.',file:'AnatomyQuest1_USC_FINAL.html',soon:false},
-      {num:'BIOL U244',title:'Human Anatomy & Physiology II',desc:'Cardiovascular, respiratory, digestive, and reproductive systems with lab. Continuation of A&P I.',file:'AnatomyQuest2_BIO244_USC_FINAL.html',soon:false},
-      {num:'BIOL U250',title:'Principles of Microbiology',desc:'Pathogens, immunity, epidemiology, and antimicrobial resistance for non-microbiology majors.',file:null,soon:true},
+      {num:'BIOL U243',title:'Human Anatomy & Physiology I',desc:'Skeletal, muscular, nervous, and endocrine systems. 4 credit hours with lab. Required for nursing.',file:'AnatomyQuestGame.html',soon:false},
+      {num:'BIOL U244',title:'Human Anatomy & Physiology II',desc:'Cardiovascular, respiratory, digestive, and reproductive systems with lab. Continuation of A&P I.',file:'AnatomyQuestAP2.html',soon:false},
+      {num:'BIOL U250',title:'Principles of Microbiology',desc:'Pathogens, immunity, epidemiology, and antimicrobial resistance for non-microbiology majors.',file:'PathoQuest_BIO280_USC_FINAL.html',soon:false},
       {num:'BIOL U260',title:'Emerging Infectious Diseases',desc:'Biology and epidemiology of newly emerging and re-emerging infectious diseases.',file:null,soon:true},
       {num:'BIOL U270',title:'Environmental Science',desc:'Ecosystems, biodiversity, natural resources, pollution, and human impact on the environment.',file:null,soon:true},
       {num:'CHEM U101',title:'Fundamental Chemistry I',desc:'Introduction to chemistry for non-science majors: atomic structure, bonding, and basic reactions.',file:null,soon:true},
@@ -7134,7 +7755,7 @@ const BLD_INT = {
       {name:'Spartan Athletics Staff',role:'Basketball, Intramurals & Recreation'}
     ],
     courses:[
-      {num:'MATH U102',title:'Elementary Statistics',desc:'Statistical reasoning: data collection, probability, hypothesis testing, and interpretation of results.',file:'StatQuest_MATH102_USC.html',soon:false},
+      {num:'MATH U102',title:'Elementary Statistics',desc:'Statistical reasoning: data collection, probability, hypothesis testing, and interpretation of results.',file:null,soon:true},
       {num:'MATH U120',title:'College Mathematics',desc:'Mathematics for non-STEM majors: logic, sets, probability, statistics, and financial mathematics.',file:null,soon:true},
       {num:'MATH U121',title:'College Algebra',desc:'Algebraic functions, equations, graphing, and modeling. Foundation for precalculus.',file:null,soon:true},
       {num:'MATH U122',title:'Calculus for Management & Social Sciences',desc:'Differential and integral calculus with applications in business, economics, and social science.',file:null,soon:true},
@@ -7226,11 +7847,11 @@ const BLD_INT = {
       {name:'Dr. Laura Jennings',role:'Associate Professor of Sociology'}
     ],
     courses:[
-      {num:'PSYC U101',title:'Introduction to Psychology',desc:'Behavior, brain, development, personality, and psychological disorders. Gateway to all psychology programs.',file:'PsychQuest_PSYCU101_USC_BETA1.html',soon:false},
+      {num:'PSYC U101',title:'Introduction to Psychology',desc:'Behavior, brain, development, personality, and psychological disorders. Gateway to all psychology programs.',file:'PsychQuestGame.html',soon:false},
       {num:'PSYC U225',title:'Psychological Statistics',desc:'Descriptive and inferential statistics applied to psychological research. Required for psychology majors.',file:null,soon:true},
       {num:'SOCY U101',title:'Introduction to Sociology',desc:'Social structures, inequality, race, gender, culture, and institutions. Foundation of sociological thinking.',file:null,soon:true},
       {num:'SOCY U201',title:'Intro Statistics for Social Sciences',desc:'Statistical methods applied to social science research: data analysis, probability, and interpretation.',file:null,soon:true},
-      {num:'CRJU U101',title:'Introduction to Criminal Justice',desc:'Survey of law enforcement, judicial, correctional, and juvenile systems and community relationships.',file:'JusticeCity_CRJU101_USC.html',soon:false},
+      {num:'CRJU U101',title:'Introduction to Criminal Justice',desc:'Survey of law enforcement, judicial, correctional, and juvenile systems and community relationships.',file:null,soon:true},
       {num:'CRJU U210',title:'Policing in America',desc:'Police organizations, recruitment, training, socialization, and the role of police in society.',file:null,soon:true},
       {num:'CRJU U220',title:'The Criminal Courts',desc:'Administration of criminal justice in American federal and state court systems and court personnel.',file:null,soon:true},
       {num:'CRJU U230',title:'Introduction to Corrections',desc:'Penology emphasizing history, philosophy, programs, and problems of correctional practice.',file:null,soon:true},
@@ -7323,7 +7944,7 @@ const BLD_INT = {
       {name:'Digital Collections Team',role:'Archives, Media Production & Digital Resources'}
     ],
     courses:[
-      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the individual student role within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html',soon:false},
+      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the individual student role within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html'},
       {num:'ENGL U101',title:'Composition I',desc:'Academic writing, critical reading, and research. Required for all USC Upstate students.',file:null,soon:true},
       {num:'ENGL U102',title:'Composition II',desc:'Continued composition: writing for specific audiences and synthesizing academic sources.',file:null,soon:true}
     ],
@@ -7386,7 +8007,7 @@ const BLD_INT = {
       {name:'Career Services Center',role:'Internships, Resumes & Employer Connections'}
     ],
     courses:[
-      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html',soon:false},
+      {num:'UNIV U101',title:'The Student in the University',desc:'Purposes of higher education and the role of the individual student within the university. Open to freshmen only.',file:'UniversityQuest_UNIV101_USC.html'},
       {num:'UNIV U204',title:'Life Design',desc:'Career development using design thinking: self-awareness, values, strengths, and life-work balance planning.',file:null,soon:true},
       {num:'UNIV U205',title:'Personal Financial Literacy',desc:'Personal finance essentials: student debt, budgeting, saving, credit, and spending strategies.',file:null,soon:true}
     ],
@@ -7471,9 +8092,8 @@ const BLD_INT = {
       {num:'EXSC U280',title:'Introduction to Exercise and Sport Science',desc:'Orientation to human movement science: overview, career opportunities, and current issues in the field.',file:null,soon:true},
       {num:'EXSC U290',title:'Functional Kinesiology I',desc:'Mechanisms of human movement and bioenergetic pathways of body systems with lab.',file:null,soon:true},
       {num:'EXSC U291',title:'Functional Kinesiology II',desc:'Structure and function of body systems and the impact of physical activity on each. Lab integrated.',file:null,soon:true},
-      {num:'BIOL U250',title:'Microbiology',desc:'Study of microorganisms including bacteria, viruses, fungi, and parasites. Lab included.',file:'MicroQuest_BIOL250_USC.html',soon:true},
-      {num:'BIOL U280',title:'Pathophysiology',desc:'Mechanisms of disease and their effects on body systems. Required for nursing majors.',file:'PathoQuest_BIO280_USC_FINAL.html',soon:false},
-      {num:'BIOL U280L',title:'Medical Mystery – Clinical Engine',desc:'Advanced clinical case-based diagnostic reasoning for pathophysiology.',file:'MedicalMystery_FinalBetaA.html',soon:false}
+      {num:'BIOL U243',title:'Human Anatomy & Physiology I',desc:'Skeletal, muscular, nervous, and endocrine systems with lab. Required for nursing majors.',file:'AnatomyQuestGame.html',soon:false},
+      {num:'BIOL U244',title:'Human Anatomy & Physiology II',desc:'Cardiovascular, respiratory, digestive, and reproductive systems with lab.',file:'AnatomyQuestAP2.html',soon:false}
     ],
     mini:[{action:'swim',label:'🏊 SWIM RACE',sub:'Beat the CPU in the Spartan Pool\!'}]
   },
@@ -7497,29 +8117,10 @@ const BLD_INT = {
       {name:'Parking & Transportation Services',role:'Permits, Shuttles & Campus Mobility'}
     ],
     courses:[
-      {num:'CRJU U101',title:'Introduction to Criminal Justice',desc:'Survey of law enforcement, judicial, correctional, and juvenile systems and community interrelationships.',file:'JusticeCity_CRJU101_USC.html',soon:false},
+      {num:'CRJU U101',title:'Introduction to Criminal Justice',desc:'Survey of law enforcement, judicial, correctional, and juvenile systems and community interrelationships.',file:null,soon:true},
       {num:'CRJU U210',title:'Policing in America',desc:'Police organizations, recruitment, training, and the role of police in society. Critical issues examined.',file:null,soon:true},
       {num:'CRJU U272',title:'Foundations of Crime Analysis',desc:'Overview of crime analysis: theoretical, methodological, and ethical foundations of the discipline.',file:null,soon:true}
     ],
-    mini:[]
-  },
-  'garg-lab': {
-    name:"Dr. Garg's Innovation Lab",
-    school:'Department of Biology · Health Sciences · Anatomy',
-    dept:'Virtual Anatomy & 3D Medical Imaging',
-    established:2026,
-    tagline:'"Explore the Human Body in 3D"',
-    accentColor:'#00833E',
-    anatomyUrl:'https://kashee12345.github.io/anatomy-classroom/',
-    facts:[
-      {emoji:'🧬', text:'Home to 122 interactive 3D anatomical models spanning 10 body systems.'},
-      {emoji:'🏆', text:"A flagship resource of USC Upstate's Virtual Learning Initiative."},
-      {emoji:'💡', text:'Students explore the human body using Sketchfab 3D technology.'}
-    ],
-    courses:[
-      {num:'ANAT 301', title:'Virtual Human Anatomy', desc:'Explore all 122 interactive 3D models — organized by body system.', file:'https://kashee12345.github.io/anatomy-classroom/', soon:false}
-    ],
-    faculty:[],
     mini:[]
   }
 };
@@ -7528,10 +8129,8 @@ const BLD_INT = {
 //  BUILDING INTERIOR FUNCTIONS
 // ─────────────────────────────────────────
 function openBldInt(b) {
-  if(b.portal){window.location.href=b.portal;return;}
   const data = BLD_INT[b.id];
   if (!data) return;
-  if (data.anatomyUrl) { showAnatomyOverlay(data.anatomyUrl); return; }
   bldIntBld = b;
   bldIntOpen = true;
 
@@ -7696,6 +8295,2912 @@ function drawCrossGameBadges(MX,MY,scX,scY) {
   });
 }
 
+// ════════════════════════════════════════════════════════════════════════
+// ╔════════════════════════════════════════════════════════════════════╗
+// ║  THE BEACON — ULTIMATE VISUAL UPGRADE LAYER                       ║
+// ║  Theme-swappable launcher, made to be cloned for any institution. ║
+// ║                                                                   ║
+// ║  Reskin in one place: edit BEACON_THEME below.                    ║
+// ║  Everything else (atmospherics, polish, welcoming flow, PWA, etc.)║
+// ║  reads from the theme.                                            ║
+// ╚════════════════════════════════════════════════════════════════════╝
+// ════════════════════════════════════════════════════════════════════════
+
+const BEACON_THEME = {
+  // ── Identity ────────────────────────────────────────────────────────
+  institution: 'USC UPSTATE',
+  fullName:    'University of South Carolina Upstate',
+  shortCode:   'USCUP',
+  founded:     1967,
+  motto:       'Reach Greater Heights',
+  mascot:      'SPARTAN',
+  mascotIcon:  '⚔️',
+  creator:     'Dr. Akash Garg',
+  creatorRole: 'Professor / Scholar',
+
+  // ── Brand palette ─────────────────────────────────────────────────
+  // (Currently green — but swap these and the WHOLE launcher reskins.)
+  primary:    '#00693e',  // deep brand
+  primaryLt:  '#00a84f',  // accent
+  primaryDk:  '#003a10',  // shadow
+  primaryBg:  '#0a1e0a',  // deep background
+  primaryBgDeep: '#050e05',
+  ink:        '#fff',
+  inkSoft:    '#aaccaa',
+  inkDim:     '#5aaa5a',
+  inkFaint:   '#1a3a1a',
+
+  // ── Welcome lines ───────────────────────────────────────────────────
+  welcomeFirst: 'Welcome to campus, scholar.',
+  welcomeBack:  'Welcome back, Spartan.',
+  tagline:      'A library of games for the curious.',
+
+  // ── Site/share ──────────────────────────────────────────────────────
+  shareUrl:    '',  // auto-detected at runtime
+  twitterTag:  '',
+
+  // ── Navigation hint sentences ───────────────────────────────────────
+  // Used by onboarding tour
+  tourSteps: [
+    {sel:'#title',title:'Welcome to your beacon',body:'A campus full of games — built by your professor, for you. Click anywhere or press any key to enter.'},
+    {sel:'#hud',title:'The HUD',body:'Your current building, walking instructions, and live game shortcuts live here. The HUD updates as you walk near each building.'},
+    {sel:'#c',title:'Walk the campus',body:'Use WASD or arrow keys to move. Or click anywhere — your Spartan will walk to where you tap. Walk near a building to see what games it holds.'},
+    {sel:'#c',title:'Press E to enter',body:'Approach a glowing building and press E (or click its door). Each building hosts one or more games — 2,269+ questions across 9 games.'},
+    {sel:'#hud-btns',title:'Quick launch',body:'Found a building you love? The HUD shortcut buttons let you jump straight back without walking. Welcome to the library.'}
+  ]
+};
+
+// ─── First-visit / returning-visitor state ────────────────────────────
+const _BEACON_VISITS_KEY='beacon_visits_v1';
+function _beaconVisits(){try{return JSON.parse(localStorage.getItem(_BEACON_VISITS_KEY)||'{}')}catch(e){return{}}}
+function _beaconVisitsSave(d){try{localStorage.setItem(_BEACON_VISITS_KEY,JSON.stringify(d))}catch(e){}}
+function _beaconRecordVisit(){
+  const d=_beaconVisits();
+  d.count=(d.count||0)+1;
+  d.last=Date.now();
+  if(!d.first)d.first=Date.now();
+  _beaconVisitsSave(d);
+  return d;
+}
+
+// =====================================================================
+// 1. WELCOME GREETING (first-visit + returning-visitor)
+// =====================================================================
+function showBeaconGreeting(){
+  const v=_beaconVisits();
+  const first=!v.count;
+  const greeting=first?BEACON_THEME.welcomeFirst:BEACON_THEME.welcomeBack;
+  const sub=first?BEACON_THEME.tagline:('Visit '+(v.count||0)+' · '+_beaconTimeSince(v.last));
+  document.querySelectorAll('.beacon-greeting').forEach(el=>el.remove());
+  const el=document.createElement('div');
+  el.className='beacon-greeting';
+  el.innerHTML=
+    '<div class="bg-shadow"></div>'+
+    '<div class="bg-text">'+
+      '<div class="bg-line">'+greeting+'</div>'+
+      '<div class="bg-sub">'+sub+'</div>'+
+    '</div>';
+  document.body.appendChild(el);
+  setTimeout(()=>{try{el.remove()}catch(e){}},5200);
+  _beaconRecordVisit();
+}
+function _beaconTimeSince(t){
+  if(!t)return'first time here';
+  const diff=Date.now()-t;
+  const d=Math.floor(diff/86400000);
+  const h=Math.floor(diff/3600000);
+  if(d>0)return d+(d===1?' day':' days')+' since last visit';
+  if(h>0)return h+(h===1?' hour':' hours')+' since last visit';
+  return'just now';
+}
+// Trigger greeting when title screen dismisses
+(function(){
+  document.addEventListener('keydown',_beaconWaitGreeting,{once:true});
+  document.addEventListener('click',_beaconWaitGreeting,{once:true});
+  function _beaconWaitGreeting(){
+    setTimeout(()=>{
+      const t=document.getElementById('title');
+      if(t&&t.classList.contains('hide'))showBeaconGreeting();
+      else setTimeout(_beaconWaitGreeting,200);
+    },800);
+  }
+})();
+
+// =====================================================================
+// 2. CINEMATIC TITLE SCREEN POLISH
+// =====================================================================
+(function(){
+  // Inject animated layers behind the existing title content
+  const title=document.getElementById('title');if(!title)return;
+  const layer=document.createElement('div');
+  layer.className='beacon-title-fx';
+  layer.innerHTML=
+    '<div class="btf-aurora"></div>'+
+    '<div class="btf-leaves"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>'+
+    '<div class="btf-rays"></div>'+
+    '<div class="btf-vignette"></div>';
+  title.insertBefore(layer,title.firstChild);
+})();
+
+// =====================================================================
+// 3. CLICK-TO-MOVE PATH INDICATOR
+// =====================================================================
+(function(){
+  const cv=document.getElementById('c');if(!cv)return;
+  let _pingX=null,_pingY=null,_pingT=0;
+  cv.addEventListener('click',e=>{
+    const r=cv.getBoundingClientRect();
+    _pingX=e.clientX-r.left;
+    _pingY=e.clientY-r.top;
+    _pingT=Date.now();
+  });
+  // Ride the existing render loop by injecting a draw step on every frame
+  function _drawPing(){
+    if(_pingX!=null&&Date.now()-_pingT<900){
+      const age=(Date.now()-_pingT)/900;
+      const radius=15+age*40;
+      const alpha=1-age;
+      try{
+        const c=cv.getContext('2d');
+        c.save();
+        c.strokeStyle='rgba(0,168,79,'+alpha+')';
+        c.lineWidth=3;
+        c.beginPath();c.arc(_pingX,_pingY,radius,0,6.28);c.stroke();
+        c.strokeStyle='rgba(255,255,255,'+alpha*.6+')';
+        c.lineWidth=1.5;
+        c.beginPath();c.arc(_pingX,_pingY,radius*.6,0,6.28);c.stroke();
+        c.restore();
+      }catch(e){}
+    }
+    requestAnimationFrame(_drawPing);
+  }
+  requestAnimationFrame(_drawPing);
+})();
+
+// =====================================================================
+// 4. BUILDING HOVER DETAIL CARDS
+//    On desktop, mousemove → if hovering a building, show preview card.
+// =====================================================================
+(function(){
+  const cv=document.getElementById('c');if(!cv)return;
+  let _card=null,_lastBld=null;
+  function _findBuilding(wx,wy){
+    if(typeof BUILDINGS==='undefined')return null;
+    for(const b of BUILDINGS){
+      if(wx>=b.x&&wx<=b.x+b.w&&wy>=b.y&&wy<=b.y+b.h)return b;
+    }
+    return null;
+  }
+  cv.addEventListener('mousemove',e=>{
+    const r=cv.getBoundingClientRect();
+    const sx=e.clientX-r.left,sy=e.clientY-r.top;
+    // Approximate world coords using cam (best-effort)
+    const wx=(typeof cam!=='undefined')?sx+cam.x:sx;
+    const wy=(typeof cam!=='undefined')?sy+cam.y:sy;
+    const b=_findBuilding(wx,wy);
+    if(b===_lastBld)return;
+    _lastBld=b;
+    if(_card){_card.remove();_card=null}
+    if(b){
+      _card=document.createElement('div');
+      _card.className='beacon-bld-card';
+      _card.style.left=(e.clientX+18)+'px';
+      _card.style.top=(e.clientY+18)+'px';
+      const games=b.games||[];
+      const totalQ=games.reduce((s,g)=>s+(g.q||0),0);
+      _card.innerHTML=
+        '<div class="bbc-icon">'+(b.emoji||'🏛️')+'</div>'+
+        '<div class="bbc-body">'+
+          '<div class="bbc-name">'+(b.label||'').replace(/\\n/g,' ')+'</div>'+
+          '<div class="bbc-dept">'+(b.dept||'')+'</div>'+
+          (games.length?
+            '<div class="bbc-games">'+
+              games.map(g=>{
+                const v=_beaconGameStats(g.file);
+                const tag=v.opens?' · played '+v.opens:'';
+                return'<div class="bbc-game">'+
+                  '<span class="bbc-g-name">'+g.name+'</span>'+
+                  '<span class="bbc-g-meta">'+(g.course||'')+(g.q?' · '+g.q+' Qs':'')+tag+'</span>'+
+                '</div>';
+              }).join('')+
+              (totalQ?'<div class="bbc-total">'+totalQ+' total questions</div>':'')+
+            '</div>':
+            '<div class="bbc-empty">No games — gathering point</div>'
+          )+
+        '</div>';
+      document.body.appendChild(_card);
+    }
+  });
+  cv.addEventListener('mouseleave',()=>{if(_card){_card.remove();_card=null;_lastBld=null}});
+})();
+
+// =====================================================================
+// 5. CROSS-GAME PROGRESS — read sibling-game localStorage
+// =====================================================================
+function _beaconGameStats(file){
+  // Track how many times each game has been opened from this launcher
+  let s={};try{s=JSON.parse(localStorage.getItem('beacon_game_stats_v1')||'{}')}catch(e){}
+  return s[file]||{opens:0};
+}
+function _beaconRecordGameOpen(file){
+  let s={};try{s=JSON.parse(localStorage.getItem('beacon_game_stats_v1')||'{}')}catch(e){}
+  if(!s[file])s[file]={opens:0,first:Date.now()};
+  s[file].opens++;
+  s[file].last=Date.now();
+  try{localStorage.setItem('beacon_game_stats_v1',JSON.stringify(s))}catch(e){}
+}
+// Hook into the PLAY NOW button to record + show launch cinematic
+(function(){
+  const mp=document.getElementById('mp');if(!mp)return;
+  mp.addEventListener('click',e=>{
+    const href=mp.getAttribute('href');
+    const title=document.getElementById('mt')?.textContent||'GAME';
+    const course=document.getElementById('mco')?.textContent||'';
+    if(href)_beaconRecordGameOpen(href);
+    // Brief launch cinematic
+    e.preventDefault();
+    _beaconLaunchCinematic(title,course,()=>{
+      window.open(href,'_blank');
+      document.getElementById('ov')?.classList.remove('open');
+    });
+  });
+})();
+function _beaconLaunchCinematic(title,course,then){
+  document.querySelectorAll('.beacon-launch-cin').forEach(el=>el.remove());
+  const el=document.createElement('div');
+  el.className='beacon-launch-cin';
+  el.innerHTML=
+    '<div class="blc-bg"></div>'+
+    '<div class="blc-icon">'+BEACON_THEME.mascotIcon+'</div>'+
+    '<div class="blc-launching">LAUNCHING</div>'+
+    '<div class="blc-title">'+title+'</div>'+
+    '<div class="blc-course">'+course+'</div>'+
+    '<div class="blc-bar"><div class="blc-bar-fill"></div></div>';
+  document.body.appendChild(el);
+  setTimeout(()=>{
+    if(typeof then==='function')then();
+    setTimeout(()=>{try{el.remove()}catch(e){}},800);
+  },1300);
+}
+
+// =====================================================================
+// 6. PROGRESS DASHBOARD — small stats button on title screen
+//    Click it to see total opens, last played, favorite game, etc.
+// =====================================================================
+function showBeaconDashboard(){
+  let s={};try{s=JSON.parse(localStorage.getItem('beacon_game_stats_v1')||'{}')}catch(e){}
+  const v=_beaconVisits();
+  let totalOpens=0,games=[];
+  Object.keys(s).forEach(k=>{games.push({file:k,opens:s[k].opens,last:s[k].last});totalOpens+=s[k].opens||0});
+  games.sort((a,b)=>b.opens-a.opens);
+  const fav=games[0]||null;
+  const favName=fav?_beaconResolveGameName(fav.file):'—';
+  document.querySelectorAll('.beacon-dashboard').forEach(el=>el.remove());
+  const ov=document.createElement('div');
+  ov.className='beacon-dashboard';
+  ov.innerHTML=
+    '<div class="bd-shade" onclick="closeBeaconDashboard()"></div>'+
+    '<div class="bd-card">'+
+      '<button class="bd-close" onclick="closeBeaconDashboard()">✕</button>'+
+      '<div class="bd-title">YOUR STATS</div>'+
+      '<div class="bd-sub">'+BEACON_THEME.institution+' · BEACON LIBRARY</div>'+
+      '<div class="bd-grid">'+
+        '<div class="bd-stat"><div class="bd-num">'+(v.count||1)+'</div><div class="bd-lbl">Visits</div></div>'+
+        '<div class="bd-stat"><div class="bd-num">'+totalOpens+'</div><div class="bd-lbl">Games Opened</div></div>'+
+        '<div class="bd-stat"><div class="bd-num">'+games.length+'</div><div class="bd-lbl">Different Titles</div></div>'+
+        '<div class="bd-stat"><div class="bd-num bd-num-sm">'+(fav?fav.opens:0)+'</div><div class="bd-lbl">Favorite Plays</div></div>'+
+      '</div>'+
+      '<div class="bd-fav">'+
+        '<div class="bd-fav-lbl">MOST PLAYED</div>'+
+        '<div class="bd-fav-name">'+favName+'</div>'+
+      '</div>'+
+      '<button class="bd-action" onclick="closeBeaconDashboard()">CONTINUE QUEST →</button>'+
+    '</div>';
+  document.body.appendChild(ov);
+}
+function closeBeaconDashboard(){document.querySelectorAll('.beacon-dashboard').forEach(el=>el.remove())}
+function _beaconResolveGameName(file){
+  if(typeof BUILDINGS==='undefined')return file.split('/').pop().split('.')[0];
+  for(const b of BUILDINGS){
+    for(const g of (b.games||[])){
+      if(g.file===file)return g.name;
+    }
+  }
+  return file.split('/').pop().split('.')[0];
+}
+window.showBeaconDashboard=showBeaconDashboard;
+window.closeBeaconDashboard=closeBeaconDashboard;
+
+// =====================================================================
+// 7. ONBOARDING TOUR (5 dismissible coachmarks for first-time visitors)
+// =====================================================================
+let _btIdx=0;
+function startBeaconTour(){
+  _btIdx=0;
+  document.querySelectorAll('.beacon-tour').forEach(el=>el.remove());
+  const ov=document.createElement('div');
+  ov.className='beacon-tour';
+  ov.innerHTML='<div class="bt-mask"></div><div class="bt-spot"></div><div class="bt-card"></div>';
+  document.body.appendChild(ov);
+  ov.querySelector('.bt-mask').addEventListener('click',endBeaconTour);
+  renderBeaconTour();
+}
+function renderBeaconTour(){
+  const ov=document.querySelector('.beacon-tour');if(!ov)return;
+  const steps=BEACON_THEME.tourSteps;
+  const step=steps[_btIdx];
+  if(!step){endBeaconTour();return}
+  const target=document.querySelector(step.sel);
+  const spot=ov.querySelector('.bt-spot');
+  const card=ov.querySelector('.bt-card');
+  let r;
+  if(target){
+    r=target.getBoundingClientRect();
+    spot.style.left=(r.left-10)+'px';spot.style.top=(r.top-10)+'px';
+    spot.style.width=(r.width+20)+'px';spot.style.height=(r.height+20)+'px';
+    spot.style.display='block';
+  }else{
+    spot.style.display='none';
+    r={top:innerHeight/2-60,left:innerWidth/2-150,width:300,height:120,bottom:innerHeight/2+60,right:innerWidth/2+150};
+  }
+  const dots=steps.map((_,i)=>'<span class="bt-dot'+(i===_btIdx?' on':'')+'"></span>').join('');
+  card.innerHTML='<div class="bt-step">STEP '+(_btIdx+1)+' OF '+steps.length+'</div>'+
+    '<div class="bt-title">'+step.title+'</div>'+
+    '<div class="bt-body">'+step.body+'</div>'+
+    '<div class="bt-actions"><div class="bt-dots">'+dots+'</div>'+
+    '<button class="bt-skip" onclick="endBeaconTour()">Skip</button>'+
+    '<button class="bt-next" onclick="nextBeaconTour()">'+(_btIdx===steps.length-1?'Begin Quest':'Next →')+'</button></div>';
+  const cw=340;
+  let cx=Math.max(20,Math.min(innerWidth-cw-20,r.left+r.width/2-cw/2));
+  let cy=r.bottom+24;
+  if(cy+220>innerHeight-20)cy=Math.max(20,r.top-240);
+  card.style.left=cx+'px';card.style.top=cy+'px';card.style.width=cw+'px';
+}
+function nextBeaconTour(){_btIdx++;if(_btIdx>=BEACON_THEME.tourSteps.length){endBeaconTour();return}renderBeaconTour()}
+function endBeaconTour(){
+  document.querySelectorAll('.beacon-tour').forEach(el=>el.remove());
+  try{localStorage.setItem('beacon_tour_v1',JSON.stringify({done:true}))}catch(e){}
+}
+window.startBeaconTour=startBeaconTour;
+window.endBeaconTour=endBeaconTour;
+window.nextBeaconTour=nextBeaconTour;
+window.addEventListener('resize',()=>{if(document.querySelector('.beacon-tour'))renderBeaconTour()});
+// Auto-trigger on first visit AFTER greeting fades
+(function(){
+  function _maybe(){
+    let seen={};try{seen=JSON.parse(localStorage.getItem('beacon_tour_v1')||'{}')}catch(e){}
+    if(seen.done)return;
+    setTimeout(startBeaconTour,5800);
+  }
+  if(document.readyState==='complete')_maybe();
+  else window.addEventListener('load',_maybe);
+})();
+
+// =====================================================================
+// 8. ATTRACT MODE — 30s idle → cycle through library highlights
+// =====================================================================
+const _BEACON_ATTRACT_DELAY=30000;
+let _baActive=false,_baT=null;
+function _baResetTimer(){
+  if(_baActive)_baEnd();
+  if(_baT)clearTimeout(_baT);
+  _baT=setTimeout(_baStart,_BEACON_ATTRACT_DELAY);
+}
+function _baStart(){
+  // Don't run if any modal/overlay is open
+  if(document.querySelector('.beacon-tour,#ov.open,#bld-int[style*="display:block"],#bld-int[style*="display: block"]'))return;
+  // Don't run if title screen still showing
+  const t=document.getElementById('title');if(t&&!t.classList.contains('hide'))return;
+  _baActive=true;
+  // Build highlight cards from buildings with games
+  const games=[];
+  if(typeof BUILDINGS!=='undefined'){
+    BUILDINGS.forEach(b=>(b.games||[]).forEach(g=>games.push({...g,bld:b})));
+  }
+  if(!games.length){_baEnd();return}
+  const ov=document.createElement('div');
+  ov.className='beacon-attract';
+  ov.innerHTML='<div class="ba-bg"></div>'+
+    '<div class="ba-banner">▸ ATTRACT MODE · '+BEACON_THEME.institution+'</div>'+
+    '<div class="ba-stage" id="ba-stage"></div>'+
+    '<div class="ba-press">PRESS ANY KEY OR CLICK TO RETURN</div>';
+  document.body.appendChild(ov);
+  let idx=0;
+  function _scene(){
+    if(!_baActive)return;
+    const g=games[idx%games.length];
+    const stage=document.getElementById('ba-stage');if(!stage)return;
+    stage.innerHTML=
+      '<div class="ba-scene">'+
+        '<div class="ba-icon">'+(g.bld.emoji||'📚')+'</div>'+
+        '<div class="ba-game">'+g.name.toUpperCase()+'</div>'+
+        '<div class="ba-meta">'+(g.course||'')+(g.q?' · '+g.q+' QUESTIONS':'')+'</div>'+
+        '<div class="ba-badge">'+(g.badge||((g.type||'').toUpperCase()))+'</div>'+
+        '<div class="ba-cta">FIND IT IN '+(g.bld.label||'').replace(/\\n/g,' ')+'</div>'+
+      '</div>';
+    idx++;
+    setTimeout(_scene,3500);
+  }
+  _scene();
+}
+function _baEnd(){
+  _baActive=false;
+  document.querySelectorAll('.beacon-attract').forEach(el=>el.remove());
+}
+['mousemove','mousedown','keydown','touchstart','wheel'].forEach(evt=>{
+  window.addEventListener(evt,_baResetTimer,{passive:true});
+});
+(function(){
+  function _boot(){_baResetTimer()}
+  if(document.readyState==='complete')_boot();
+  else window.addEventListener('load',_boot);
+})();
+
+// =====================================================================
+// 9. PWA SUPPORT — installable launcher
+// =====================================================================
+(function(){
+  // Inline icon as data URL
+  const icoSm='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">'+
+    '<rect width="192" height="192" rx="22" fill="'+BEACON_THEME.primaryBg+'"/>'+
+    '<text x="96" y="118" text-anchor="middle" font-size="100" filter="drop-shadow(0 0 16px '+BEACON_THEME.primaryLt+')">'+BEACON_THEME.mascotIcon+'</text>'+
+    '<text x="96" y="170" text-anchor="middle" fill="'+BEACON_THEME.primaryLt+'" font-family="monospace" font-size="14" font-weight="900">BEACON</text>'+
+    '</svg>';
+  const icoLg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'+
+    '<rect width="512" height="512" rx="64" fill="'+BEACON_THEME.primaryBg+'"/>'+
+    '<text x="256" y="320" text-anchor="middle" font-size="280" filter="drop-shadow(0 0 48px '+BEACON_THEME.primaryLt+')">'+BEACON_THEME.mascotIcon+'</text>'+
+    '<text x="256" y="450" text-anchor="middle" fill="'+BEACON_THEME.primaryLt+'" font-family="monospace" font-size="38" font-weight="900">'+BEACON_THEME.shortCode+' BEACON</text>'+
+    '</svg>';
+  const manifest={
+    name:BEACON_THEME.institution+' Beacon — '+BEACON_THEME.creator,
+    short_name:'Beacon',
+    description:BEACON_THEME.institution+' game library · 9 games · 2,269+ questions',
+    start_url:'.',scope:'.',display:'standalone',orientation:'any',
+    background_color:BEACON_THEME.primaryBgDeep,
+    theme_color:BEACON_THEME.primaryBg,
+    icons:[
+      {src:'data:image/svg+xml;utf8,'+encodeURIComponent(icoSm),sizes:'192x192',type:'image/svg+xml',purpose:'any maskable'},
+      {src:'data:image/svg+xml;utf8,'+encodeURIComponent(icoLg),sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}
+    ]
+  };
+  try{
+    const link=document.createElement('link');
+    link.rel='manifest';
+    link.href=URL.createObjectURL(new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'}));
+    document.head.appendChild(link);
+    const tc=document.createElement('meta');tc.name='theme-color';tc.content=BEACON_THEME.primaryBg;document.head.appendChild(tc);
+  }catch(e){}
+  // Service worker for offline cache
+  if('serviceWorker' in navigator){
+    const swSrc='const CACHE="beacon-cache-v1";'+
+      'self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(["./"])).catch(()=>{}));self.skipWaiting()});'+
+      'self.addEventListener("activate",e=>{e.waitUntil(self.clients.claim())});'+
+      'self.addEventListener("fetch",e=>{'+
+        'if(e.request.method!=="GET")return;'+
+        'e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{'+
+          'const cl=resp.clone();if(resp&&resp.ok)caches.open(CACHE).then(c=>c.put(e.request,cl)).catch(()=>{});return resp;'+
+        '}).catch(()=>caches.match("./"))));'+
+      '});';
+    try{
+      const swURL=URL.createObjectURL(new Blob([swSrc],{type:'text/javascript'}));
+      navigator.serviceWorker.register(swURL,{scope:'./'}).catch(()=>{});
+    }catch(e){}
+  }
+  // Install prompt capture
+  let _installEvt=null;
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();_installEvt=e;
+    document.querySelectorAll('.beacon-install-btn').forEach(b=>b.classList.add('show'));
+  });
+  window.addEventListener('appinstalled',()=>{
+    document.querySelectorAll('.beacon-install-btn').forEach(b=>b.classList.remove('show'));
+  });
+  window.installBeacon=function(){
+    if(!_installEvt){alert('To install:\n\n1. Tap the Share icon\n2. Choose "Add to Home Screen"');return}
+    _installEvt.prompt();
+    _installEvt.userChoice.finally(()=>{_installEvt=null});
+  };
+})();
+
+// =====================================================================
+// 10. TITLE-SCREEN ENHANCEMENT — inject Stats button + Install button
+// =====================================================================
+(function(){
+  function _inject(){
+    const t=document.getElementById('title');if(!t)return;
+    if(t.querySelector('.beacon-tbar'))return;
+    const bar=document.createElement('div');
+    bar.className='beacon-tbar';
+    bar.innerHTML=
+      '<button class="beacon-tbar-btn" onclick="event.stopPropagation();showBeaconDashboard()">📊 STATS</button>'+
+      '<button class="beacon-tbar-btn beacon-install-btn" onclick="event.stopPropagation();installBeacon()">⬇ INSTALL</button>'+
+      '<button class="beacon-tbar-btn" onclick="event.stopPropagation();try{localStorage.removeItem(\'beacon_tour_v1\')}catch(e){};startBeaconTour()">🎓 TOUR</button>';
+    t.appendChild(bar);
+  }
+  if(document.readyState==='complete')setTimeout(_inject,400);
+  else document.addEventListener('DOMContentLoaded',()=>setTimeout(_inject,400));
+})();
+
+// =====================================================================
+// 11. ALWAYS-ON ATMOSPHERIC OVERLAY CANVAS
+//     A second canvas layered on top of the game canvas. Renders:
+//     - Drifting fall leaves continuously across the WORLD
+//     - Day/night sky tint
+//     - Building proximity halos (always glowing for near buildings)
+//     - Footstep dust behind the Spartan
+//     - Click-to-move sparkle trail
+//     - Bird flocks crossing the sky periodically
+//     - "E TO ENTER" floating prompt over nearest building
+//     - Floating course-code banners above each building
+// =====================================================================
+(function(){
+  // Wait for the main canvas to exist
+  function _waitInit(){
+    const mainC=document.getElementById('c');
+    if(!mainC||typeof BUILDINGS==='undefined'||typeof P==='undefined'||typeof cam==='undefined'){
+      setTimeout(_waitInit,300);return;
+    }
+    _initOverlay();
+  }
+  function _initOverlay(){
+    const mainC=document.getElementById('c');
+    const ov=document.createElement('canvas');
+    ov.id='beacon-overlay-cv';
+    ov.style.cssText='position:fixed;top:26px;left:0;pointer-events:none;z-index:5;';
+    document.body.appendChild(ov);
+    function _resize(){
+      ov.width=window.innerWidth;
+      ov.height=window.innerHeight-26-100; // match main canvas dims (TICK + HUD)
+      ov.style.width=ov.width+'px';
+      ov.style.height=ov.height+'px';
+    }
+    _resize();window.addEventListener('resize',_resize);
+    const ovx=ov.getContext('2d');
+
+    // ── Helper: convert world coords → screen coords using existing cam ──
+    function w2s(wx,wy){
+      return{x:wx-cam.x,y:wy-cam.y};
+    }
+
+    // ── 1. Animated fall leaves (world-anchored) ─────────────────────
+    const LEAVES=[];
+    for(let i=0;i<48;i++){
+      LEAVES.push({
+        wx:Math.random()*WW, wy:Math.random()*WH,
+        vx:0.2+Math.random()*0.4,
+        vy:0.3+Math.random()*0.5,
+        rot:Math.random()*6.28,
+        rotV:(Math.random()-.5)*0.05,
+        size:6+Math.random()*8,
+        col:['#ff6040','#ff8030','#fff080','#c0a020','#ff5060','#ffa040'][Math.floor(Math.random()*6)],
+        sway:Math.random()*6.28
+      });
+    }
+    function _updateLeaves(dt){
+      LEAVES.forEach(l=>{
+        l.sway+=dt*1.4;
+        l.wx+=l.vx+Math.sin(l.sway)*0.4;
+        l.wy+=l.vy;
+        l.rot+=l.rotV;
+        if(l.wy>WH+30){l.wy=-30;l.wx=Math.random()*WW}
+        if(l.wx>WW+30)l.wx=-30;
+      });
+    }
+    function _drawLeaves(){
+      LEAVES.forEach(l=>{
+        const s=w2s(l.wx,l.wy);
+        if(s.x<-30||s.x>ov.width+30||s.y<-30||s.y>ov.height+30)return;
+        ovx.save();
+        ovx.translate(s.x,s.y);
+        ovx.rotate(l.rot);
+        ovx.fillStyle=l.col;
+        ovx.beginPath();
+        ovx.ellipse(0,0,l.size*.6,l.size,0,0,Math.PI*2);
+        ovx.fill();
+        // Leaf vein
+        ovx.strokeStyle='rgba(0,0,0,.4)';
+        ovx.lineWidth=.7;
+        ovx.beginPath();
+        ovx.moveTo(0,-l.size);ovx.lineTo(0,l.size);
+        ovx.stroke();
+        ovx.restore();
+      });
+    }
+
+    // ── 2. Bird flock (V formation) ─────────────────────────────────
+    let _birds=null,_birdT=Math.random()*15;
+    function _spawnBirdFlock(){
+      const fromLeft=Math.random()<0.5;
+      const count=5+Math.floor(Math.random()*4);
+      const wy=80+Math.random()*200;  // high in the sky
+      const wx=fromLeft?-50:WW+50;
+      const dir=fromLeft?1:-1;
+      _birds=[];
+      for(let i=0;i<count;i++){
+        const offset=i*22;
+        _birds.push({
+          wx:wx-offset*dir+(i%2===0?0:i*4)*dir,
+          wy:wy+Math.abs(i-Math.floor(count/2))*14,
+          vx:dir*1.6,
+          flap:Math.random()*6.28
+        });
+      }
+    }
+    function _updateBirds(dt){
+      _birdT-=dt;
+      if(_birdT<0){_spawnBirdFlock();_birdT=18+Math.random()*22}
+      if(_birds){
+        let allGone=true;
+        _birds.forEach(b=>{
+          b.wx+=b.vx;
+          b.flap+=dt*8;
+          if(b.wx>-100&&b.wx<WW+100)allGone=false;
+        });
+        if(allGone)_birds=null;
+      }
+    }
+    function _drawBirds(){
+      if(!_birds)return;
+      _birds.forEach(b=>{
+        const s=w2s(b.wx,b.wy);
+        if(s.x<-30||s.x>ov.width+30)return;
+        const wing=Math.sin(b.flap)*4;
+        ovx.save();
+        ovx.strokeStyle='rgba(20,30,20,.7)';
+        ovx.lineWidth=2;
+        ovx.beginPath();
+        ovx.moveTo(s.x-7,s.y+wing);
+        ovx.quadraticCurveTo(s.x,s.y-2,s.x+7,s.y+wing);
+        ovx.stroke();
+        ovx.restore();
+      });
+    }
+
+    // ── 3. Building proximity halos + "E TO ENTER" prompt ───────────
+    function _drawBuildingAuras(){
+      if(typeof BUILDINGS==='undefined'||!P)return;
+      let nearestB=null,nearestD=99999;
+      BUILDINGS.forEach(b=>{
+        if(b.soon||!(b.games&&b.games.length>0))return;
+        const cxp=b.x+b.w/2,cyp=b.y+b.h/2;
+        const dx=P.x-cxp,dy=P.y-(b.y+b.h)+30;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        // Always show subtle aura
+        const sBase=w2s(b.x+b.w/2,b.y+b.h-10);
+        if(sBase.x<-100||sBase.x>ov.width+100||sBase.y<-100||sBase.y>ov.height+100)return;
+        const proximity=Math.max(0,1-d/300);
+        if(proximity>0.05){
+          const radius=80+proximity*40;
+          const grad=ovx.createRadialGradient(sBase.x,sBase.y,0,sBase.x,sBase.y,radius);
+          grad.addColorStop(0,'rgba(0,168,79,'+(proximity*.25)+')');
+          grad.addColorStop(.5,'rgba(0,168,79,'+(proximity*.10)+')');
+          grad.addColorStop(1,'rgba(0,168,79,0)');
+          ovx.save();
+          ovx.fillStyle=grad;
+          ovx.beginPath();
+          ovx.arc(sBase.x,sBase.y,radius,0,Math.PI*2);
+          ovx.fill();
+          ovx.restore();
+        }
+        if(d<nearestD){nearestD=d;nearestB=b}
+      });
+      // "E TO ENTER" prompt for the nearest building if close enough
+      if(nearestB&&nearestD<140){
+        const sTop=w2s(nearestB.x+nearestB.w/2,nearestB.y-30);
+        const t=Date.now();
+        const pulse=Math.sin(t/300)*0.15;
+        ovx.save();
+        // Banner background
+        const bw=180,bh=44;
+        const bx=sTop.x-bw/2,by=sTop.y-bh/2;
+        ovx.fillStyle='rgba(0,40,16,.92)';
+        ovx.fillRect(bx,by,bw,bh);
+        ovx.strokeStyle='#00a84f';
+        ovx.lineWidth=2+pulse;
+        ovx.strokeRect(bx,by,bw,bh);
+        ovx.shadowColor='#00a84f';
+        ovx.shadowBlur=12+pulse*8;
+        ovx.strokeRect(bx,by,bw,bh);
+        ovx.shadowBlur=0;
+        // "PRESS E" text
+        ovx.fillStyle='#fff';
+        ovx.font="bold 13px 'Press Start 2P',monospace";
+        ovx.textAlign='center';
+        ovx.fillText('▶ PRESS E',sTop.x,by+18);
+        ovx.fillStyle='#7ed85a';
+        ovx.font="11px 'VT323',monospace";
+        ovx.fillText('TO ENTER · '+(nearestB.games?nearestB.games.length:0)+' GAMES',sTop.x,by+34);
+        ovx.restore();
+      }
+    }
+
+    // ── 4. Building course banners (floating above each building) ────
+    function _drawBuildingBanners(){
+      if(typeof BUILDINGS==='undefined')return;
+      const t=Date.now();
+      BUILDINGS.forEach(b=>{
+        if(b.soon||!(b.games&&b.games.length>0))return;
+        const sTop=w2s(b.x+b.w/2,b.y-58);
+        if(sTop.x<-150||sTop.x>ov.width+150||sTop.y<-50||sTop.y>ov.height)return;
+        const float=Math.sin(t/1200+b.x*.01)*3;
+        ovx.save();
+        ovx.translate(sTop.x,sTop.y+float);
+        // Banner body
+        const bw=Math.min(220,b.w*.75),bh=22;
+        ovx.fillStyle='rgba(10,30,12,.85)';
+        ovx.fillRect(-bw/2,-bh/2,bw,bh);
+        ovx.fillStyle='#00693e';
+        ovx.fillRect(-bw/2,-bh/2,bw,3);
+        ovx.fillStyle='#00693e';
+        ovx.fillRect(-bw/2,bh/2-3,bw,3);
+        // Banner text
+        ovx.fillStyle='#7ed85a';
+        ovx.font="9px 'Press Start 2P',monospace";
+        ovx.textAlign='center';
+        const totalQ=b.games.reduce((s,g)=>s+(g.q||0),0);
+        const courses=b.games.map(g=>g.course).filter(Boolean).join(' · ');
+        ovx.fillText(courses||'GAMES',0,-1);
+        ovx.fillStyle='#f0c840';
+        ovx.font="10px 'VT323',monospace";
+        ovx.fillText(b.games.length+' GAME'+(b.games.length>1?'S':'')+(totalQ?' · '+totalQ+'Q':''),0,11);
+        ovx.restore();
+      });
+    }
+
+    // ── 5. Footstep dust + click-to-move sparkle trail ───────────────
+    const FOOTSTEPS=[];
+    let _lastFootX=P.x,_lastFootY=P.y,_footAcc=0;
+    function _updateFootsteps(dt){
+      const moving=Math.abs(P.x-_lastFootX)>1||Math.abs(P.y-_lastFootY)>1;
+      _footAcc+=dt;
+      if(moving&&_footAcc>0.18){
+        _footAcc=0;
+        FOOTSTEPS.push({wx:P.x+(Math.random()-.5)*6,wy:P.y+8,life:1,size:4+Math.random()*3});
+      }
+      _lastFootX=P.x;_lastFootY=P.y;
+      for(let i=FOOTSTEPS.length-1;i>=0;i--){
+        FOOTSTEPS[i].life-=dt*1.5;
+        FOOTSTEPS[i].wy-=dt*5;
+        if(FOOTSTEPS[i].life<=0)FOOTSTEPS.splice(i,1);
+      }
+    }
+    function _drawFootsteps(){
+      FOOTSTEPS.forEach(f=>{
+        const s=w2s(f.wx,f.wy);
+        if(s.x<-30||s.x>ov.width+30||s.y<-30||s.y>ov.height+30)return;
+        ovx.save();
+        ovx.fillStyle='rgba(180,160,120,'+f.life*.5+')';
+        ovx.beginPath();
+        ovx.arc(s.x,s.y,f.size,0,Math.PI*2);
+        ovx.fill();
+        ovx.restore();
+      });
+    }
+
+    // Click target sparkle trail (when click-to-move target exists)
+    function _drawClickTarget(){
+      if(!P.target)return;
+      const s=w2s(P.target.x,P.target.y);
+      if(s.x<-30||s.x>ov.width+30||s.y<-30||s.y>ov.height+30)return;
+      const t=Date.now();
+      const pulse=Math.sin(t/200);
+      ovx.save();
+      // Outer ring
+      ovx.strokeStyle='rgba(0,168,79,'+(.5+pulse*.2)+')';
+      ovx.lineWidth=2;
+      ovx.beginPath();
+      ovx.arc(s.x,s.y,18+pulse*4,0,Math.PI*2);
+      ovx.stroke();
+      // Inner cross
+      ovx.strokeStyle='rgba(126,216,90,.7)';
+      ovx.lineWidth=1.5;
+      ovx.beginPath();
+      ovx.moveTo(s.x-12,s.y);ovx.lineTo(s.x+12,s.y);
+      ovx.moveTo(s.x,s.y-12);ovx.lineTo(s.x,s.y+12);
+      ovx.stroke();
+      // Sparkle line from player to target (dashed)
+      const sp=w2s(P.x,P.y);
+      ovx.strokeStyle='rgba(0,168,79,.35)';
+      ovx.lineWidth=1.5;
+      ovx.setLineDash([6,6]);
+      ovx.lineDashOffset=-t*.05;
+      ovx.beginPath();
+      ovx.moveTo(sp.x,sp.y);ovx.lineTo(s.x,s.y);
+      ovx.stroke();
+      ovx.setLineDash([]);
+      ovx.restore();
+    }
+
+    // ── 6. Day/night cycle tint ──────────────────────────────────────
+    // 8-minute cycle. Day is bright, dusk warm orange, night cool blue.
+    function _drawDayNight(){
+      const cycle=(Date.now()/480000)%1; // 8 min
+      let tint=null;
+      if(cycle<0.4){tint=null}                                          // day
+      else if(cycle<0.5){tint={r:80,g:30,b:0,a:(cycle-0.4)/0.1*0.18}}   // sunset
+      else if(cycle<0.85){tint={r:0,g:5,b:30,a:0.2+(cycle-0.5)/0.35*0.18}} // night
+      else{tint={r:60,g:20,b:0,a:0.18-(cycle-0.85)/0.15*0.18}}          // dawn
+      if(tint){
+        ovx.save();
+        ovx.fillStyle='rgba('+tint.r+','+tint.g+','+tint.b+','+tint.a+')';
+        ovx.fillRect(0,0,ov.width,ov.height);
+        ovx.restore();
+      }
+      // Sun/moon at top of frame
+      const sunX=ov.width*(0.1+cycle*0.8);
+      const sunY=80-Math.sin(cycle*Math.PI)*40;
+      const isDay=cycle<0.5;
+      ovx.save();
+      const grad=ovx.createRadialGradient(sunX,sunY,2,sunX,sunY,40);
+      if(isDay){
+        grad.addColorStop(0,'rgba(255,240,180,.85)');
+        grad.addColorStop(.4,'rgba(255,200,80,.4)');
+        grad.addColorStop(1,'rgba(255,200,80,0)');
+      } else {
+        grad.addColorStop(0,'rgba(220,230,255,.85)');
+        grad.addColorStop(.4,'rgba(160,180,220,.3)');
+        grad.addColorStop(1,'rgba(160,180,220,0)');
+      }
+      ovx.fillStyle=grad;
+      ovx.beginPath();ovx.arc(sunX,sunY,40,0,Math.PI*2);ovx.fill();
+      ovx.fillStyle=isDay?'rgba(255,240,180,.95)':'rgba(240,245,255,.85)';
+      ovx.beginPath();ovx.arc(sunX,sunY,12,0,Math.PI*2);ovx.fill();
+      ovx.restore();
+    }
+
+    // ── 7. Animated entry confetti ───────────────────────────────────
+    const _confetti=[];
+    window.beaconBurstConfetti=function(){
+      const sx=ov.width/2,sy=ov.height/2;
+      const colors=['#00a84f','#7ed85a','#f0c840','#ffd460','#fff','#ff8060'];
+      for(let i=0;i<40;i++){
+        _confetti.push({
+          x:sx,y:sy,
+          vx:(Math.random()-0.5)*8,
+          vy:-(Math.random()*8+3),
+          col:colors[i%colors.length],
+          life:1,
+          rot:Math.random()*6.28,
+          rotV:(Math.random()-.5)*.3
+        });
+      }
+    };
+    function _updateConfetti(dt){
+      for(let i=_confetti.length-1;i>=0;i--){
+        const c=_confetti[i];
+        c.x+=c.vx;c.y+=c.vy;
+        c.vy+=0.25;
+        c.rot+=c.rotV;
+        c.life-=dt*0.5;
+        if(c.life<=0||c.y>ov.height+30)_confetti.splice(i,1);
+      }
+    }
+    function _drawConfetti(){
+      _confetti.forEach(c=>{
+        ovx.save();
+        ovx.translate(c.x,c.y);
+        ovx.rotate(c.rot);
+        ovx.fillStyle=c.col;
+        ovx.globalAlpha=c.life;
+        ovx.fillRect(-3,-2,6,4);
+        ovx.restore();
+      });
+    }
+    // Hook into modal open to fire confetti
+    (function(){
+      const origOpen=window.openModal;
+      if(typeof origOpen==='function'){
+        window.openModal=function(){
+          window.beaconBurstConfetti();
+          return origOpen.apply(this,arguments);
+        };
+      }
+    })();
+
+    // ── 8. STARS at night (twinkling points in upper sky) ────────────
+    const STARS=[];
+    for(let i=0;i<140;i++){
+      STARS.push({
+        x:Math.random(),         // 0..1 across screen
+        y:Math.random()*0.45,    // 0..0.45 only upper sky area
+        size:0.5+Math.random()*1.5,
+        twinkle:Math.random()*6.28
+      });
+    }
+    function _drawStars(){
+      const cycle=(Date.now()/480000)%1;
+      // Visible only at night (cycle 0.5-0.85)
+      let alpha=0;
+      if(cycle>0.5&&cycle<0.85){
+        if(cycle<0.6)alpha=(cycle-0.5)/0.1;
+        else if(cycle>0.78)alpha=1-(cycle-0.78)/0.07;
+        else alpha=1;
+      }
+      if(alpha<0.05)return;
+      const t=Date.now()/1000;
+      STARS.forEach(s=>{
+        const sx=s.x*ov.width,sy=s.y*ov.height;
+        s.twinkle+=0.04;
+        const tw=0.5+Math.sin(s.twinkle+t)*0.5;
+        ovx.save();
+        ovx.fillStyle='rgba(255,255,240,'+(alpha*tw*0.9)+')';
+        ovx.beginPath();ovx.arc(sx,sy,s.size,0,Math.PI*2);ovx.fill();
+        // Cross-shaped twinkle for bigger stars
+        if(s.size>1.2&&tw>0.7){
+          ovx.strokeStyle='rgba(255,255,240,'+(alpha*tw*0.4)+')';
+          ovx.lineWidth=.5;
+          ovx.beginPath();
+          ovx.moveTo(sx-3,sy);ovx.lineTo(sx+3,sy);
+          ovx.moveTo(sx,sy-3);ovx.lineTo(sx,sy+3);
+          ovx.stroke();
+        }
+        ovx.restore();
+      });
+    }
+
+    // ── 9. LAMP HALOS at night ───────────────────────────────────────
+    function _drawLampGlows(){
+      if(typeof LAMPS==='undefined')return;
+      const cycle=(Date.now()/480000)%1;
+      let alpha=0;
+      if(cycle>0.45&&cycle<0.9){
+        if(cycle<0.55)alpha=(cycle-0.45)/0.1;
+        else if(cycle>0.83)alpha=1-(cycle-0.83)/0.07;
+        else alpha=1;
+      }
+      if(alpha<0.05)return;
+      const t=Date.now()/1000;
+      LAMPS.forEach((l,i)=>{
+        const s=w2s(l.x,l.y);
+        if(s.x<-100||s.x>ov.width+100||s.y<-100||s.y>ov.height+100)return;
+        // Flicker
+        const flicker=0.85+Math.sin(t*2+i)*0.1+Math.random()*0.05;
+        const a=alpha*flicker;
+        ovx.save();
+        const grad=ovx.createRadialGradient(s.x,s.y-20,5,s.x,s.y-20,80);
+        grad.addColorStop(0,'rgba(255,224,128,'+(a*.65)+')');
+        grad.addColorStop(.4,'rgba(255,200,80,'+(a*.25)+')');
+        grad.addColorStop(1,'rgba(255,200,80,0)');
+        ovx.fillStyle=grad;
+        ovx.beginPath();ovx.arc(s.x,s.y-20,80,0,Math.PI*2);ovx.fill();
+        // Bright bulb core
+        ovx.fillStyle='rgba(255,255,200,'+(a*.95)+')';
+        ovx.beginPath();ovx.arc(s.x,s.y-25,3,0,Math.PI*2);ovx.fill();
+        ovx.restore();
+      });
+    }
+
+    // ── 10. WINDOW LIGHTS in buildings at night ──────────────────────
+    function _drawWindowLights(){
+      if(typeof BUILDINGS==='undefined')return;
+      const cycle=(Date.now()/480000)%1;
+      let alpha=0;
+      if(cycle>0.48&&cycle<0.88){
+        if(cycle<0.55)alpha=(cycle-0.48)/0.07;
+        else if(cycle>0.81)alpha=1-(cycle-0.81)/0.07;
+        else alpha=1;
+      }
+      if(alpha<0.05)return;
+      const t=Date.now()/1000;
+      BUILDINGS.forEach((b,bi)=>{
+        if(b.soon)return;
+        // Pseudo-deterministic flicker per building
+        const seed=bi*7;
+        // Calculate window grid based on building dimensions
+        const cols=Math.floor(b.w/60);
+        const rows=Math.floor(b.h/80);
+        if(cols<2||rows<1)return;
+        const spaceX=b.w/(cols+1);
+        const spaceY=b.h/(rows+1);
+        for(let r=0;r<rows;r++){
+          for(let c=0;c<cols;c++){
+            // ~70% of windows are lit
+            const lit=((c*7+r*11+seed)%10)<7;
+            if(!lit)continue;
+            const wx=b.x+spaceX*(c+1);
+            const wy=b.y+spaceY*(r+1)+10;
+            const s=w2s(wx,wy);
+            if(s.x<-30||s.x>ov.width+30||s.y<-30||s.y>ov.height+30)continue;
+            // Subtle flicker per window
+            const flick=0.8+Math.sin(t*3+seed+r*3+c*5)*0.15+(((seed+r*c)%3)===0?Math.random()*0.1:0);
+            const a=alpha*flick*0.85;
+            ovx.save();
+            // Warm window glow
+            ovx.fillStyle='rgba(255,210,120,'+a+')';
+            ovx.fillRect(s.x-5,s.y-7,10,14);
+            // Brighter center
+            ovx.fillStyle='rgba(255,240,180,'+(a*.6)+')';
+            ovx.fillRect(s.x-3,s.y-5,6,10);
+            // Soft halo around window
+            const grad=ovx.createRadialGradient(s.x,s.y,2,s.x,s.y,18);
+            grad.addColorStop(0,'rgba(255,210,120,'+(a*.3)+')');
+            grad.addColorStop(1,'rgba(255,210,120,0)');
+            ovx.fillStyle=grad;
+            ovx.beginPath();ovx.arc(s.x,s.y,18,0,Math.PI*2);ovx.fill();
+            ovx.restore();
+          }
+        }
+      });
+    }
+
+    // ── 11. BUILDING-SPECIFIC DECORATIVE AURAS ───────────────────────
+    // Each building gets a unique floating decoration based on its theme
+    const BUILDING_AURAS={
+      'smith':       {kind:'beaker',  col:'#7ed85a'},  // Science — beakers
+      'artsci':      {kind:'brain',   col:'#c08aff'},  // Arts & Sci — psyche/brain waves
+      'hodge':       {kind:'ball',    col:'#ff8030'},  // Hodge — basketball
+      'hpac':        {kind:'note',    col:'#f0c840'},  // HPAC — music notes
+      'library':     {kind:'book',    col:'#5ec8ff'},  // Library — books
+      'sansbury':    {kind:'pizza',   col:'#ff8030'},  // Dining — pizza/steam
+      'hec':         {kind:'heart',   col:'#ff4040'},  // Health Ed — heart
+      'rampey':      {kind:'cross',   col:'#5ec8ff'},  // Health services — medical cross
+      'media':       {kind:'tv',      col:'#5ec8ff'},  // Media — TV signal
+      'hicks':       {kind:'palette', col:'#ff60a0'},  // Visual Arts — paint dots
+      'burroughs':   {kind:'globe',   col:'#5ec8ff'},  // Global Ed — globe icon
+      'readiness':   {kind:'dumbbell',col:'#ff8030'},  // Readiness — dumbbell
+      'safety':      {kind:'siren',   col:'#ff4040'},  // Public Safety — siren
+      'stockwell':   {kind:'star',    col:'#f0c840'},  // Admin — star
+    };
+    // Floating decoration particles per building
+    const DECOR_PARTS=[];
+    let _decorAcc=0;
+    function _updateDecors(dt){
+      _decorAcc+=dt;
+      if(_decorAcc<0.3)return; // every 0.3s spawn new
+      _decorAcc=0;
+      if(typeof BUILDINGS==='undefined')return;
+      BUILDINGS.forEach(b=>{
+        if(b.soon)return;
+        const aura=BUILDING_AURAS[b.id];
+        if(!aura)return;
+        // Don't spawn off-screen
+        const sBase=w2s(b.x+b.w/2,b.y+b.h*0.3);
+        if(sBase.x<-150||sBase.x>ov.width+150)return;
+        DECOR_PARTS.push({
+          wx:b.x+b.w*(0.3+Math.random()*0.4),
+          wy:b.y+b.h*(0.3+Math.random()*0.3),
+          vx:(Math.random()-.5)*.3,
+          vy:-0.4-Math.random()*0.4,
+          rot:Math.random()*6.28,
+          rotV:(Math.random()-.5)*0.1,
+          life:1,
+          maxLife:2.4+Math.random(),
+          kind:aura.kind,
+          col:aura.col,
+          size:14+Math.random()*8
+        });
+      });
+      // Cap so we don't accumulate too many
+      while(DECOR_PARTS.length>120)DECOR_PARTS.shift();
+    }
+    function _tickDecors(dt){
+      for(let i=DECOR_PARTS.length-1;i>=0;i--){
+        const p=DECOR_PARTS[i];
+        p.wx+=p.vx;
+        p.wy+=p.vy;
+        p.rot+=p.rotV;
+        p.life-=dt/p.maxLife;
+        if(p.life<=0)DECOR_PARTS.splice(i,1);
+      }
+    }
+    function _drawDecors(){
+      DECOR_PARTS.forEach(p=>{
+        const s=w2s(p.wx,p.wy);
+        if(s.x<-50||s.x>ov.width+50||s.y<-50||s.y>ov.height+50)return;
+        const a=Math.min(1,p.life*1.5);
+        ovx.save();
+        ovx.translate(s.x,s.y);
+        ovx.rotate(p.rot);
+        ovx.globalAlpha=a;
+        // Draw based on kind
+        const sz=p.size;
+        if(p.kind==='heart'){
+          // Pixel heart
+          ovx.fillStyle=p.col;
+          ovx.fillRect(-sz/2,-sz/3,sz/3,sz/3);
+          ovx.fillRect(sz/6,-sz/3,sz/3,sz/3);
+          ovx.fillRect(-sz/2,0,sz,sz/3);
+          ovx.fillRect(-sz/3,sz/3,sz*2/3,sz/4);
+        } else if(p.kind==='note'){
+          // Music note (oval + stem)
+          ovx.fillStyle=p.col;
+          ovx.beginPath();ovx.ellipse(-sz/4,sz/3,sz/3,sz/4,0.3,0,Math.PI*2);ovx.fill();
+          ovx.fillRect(0,-sz/2,sz/8,sz);
+        } else if(p.kind==='book'){
+          // Book
+          ovx.fillStyle=p.col;
+          ovx.fillRect(-sz/2,-sz/3,sz,sz/2);
+          ovx.fillStyle='rgba(255,255,255,.7)';
+          ovx.fillRect(-sz/3,-sz/4,sz*2/3,sz/3);
+        } else if(p.kind==='ball'){
+          // Basketball
+          ovx.fillStyle=p.col;
+          ovx.beginPath();ovx.arc(0,0,sz/2,0,Math.PI*2);ovx.fill();
+          ovx.strokeStyle='rgba(0,0,0,.5)';
+          ovx.lineWidth=1;
+          ovx.beginPath();ovx.moveTo(-sz/2,0);ovx.lineTo(sz/2,0);ovx.stroke();
+          ovx.beginPath();ovx.arc(0,0,sz/3,0,Math.PI);ovx.stroke();
+        } else if(p.kind==='beaker'){
+          // Lab beaker
+          ovx.fillStyle=p.col;
+          ovx.fillRect(-sz/4,-sz/2,sz/2,sz/2);  // neck
+          ovx.beginPath();
+          ovx.moveTo(-sz/4,0);ovx.lineTo(-sz/2,sz/2);
+          ovx.lineTo(sz/2,sz/2);ovx.lineTo(sz/4,0);
+          ovx.fill();
+        } else if(p.kind==='brain'){
+          // Brain wavy line
+          ovx.strokeStyle=p.col;
+          ovx.lineWidth=2;
+          ovx.beginPath();
+          for(let i=-sz/2;i<=sz/2;i+=2){
+            const y=Math.sin(i*0.6)*sz/3;
+            if(i===-sz/2)ovx.moveTo(i,y);else ovx.lineTo(i,y);
+          }
+          ovx.stroke();
+        } else if(p.kind==='pizza'){
+          // Steam wisp
+          ovx.strokeStyle=p.col;
+          ovx.lineWidth=2.5;
+          ovx.beginPath();
+          ovx.moveTo(-sz/3,sz/3);
+          ovx.bezierCurveTo(sz/4,0,-sz/4,-sz/4,sz/4,-sz/2);
+          ovx.stroke();
+        } else if(p.kind==='cross'){
+          // Medical cross
+          ovx.fillStyle=p.col;
+          ovx.fillRect(-sz/2,-sz/6,sz,sz/3);
+          ovx.fillRect(-sz/6,-sz/2,sz/3,sz);
+        } else if(p.kind==='tv'){
+          // TV signal arc
+          ovx.strokeStyle=p.col;
+          ovx.lineWidth=2;
+          for(let r=sz/4;r<=sz/2;r+=sz/6){
+            ovx.beginPath();ovx.arc(0,sz/3,r,Math.PI+0.4,Math.PI*2-0.4);ovx.stroke();
+          }
+        } else if(p.kind==='palette'){
+          // Paint dots
+          ['#ff60a0','#5ec8ff','#f0c840','#7ed85a'].forEach((c,i)=>{
+            ovx.fillStyle=c;
+            const a=i*Math.PI/2;
+            ovx.beginPath();ovx.arc(Math.cos(a)*sz/3,Math.sin(a)*sz/3,sz/5,0,Math.PI*2);ovx.fill();
+          });
+        } else if(p.kind==='globe'){
+          // Globe
+          ovx.strokeStyle=p.col;
+          ovx.lineWidth=1.5;
+          ovx.beginPath();ovx.arc(0,0,sz/2,0,Math.PI*2);ovx.stroke();
+          ovx.beginPath();ovx.ellipse(0,0,sz/2,sz/4,0,0,Math.PI*2);ovx.stroke();
+          ovx.beginPath();ovx.moveTo(0,-sz/2);ovx.lineTo(0,sz/2);ovx.stroke();
+        } else if(p.kind==='dumbbell'){
+          ovx.fillStyle=p.col;
+          ovx.fillRect(-sz/2,-sz/4,sz/4,sz/2);
+          ovx.fillRect(sz/4,-sz/4,sz/4,sz/2);
+          ovx.fillRect(-sz/4,-sz/8,sz/2,sz/4);
+        } else if(p.kind==='siren'){
+          ovx.fillStyle=p.col;
+          ovx.beginPath();ovx.arc(0,0,sz/3,0,Math.PI*2);ovx.fill();
+          ovx.strokeStyle=p.col;ovx.lineWidth=1;
+          ovx.beginPath();ovx.arc(0,0,sz/2,0,Math.PI*2);ovx.stroke();
+        } else { // star
+          ovx.fillStyle=p.col;
+          ovx.beginPath();
+          for(let i=0;i<10;i++){
+            const a=(i/10)*Math.PI*2-Math.PI/2;
+            const r=i%2===0?sz/2:sz/4;
+            const x=Math.cos(a)*r,y=Math.sin(a)*r;
+            if(i===0)ovx.moveTo(x,y);else ovx.lineTo(x,y);
+          }
+          ovx.closePath();ovx.fill();
+        }
+        ovx.restore();
+      });
+    }
+
+    // ── 12. SQUIRRELS darting between trees ──────────────────────────
+    const SQUIRRELS=[];
+    for(let i=0;i<3;i++){
+      SQUIRRELS.push({
+        wx:600+Math.random()*1400,
+        wy:600+Math.random()*1000,
+        tx:0,ty:0,
+        speed:80+Math.random()*40,
+        idle:Math.random()*3,
+        dashing:false,
+        dashT:0,
+        flip:false
+      });
+    }
+    function _updateSquirrels(dt){
+      SQUIRRELS.forEach(sq=>{
+        if(!sq.dashing){
+          sq.idle-=dt;
+          if(sq.idle<=0){
+            // Pick a new tree to dash to
+            if(typeof TREES!=='undefined'&&TREES.length){
+              const tree=TREES[Math.floor(Math.random()*TREES.length)];
+              sq.tx=tree.x+(Math.random()-.5)*40;
+              sq.ty=tree.y+(Math.random()-.5)*40;
+              sq.flip=sq.tx<sq.wx;
+              sq.dashing=true;
+              sq.dashT=0;
+            }
+          }
+        } else {
+          const dx=sq.tx-sq.wx,dy=sq.ty-sq.wy;
+          const d=Math.sqrt(dx*dx+dy*dy);
+          if(d<5){
+            sq.dashing=false;
+            sq.idle=2+Math.random()*5;
+          } else {
+            sq.wx+=(dx/d)*sq.speed*dt;
+            sq.wy+=(dy/d)*sq.speed*dt;
+            sq.dashT+=dt;
+          }
+        }
+      });
+    }
+    function _drawSquirrels(){
+      SQUIRRELS.forEach(sq=>{
+        const s=w2s(sq.wx,sq.wy);
+        if(s.x<-30||s.x>ov.width+30||s.y<-30||s.y>ov.height+30)return;
+        const t=Date.now()/100;
+        const bob=sq.dashing?Math.sin(sq.dashT*15)*1.5:0;
+        ovx.save();
+        ovx.translate(s.x,s.y+bob);
+        if(sq.flip)ovx.scale(-1,1);
+        // Body (brown)
+        ovx.fillStyle='#7a4818';
+        ovx.fillRect(-3,-3,9,5);    // body
+        // Tail
+        ovx.fillStyle='#5a3010';
+        ovx.fillRect(-7,-5,5,4);    // bushy tail
+        ovx.fillRect(-8,-7,3,3);
+        // Head
+        ovx.fillStyle='#8a5828';
+        ovx.fillRect(5,-4,4,4);
+        // Eye
+        ovx.fillStyle='#000';
+        ovx.fillRect(7,-3,1,1);
+        // Ear
+        ovx.fillStyle='#7a4818';
+        ovx.fillRect(7,-5,1,1);
+        ovx.restore();
+      });
+    }
+
+    // ── 13. PATH MAGIC DUST when player is idle (toward nearest building) ──
+    let _idleT=0,_lastPx=P.x,_lastPy=P.y;
+    const PATH_DUST=[];
+    function _updatePathDust(dt){
+      const moving=Math.abs(P.x-_lastPx)>1||Math.abs(P.y-_lastPy)>1;
+      _lastPx=P.x;_lastPy=P.y;
+      if(moving){_idleT=0;return}
+      _idleT+=dt;
+      if(_idleT<2)return; // wait 2 sec idle before showing dust
+      // Find nearest unvisited building
+      if(typeof BUILDINGS==='undefined')return;
+      let nearest=null,d=99999;
+      BUILDINGS.forEach(b=>{
+        if(b.soon||!(b.games&&b.games.length>0))return;
+        const cxp=b.x+b.w/2,cyp=b.y+b.h/2;
+        const dd=Math.sqrt((P.x-cxp)*(P.x-cxp)+(P.y-cyp)*(P.y-cyp));
+        if(dd<d){d=dd;nearest=b}
+      });
+      if(!nearest||d<150)return; // already there
+      // Spawn a dust particle along path direction
+      if(Math.random()<0.3){
+        const angle=Math.atan2((nearest.y+nearest.h/2)-P.y,(nearest.x+nearest.w/2)-P.x);
+        PATH_DUST.push({
+          wx:P.x+Math.cos(angle)*30+(Math.random()-.5)*10,
+          wy:P.y+Math.sin(angle)*30+(Math.random()-.5)*10,
+          vx:Math.cos(angle)*40,
+          vy:Math.sin(angle)*40,
+          life:1
+        });
+      }
+      // Update existing
+      for(let i=PATH_DUST.length-1;i>=0;i--){
+        const p=PATH_DUST[i];
+        p.wx+=p.vx*dt;
+        p.wy+=p.vy*dt;
+        p.life-=dt*0.7;
+        if(p.life<=0)PATH_DUST.splice(i,1);
+      }
+    }
+    function _drawPathDust(){
+      PATH_DUST.forEach(p=>{
+        const s=w2s(p.wx,p.wy);
+        if(s.x<-20||s.x>ov.width+20||s.y<-20||s.y>ov.height+20)return;
+        ovx.save();
+        const grad=ovx.createRadialGradient(s.x,s.y,0,s.x,s.y,8);
+        grad.addColorStop(0,'rgba(255,224,128,'+(p.life*0.7)+')');
+        grad.addColorStop(1,'rgba(255,224,128,0)');
+        ovx.fillStyle=grad;
+        ovx.beginPath();ovx.arc(s.x,s.y,8,0,Math.PI*2);ovx.fill();
+        ovx.fillStyle='rgba(255,255,200,'+(p.life)+')';
+        ovx.beginPath();ovx.arc(s.x,s.y,1.5,0,Math.PI*2);ovx.fill();
+        ovx.restore();
+      });
+    }
+
+    // ── 14. MINI-RADAR in bottom-right corner ────────────────────────
+    function _drawMiniRadar(){
+      const t=Date.now();
+      const padding=14,size=120;
+      const rx=ov.width-size-padding,ry=ov.height-size-padding-100; // above HUD
+      // Background
+      ovx.save();
+      // Outer border + glow
+      ovx.fillStyle='rgba(0,40,16,.85)';
+      ovx.fillRect(rx,ry,size,size);
+      ovx.strokeStyle='rgba(0,168,79,.6)';
+      ovx.lineWidth=2;
+      ovx.strokeRect(rx,ry,size,size);
+      ovx.shadowColor='#00a84f';
+      ovx.shadowBlur=8;
+      ovx.strokeRect(rx,ry,size,size);
+      ovx.shadowBlur=0;
+      // Inner background (subtle map look)
+      ovx.fillStyle='rgba(0,80,30,.3)';
+      ovx.fillRect(rx+2,ry+2,size-4,size-4);
+      // Buildings as dots
+      if(typeof BUILDINGS!=='undefined'){
+        BUILDINGS.forEach(b=>{
+          const px=rx+2+(b.x/WW)*(size-4);
+          const py=ry+2+(b.y/WH)*(size-4);
+          const pw=Math.max(2,(b.w/WW)*(size-4));
+          const ph=Math.max(2,(b.h/WH)*(size-4));
+          if(b.soon){
+            ovx.fillStyle='rgba(120,120,120,.5)';
+          } else if(b.games&&b.games.length>0){
+            ovx.fillStyle='rgba(0,168,79,.85)';
+          } else {
+            ovx.fillStyle='rgba(80,140,80,.6)';
+          }
+          ovx.fillRect(px,py,pw,ph);
+        });
+      }
+      // Player as pulsing gold dot
+      if(typeof P!=='undefined'){
+        const px=rx+2+(P.x/WW)*(size-4);
+        const py=ry+2+(P.y/WH)*(size-4);
+        const pulse=(Math.sin(t/200)+1)/2;
+        ovx.fillStyle='#f0c840';
+        ovx.beginPath();ovx.arc(px,py,3+pulse*1.5,0,Math.PI*2);ovx.fill();
+        ovx.strokeStyle='rgba(240,200,64,'+(0.3+pulse*0.4)+')';
+        ovx.lineWidth=1;
+        ovx.beginPath();ovx.arc(px,py,7+pulse*3,0,Math.PI*2);ovx.stroke();
+      }
+      // Title bar
+      ovx.fillStyle='rgba(0,40,16,.95)';
+      ovx.fillRect(rx,ry-18,size,18);
+      ovx.fillStyle='#7ed85a';
+      ovx.font="bold 9px 'Press Start 2P',monospace";
+      ovx.textAlign='center';
+      ovx.fillText('CAMPUS MAP',rx+size/2,ry-5);
+      ovx.restore();
+    }
+
+    // ── 15. SEASONAL MODE auto-detection ─────────────────────────────
+    // Pick the season based on month (Northern Hemisphere). Each season
+    // changes leaf colors, adds snow/blossoms, etc.
+    function _getSeason(){
+      const m=new Date().getMonth();
+      if(m===11||m<2)return'winter';
+      if(m<5)return'spring';
+      if(m<8)return'summer';
+      return'fall';
+    }
+    const SEASON=_getSeason();
+    // Recolor leaves based on season
+    if(SEASON==='spring'){
+      LEAVES.forEach(l=>{l.col=['#ffb0d0','#ff8090','#fff0a0','#ffc0e0'][Math.floor(Math.random()*4)]});
+    } else if(SEASON==='summer'){
+      LEAVES.forEach(l=>{l.col=['#7ed85a','#9eea60','#5eb030','#7ec040'][Math.floor(Math.random()*4)]});
+    } else if(SEASON==='winter'){
+      LEAVES.forEach(l=>{l.col='#ffffff';l.size=3+Math.random()*4});  // snowflakes
+    }
+    // Snow particle system for winter
+    const SNOW=[];
+    if(SEASON==='winter'){
+      for(let i=0;i<60;i++){
+        SNOW.push({
+          wx:Math.random()*WW,
+          wy:Math.random()*WH,
+          vy:.5+Math.random()*.6,
+          sway:Math.random()*6.28,
+          size:1+Math.random()*2.5
+        });
+      }
+    }
+    function _updateSnow(dt){
+      if(SEASON!=='winter')return;
+      SNOW.forEach(s=>{
+        s.sway+=dt*1.2;
+        s.wy+=s.vy;
+        s.wx+=Math.sin(s.sway)*.4;
+        if(s.wy>WH+10){s.wy=-10;s.wx=Math.random()*WW}
+      });
+    }
+    function _drawSnow(){
+      if(SEASON!=='winter'||SNOW.length===0)return;
+      SNOW.forEach(s=>{
+        const screen=w2s(s.wx,s.wy);
+        if(screen.x<-30||screen.x>ov.width+30||screen.y<-30||screen.y>ov.height+30)return;
+        ovx.save();
+        ovx.fillStyle='rgba(255,255,255,.85)';
+        ovx.beginPath();ovx.arc(screen.x,screen.y,s.size,0,Math.PI*2);ovx.fill();
+        ovx.restore();
+      });
+    }
+    // Subtle ground-frost overlay in winter, blossom petals in spring (handled by recolored leaves)
+
+    // ── 16. PLAYER HERO GLOW ─────────────────────────────────────────
+    function _drawPlayerGlow(){
+      if(typeof P==='undefined')return;
+      const s=w2s(P.x,P.y);
+      if(s.x<-100||s.x>ov.width+100||s.y<-100||s.y>ov.height+100)return;
+      const t=Date.now();
+      const pulse=Math.sin(t/600)*0.1;
+      ovx.save();
+      // Soft breathing aura under player
+      const grad=ovx.createRadialGradient(s.x,s.y+8,5,s.x,s.y+8,40);
+      grad.addColorStop(0,'rgba(0,168,79,'+(0.18+pulse)+')');
+      grad.addColorStop(.6,'rgba(0,168,79,'+(0.06+pulse*.5)+')');
+      grad.addColorStop(1,'rgba(0,168,79,0)');
+      ovx.fillStyle=grad;
+      ovx.beginPath();
+      ovx.ellipse(s.x,s.y+8,42,15,0,0,Math.PI*2);
+      ovx.fill();
+      ovx.restore();
+    }
+
+    // ── 17. FOUNTAIN SPLASH PARTICLES when near fountain ─────────────
+    const SPLASHES=[];
+    let _splashCheck=0;
+    function _updateSplashes(dt){
+      _splashCheck+=dt;
+      // When player is near fountain, emit splash drops
+      if(typeof FOUNTAIN!=='undefined'&&typeof P!=='undefined'){
+        const dx=P.x-FOUNTAIN.x,dy=P.y-FOUNTAIN.y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<200&&_splashCheck>0.06){
+          _splashCheck=0;
+          // emit 1-2 droplets from random rim positions
+          for(let i=0;i<2;i++){
+            const ang=Math.random()*Math.PI*2;
+            const rimX=FOUNTAIN.x+Math.cos(ang)*60;
+            const rimY=FOUNTAIN.y+Math.sin(ang)*30+30;
+            SPLASHES.push({
+              wx:rimX,wy:rimY,
+              vx:Math.cos(ang)*30+(Math.random()-.5)*20,
+              vy:-50-Math.random()*30,
+              life:1
+            });
+          }
+        }
+      }
+      for(let i=SPLASHES.length-1;i>=0;i--){
+        const sp=SPLASHES[i];
+        sp.wx+=sp.vx*dt;
+        sp.wy+=sp.vy*dt;
+        sp.vy+=120*dt; // gravity
+        sp.life-=dt*1.0;
+        if(sp.life<=0)SPLASHES.splice(i,1);
+      }
+    }
+    function _drawSplashes(){
+      SPLASHES.forEach(sp=>{
+        const s=w2s(sp.wx,sp.wy);
+        if(s.x<-30||s.x>ov.width+30||s.y<-30||s.y>ov.height+30)return;
+        ovx.save();
+        ovx.fillStyle='rgba(170,220,255,'+(sp.life*.85)+')';
+        ovx.beginPath();ovx.arc(s.x,s.y,2.5,0,Math.PI*2);ovx.fill();
+        ovx.fillStyle='rgba(255,255,255,'+(sp.life*.4)+')';
+        ovx.beginPath();ovx.arc(s.x-.5,s.y-.5,1,0,Math.PI*2);ovx.fill();
+        ovx.restore();
+      });
+    }
+
+    // ── 18. STUDENT SPEECH BUBBLES (USC trivia/quotes) ──────────────
+    const STUDENT_QUOTES=[
+      'Go Spartans!',
+      'Reach Greater Heights',
+      'Dr. Garg made another game?!',
+      'BIO 280 saves lives',
+      'I love this campus.',
+      'Where is Sansbury?',
+      'Who has notes for PSYC 101?',
+      'Library closes at midnight!',
+      'Did you see that goose?',
+      'Test on Friday — pray.',
+      'Office hours? Try Stockwell.',
+      'Mary Black > all',
+      'BIO 143 is fire',
+      'PathoQuest beat me again 😭',
+      'AnatomyQuest > flashcards',
+      'Spartan rec ctr is open',
+      'Anyone else hate cytology?',
+      'I love this professor',
+      '2,269 questions?? madness',
+      'Where do I park??'
+    ];
+    const _bubbles=new Map(); // student-index → bubble state
+    function _updateStudentBubbles(dt){
+      if(typeof STUDENTS==='undefined'||!STUDENTS.length)return;
+      // Periodically pick a random student and give them a quote
+      if(Math.random()<dt*0.4){
+        const idx=Math.floor(Math.random()*STUDENTS.length);
+        if(!_bubbles.has(idx)){
+          _bubbles.set(idx,{
+            text:STUDENT_QUOTES[Math.floor(Math.random()*STUDENT_QUOTES.length)],
+            life:5,
+            seed:Math.random()
+          });
+        }
+      }
+      // Tick existing
+      for(const[idx,b]of _bubbles){
+        b.life-=dt;
+        if(b.life<=0)_bubbles.delete(idx);
+      }
+    }
+    function _drawStudentBubbles(){
+      if(typeof STUDENTS==='undefined')return;
+      _bubbles.forEach((b,idx)=>{
+        const st=STUDENTS[idx];if(!st)return;
+        const s=w2s(st.x,st.y-40);
+        if(s.x<-200||s.x>ov.width+200||s.y<-50||s.y>ov.height+50)return;
+        const fadeIn=Math.min(1,(5-b.life)*4);
+        const fadeOut=Math.min(1,b.life);
+        const alpha=Math.min(fadeIn,fadeOut);
+        ovx.save();
+        ovx.font="11px 'VT323',monospace";
+        const w=Math.min(220,ovx.measureText(b.text).width+18);
+        const h=22;
+        const bx=s.x-w/2,by=s.y-h;
+        // Bubble background
+        ovx.fillStyle='rgba(0,0,0,'+(alpha*.85)+')';
+        ovx.beginPath();
+        ovx.moveTo(bx+5,by);
+        ovx.lineTo(bx+w-5,by);
+        ovx.quadraticCurveTo(bx+w,by,bx+w,by+5);
+        ovx.lineTo(bx+w,by+h-5);
+        ovx.quadraticCurveTo(bx+w,by+h,bx+w-5,by+h);
+        ovx.lineTo(s.x+5,by+h);
+        ovx.lineTo(s.x,by+h+5);
+        ovx.lineTo(s.x-5,by+h);
+        ovx.lineTo(bx+5,by+h);
+        ovx.quadraticCurveTo(bx,by+h,bx,by+h-5);
+        ovx.lineTo(bx,by+5);
+        ovx.quadraticCurveTo(bx,by,bx+5,by);
+        ovx.fill();
+        // Border
+        ovx.strokeStyle='rgba(126,216,90,'+(alpha*.7)+')';
+        ovx.lineWidth=1;
+        ovx.stroke();
+        // Text
+        ovx.fillStyle='rgba(220,255,220,'+alpha+')';
+        ovx.textAlign='center';
+        ovx.fillText(b.text,s.x,by+15);
+        ovx.restore();
+      });
+    }
+
+    // ── 19. ACHIEVEMENT TOAST on first building visit ────────────────
+    const _BLDG_VISITS_KEY='beacon_bldg_visits_v1';
+    function _bldgVisits(){try{return JSON.parse(localStorage.getItem(_BLDG_VISITS_KEY)||'{}')}catch(e){return{}}}
+    function _bldgVisitsSave(d){try{localStorage.setItem(_BLDG_VISITS_KEY,JSON.stringify(d))}catch(e){}}
+    let _lastVisitedId=null;
+    function _checkBuildingVisits(){
+      if(typeof BUILDINGS==='undefined'||typeof P==='undefined')return;
+      // Find building player is INSIDE (not just near)
+      let inside=null;
+      BUILDINGS.forEach(b=>{
+        if(P.x>=b.x-30&&P.x<=b.x+b.w+30&&P.y>=b.y-30&&P.y<=b.y+b.h+30){
+          inside=b;
+        }
+      });
+      if(inside&&inside.id!==_lastVisitedId){
+        _lastVisitedId=inside.id;
+        const visits=_bldgVisits();
+        if(!visits[inside.id]){
+          visits[inside.id]=Date.now();
+          _bldgVisitsSave(visits);
+          // Trigger achievement toast
+          _showVisitAchievement(inside);
+        }
+      } else if(!inside){_lastVisitedId=null}
+    }
+    function _showVisitAchievement(b){
+      document.querySelectorAll('.beacon-visit-ach').forEach(el=>el.remove());
+      const t=document.createElement('div');
+      t.className='beacon-visit-ach';
+      const games=b.games?b.games.length:0;
+      const visited=Object.keys(_bldgVisits()).length;
+      const total=BUILDINGS.filter(bb=>!bb.soon).length;
+      t.innerHTML=
+        '<div class="bva-icon">'+(b.emoji||'🏛️')+'</div>'+
+        '<div class="bva-body">'+
+          '<div class="bva-label">★ NEW BUILDING DISCOVERED</div>'+
+          '<div class="bva-name">'+b.label.replace(/\\n/g,' ')+'</div>'+
+          '<div class="bva-progress">'+visited+' / '+total+' BUILDINGS · '+games+' GAMES INSIDE</div>'+
+        '</div>';
+      document.body.appendChild(t);
+      setTimeout(()=>{try{t.remove()}catch(e){}},5500);
+    }
+    setInterval(_checkBuildingVisits,500);
+
+    // ── 20. TITLE-SCREEN MASCOT WALK-ON CINEMATIC ────────────────────
+    (function(){
+      const tscv=document.getElementById('tscv');
+      if(!tscv)return;
+      const ttcx=tscv.getContext('2d');
+      function _resizeTscv(){
+        tscv.width=window.innerWidth;
+        tscv.height=window.innerHeight;
+      }
+      _resizeTscv();window.addEventListener('resize',_resizeTscv);
+      // Walking spartan state
+      const TS={
+        x:-80,
+        y:0,
+        vx:1.4,
+        frame:0,
+        ft:0,
+        swordRaised:false,
+        swordT:0,
+        leaves:[]
+      };
+      // Sparkle leaves on title
+      for(let i=0;i<24;i++){
+        TS.leaves.push({
+          x:Math.random()*tscv.width,
+          y:Math.random()*tscv.height,
+          vy:.4+Math.random()*.7,
+          vx:.3+Math.random()*.4,
+          rot:Math.random()*6.28,
+          rotV:(Math.random()-.5)*.04,
+          col:SEASON==='winter'?'#fff':SEASON==='spring'?'#ffb0d0':SEASON==='summer'?'#7ed85a':['#ff6040','#fff080','#ff8030','#c0a020'][Math.floor(Math.random()*4)],
+          sz:5+Math.random()*5
+        });
+      }
+      let lastT=performance.now();
+      function _tick(){
+        const now=performance.now();
+        const dt=Math.min(.1,(now-lastT)/1000);
+        lastT=now;
+        const title=document.getElementById('title');
+        const visible=title&&!title.classList.contains('hide');
+        if(!visible){requestAnimationFrame(_tick);return}
+        TS.y=tscv.height*.55;
+        // Animate spartan
+        TS.x+=TS.vx;
+        TS.ft+=dt;
+        if(TS.ft>0.18){TS.ft=0;TS.frame=(TS.frame+1)%4}
+        // Reach center → raise sword
+        const centerX=tscv.width*.5;
+        if(!TS.swordRaised&&TS.x>centerX-30){
+          TS.swordRaised=true;TS.swordT=now;TS.vx=0;
+        }
+        // After 2.5s of sword pose, walk off
+        if(TS.swordRaised&&now-TS.swordT>2500){
+          TS.swordRaised=false;
+          TS.vx=2.0;
+        }
+        // Wrap around
+        if(TS.x>tscv.width+50)TS.x=-80;
+
+        ttcx.clearRect(0,0,tscv.width,tscv.height);
+        // Update + draw leaves
+        TS.leaves.forEach(l=>{
+          l.y+=l.vy;l.x+=l.vx;l.rot+=l.rotV;
+          if(l.y>tscv.height+30){l.y=-30;l.x=Math.random()*tscv.width}
+          if(l.x>tscv.width+30)l.x=-30;
+          ttcx.save();
+          ttcx.translate(l.x,l.y);
+          ttcx.rotate(l.rot);
+          ttcx.fillStyle=l.col;
+          ttcx.beginPath();
+          ttcx.ellipse(0,0,l.sz*.6,l.sz,0,0,Math.PI*2);
+          ttcx.fill();
+          ttcx.restore();
+        });
+        // Draw spartan
+        const px=TS.x,py=TS.y,pscale=4;
+        ttcx.save();
+        // Walking bob
+        const bob=TS.swordRaised?0:Math.sin(TS.ft*30)*1.5;
+        ttcx.translate(px,py+bob);
+        // Body — green tunic
+        ttcx.fillStyle='#00693e';
+        ttcx.fillRect(-6*pscale,-10*pscale,12*pscale,12*pscale);
+        // Shoulders/armor
+        ttcx.fillStyle='#003a10';
+        ttcx.fillRect(-7*pscale,-10*pscale,14*pscale,3*pscale);
+        // Helmet
+        ttcx.fillStyle='#c0a040';
+        ttcx.fillRect(-5*pscale,-16*pscale,10*pscale,7*pscale);
+        // Helmet crest (red plume)
+        ttcx.fillStyle='#e00';
+        ttcx.fillRect(-1*pscale,-21*pscale,2*pscale,5*pscale);
+        ttcx.fillRect(0,-22*pscale,1*pscale,1*pscale);
+        // Eyes (slit)
+        ttcx.fillStyle='#000';
+        ttcx.fillRect(-3*pscale,-12*pscale,2*pscale,1*pscale);
+        ttcx.fillRect(1*pscale,-12*pscale,2*pscale,1*pscale);
+        // Cape
+        ttcx.fillStyle='#7a2020';
+        const capeWave=Math.sin(now/200)*pscale*.5;
+        ttcx.fillRect(-7*pscale,-9*pscale,2*pscale,12*pscale+capeWave);
+        ttcx.fillRect(5*pscale,-9*pscale,2*pscale,12*pscale-capeWave);
+        // Legs
+        const legSwing=TS.swordRaised?0:Math.sin(TS.frame*Math.PI/2)*pscale;
+        ttcx.fillStyle='#2a3a2a';
+        ttcx.fillRect(-4*pscale,2*pscale,3*pscale,8*pscale-legSwing);
+        ttcx.fillRect(1*pscale,2*pscale,3*pscale,8*pscale+legSwing);
+        // Sword (raised when at center)
+        ttcx.fillStyle='#cccccc';
+        if(TS.swordRaised){
+          ttcx.fillRect(5*pscale,-30*pscale,2*pscale,18*pscale);
+          // Blade highlight
+          ttcx.fillStyle='#fff';
+          ttcx.fillRect(5*pscale,-30*pscale,1*pscale,18*pscale);
+          // Hilt
+          ttcx.fillStyle='#c0a040';
+          ttcx.fillRect(3*pscale,-12*pscale,6*pscale,2*pscale);
+          // Sparkle on tip
+          const sp=Math.sin(now/100)*0.5+0.5;
+          ttcx.fillStyle='rgba(255,255,255,'+sp+')';
+          ttcx.beginPath();
+          ttcx.arc(6*pscale,-32*pscale,3+sp*2,0,Math.PI*2);
+          ttcx.fill();
+        } else {
+          ttcx.fillRect(5*pscale,-7*pscale,2*pscale,12*pscale);
+        }
+        ttcx.restore();
+        // Light rays from raised sword
+        if(TS.swordRaised){
+          const cx=px+6*pscale,cy=py-32*pscale;
+          ttcx.save();
+          ttcx.globalCompositeOperation='screen';
+          for(let i=0;i<8;i++){
+            const a=(now/600+i*Math.PI/4)%(Math.PI*2);
+            ttcx.strokeStyle='rgba(255,240,180,.25)';
+            ttcx.lineWidth=2;
+            ttcx.beginPath();
+            ttcx.moveTo(cx,cy);
+            ttcx.lineTo(cx+Math.cos(a)*200,cy+Math.sin(a)*200);
+            ttcx.stroke();
+          }
+          ttcx.restore();
+        }
+        requestAnimationFrame(_tick);
+      }
+      requestAnimationFrame(_tick);
+    })();
+
+    // ════════════════════════════════════════════════════════════════
+    // ROUND 4 — easter eggs, holidays, ambient life, sound
+    // ════════════════════════════════════════════════════════════════
+
+    // ── 21. HOLIDAY DETECTION ────────────────────────────────────────
+    function _getHoliday(){
+      const d=new Date();
+      const m=d.getMonth(),day=d.getDate();
+      if(m===9&&day>=28||m===10&&day<=1)return'halloween';
+      if(m===11&&day>=15&&day<=25)return'christmas';
+      if(m===1&&day===14)return'valentine';
+      if(m===6&&day===4)return'independence';
+      if(m===3)return'spring';
+      if(m===7&&day===18)return'firstday';
+      return null;
+    }
+    const HOLIDAY=_getHoliday();
+
+    // ── 22. COIN-IN-FOUNTAIN WISH ────────────────────────────────────
+    const _COIN={active:false,phase:'',t:0,x:0,y:0,wish:'',ripples:[]};
+    const WISHES=[
+      'May your GPA be ever rising',
+      'I wish to pass anatomy',
+      'Let the goose visit me today',
+      'Make this semester fly',
+      'Send me a kind professor',
+      'May I survive finals',
+      'Bring me a parking spot',
+      'Let coffee be free this week',
+      'Reach Greater Heights',
+      'May Dr. Garg return my email',
+      'Block the boss-survives ending',
+      'Help me memorize cytology',
+      'Make NCLEX kind to me',
+      'Spartan strength!',
+      'Find me my study group'
+    ];
+    // Hook fountain click
+    (function(){
+      const mainC=document.getElementById('c');if(!mainC)return;
+      mainC.addEventListener('click',e=>{
+        if(_COIN.active||typeof FOUNTAIN==='undefined')return;
+        const r=mainC.getBoundingClientRect();
+        const sx=e.clientX-r.left,sy=e.clientY-r.top;
+        const wx=sx+cam.x,wy=sy+cam.y;
+        const dx=wx-FOUNTAIN.x,dy=wy-FOUNTAIN.y-30;
+        if(Math.sqrt(dx*dx+dy*dy)<70){
+          _COIN.active=true;_COIN.phase='flip';_COIN.t=0;
+          _COIN.x=FOUNTAIN.x;_COIN.y=FOUNTAIN.y-100;
+          _COIN.wish=WISHES[Math.floor(Math.random()*WISHES.length)];
+          _COIN.ripples=[];
+          if(typeof beep==='function'){beep&&beep(880,.1)}
+          else if(window.AudioContext){
+            try{const a=new AudioContext();const o=a.createOscillator();const g=a.createGain();
+              o.connect(g);g.connect(a.destination);o.frequency.value=900;g.gain.value=.1;
+              o.start();o.frequency.exponentialRampToValueAtTime(400,a.currentTime+.4);
+              g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.5);o.stop(a.currentTime+.5)}catch(e){}
+          }
+        }
+      });
+    })();
+    function _updateCoin(dt){
+      if(!_COIN.active)return;
+      _COIN.t+=dt;
+      if(_COIN.phase==='flip'&&_COIN.t<1.2){
+        _COIN.y=FOUNTAIN.y-100+Math.sin(_COIN.t*Math.PI*2)*30-_COIN.t*40;
+      } else if(_COIN.phase==='flip'){
+        _COIN.phase='wish';_COIN.t=0;
+      } else if(_COIN.phase==='wish'&&_COIN.t<2.4){
+        // Wish text shows
+      } else if(_COIN.phase==='wish'){
+        _COIN.phase='sink';_COIN.t=0;
+        // Spawn ripples
+        for(let i=0;i<3;i++)_COIN.ripples.push({r:0,life:1,delay:i*0.2});
+      } else if(_COIN.phase==='sink'&&_COIN.t<2){
+        _COIN.y=FOUNTAIN.y+_COIN.t*12;
+      } else {
+        _COIN.active=false;
+      }
+      _COIN.ripples.forEach(rp=>{
+        if(rp.delay>0){rp.delay-=dt;return}
+        rp.r+=dt*70;rp.life-=dt*0.6;
+      });
+      _COIN.ripples=_COIN.ripples.filter(rp=>rp.life>0);
+    }
+    function _drawCoin(){
+      if(!_COIN.active)return;
+      // Coin
+      if(_COIN.phase!=='wish'){
+        const s=w2s(_COIN.x,_COIN.y);
+        ovx.save();
+        ovx.translate(s.x,s.y);
+        const rot=_COIN.phase==='flip'?(_COIN.t*8):(_COIN.t*2);
+        ovx.scale(Math.cos(rot),1);
+        ovx.fillStyle='#f0c840';
+        ovx.beginPath();ovx.arc(0,0,8,0,Math.PI*2);ovx.fill();
+        ovx.fillStyle='#a87010';
+        ovx.beginPath();ovx.arc(0,0,5,0,Math.PI*2);ovx.fill();
+        ovx.fillStyle='#fff';
+        ovx.font="bold 7px monospace";ovx.textAlign='center';
+        ovx.fillText('U',0,2);
+        ovx.restore();
+      }
+      // Wish text bubble
+      if(_COIN.phase==='wish'){
+        const s=w2s(FOUNTAIN.x,FOUNTAIN.y-60);
+        ovx.save();
+        const alpha=Math.sin((_COIN.t/2.4)*Math.PI);
+        ovx.fillStyle='rgba(255,224,128,'+(alpha*.95)+')';
+        ovx.font="italic 14px 'VT323',monospace";
+        ovx.textAlign='center';
+        ovx.shadowColor='#f0c840';ovx.shadowBlur=12;
+        ovx.fillText('"'+_COIN.wish+'"',s.x,s.y);
+        ovx.restore();
+      }
+      // Ripples
+      _COIN.ripples.forEach(rp=>{
+        if(rp.delay>0)return;
+        const s=w2s(FOUNTAIN.x,FOUNTAIN.y);
+        ovx.save();
+        ovx.strokeStyle='rgba(170,220,255,'+rp.life+')';
+        ovx.lineWidth=2;
+        ovx.beginPath();ovx.ellipse(s.x,s.y+30,rp.r,rp.r*.4,0,0,Math.PI*2);ovx.stroke();
+        ovx.restore();
+      });
+    }
+
+    // ── 23. HIDDEN BENCH WITH DR. GARG QUOTES ────────────────────────
+    const HIDDEN_BENCH={x:340,y:1480};
+    const GARG_WISDOM=[
+      '"The body is the syllabus. Read it carefully." — Dr. Garg',
+      '"Memorize less. Understand more. Both, ideally." — Dr. Garg',
+      '"Pathophysiology is just chemistry on bad days." — Dr. Garg',
+      '"Every wrong answer is a question that asked twice." — Dr. Garg',
+      '"Sleep is part of the curriculum." — Dr. Garg',
+      '"NCLEX favors the prepared and the hydrated." — Dr. Garg',
+      '"Pixels can teach pathophysiology too." — Dr. Garg',
+      '"Show up. Walk in. Press play." — Dr. Garg',
+      '"There are no shortcuts. Only different routes." — Dr. Garg',
+      '"The patient is the textbook. Listen first." — Dr. Garg',
+      '"Reach Greater Heights — but pace yourself." — Dr. Garg',
+      '"You will forget. Then re-learn. That\'s the cycle." — Dr. Garg'
+    ];
+    let _benchPrompt=false,_benchMsg='',_benchT=0;
+    function _updateBench(dt){
+      if(typeof P==='undefined')return;
+      const dx=P.x-HIDDEN_BENCH.x,dy=P.y-HIDDEN_BENCH.y;
+      const near=Math.sqrt(dx*dx+dy*dy)<60;
+      if(near&&!_benchPrompt&&_benchT<=0){
+        _benchPrompt=true;
+        _benchMsg=GARG_WISDOM[Math.floor(Math.random()*GARG_WISDOM.length)];
+        _benchT=8;
+      } else if(!near){_benchPrompt=false}
+      if(_benchT>0)_benchT-=dt;
+    }
+    function _drawBench(){
+      const s=w2s(HIDDEN_BENCH.x,HIDDEN_BENCH.y);
+      if(s.x>-50&&s.x<ov.width+50&&s.y>-50&&s.y<ov.height+50){
+        // Draw subtle bench (a few brown blocks)
+        ovx.save();
+        ovx.fillStyle='#5a3010';
+        ovx.fillRect(s.x-18,s.y-2,36,5);
+        ovx.fillRect(s.x-18,s.y+5,36,3);
+        ovx.fillStyle='#3a2008';
+        ovx.fillRect(s.x-16,s.y+3,3,8);
+        ovx.fillRect(s.x+13,s.y+3,3,8);
+        ovx.restore();
+      }
+      // Show wisdom bubble
+      if(_benchPrompt&&_benchMsg&&_benchT>0){
+        const sb=w2s(HIDDEN_BENCH.x,HIDDEN_BENCH.y-30);
+        ovx.save();
+        ovx.font="13px 'VT323',monospace";
+        const w=Math.min(ovx.measureText(_benchMsg).width+20,360);
+        const h=46;
+        const bx=sb.x-w/2,by=sb.y-h;
+        const alpha=Math.min(1,_benchT,8-_benchT);
+        ovx.fillStyle='rgba(40,30,8,'+(alpha*.92)+')';
+        ovx.fillRect(bx,by,w,h);
+        ovx.strokeStyle='rgba(240,200,64,'+(alpha*.7)+')';
+        ovx.lineWidth=1.5;
+        ovx.strokeRect(bx,by,w,h);
+        ovx.fillStyle='rgba(255,224,128,'+alpha+')';
+        // Word-wrap
+        const words=_benchMsg.split(' ');
+        let line='';const lines=[];
+        words.forEach(w2=>{
+          const test=line?line+' '+w2:w2;
+          if(ovx.measureText(test).width>w-16){lines.push(line);line=w2}else line=test;
+        });
+        if(line)lines.push(line);
+        lines.slice(0,3).forEach((l,i)=>ovx.fillText(l,bx+10,by+18+i*14));
+        ovx.restore();
+      }
+    }
+
+    // ── 24. RANDOM DR. GARG SIGHTING ─────────────────────────────────
+    const FORTUNES=[
+      'A passing grade is in your future.',
+      'Beware: cytology midterm approaching.',
+      'You will dream about Krebs cycle tonight.',
+      'Lucky number: 280 (BIO 280)',
+      'A free coffee will appear in your hour of need.',
+      'Today\'s lecture: surprisingly rememberable.',
+      'A study buddy will text you in 10 minutes.',
+      'You will spell "anesthesia" correctly. Eventually.',
+      'A goose looks at you and approves.',
+      'Sleep tonight. Trust me. — A.G.',
+    ];
+    const _GARG={active:false,b:null,wx:0,wy:0,fortune:'',given:false,t:0,nextT:300+Math.random()*300};
+    function _updateGargSighting(dt){
+      _GARG.nextT-=dt;
+      if(!_GARG.active&&_GARG.nextT<=0){
+        // Spawn at a random building
+        if(typeof BUILDINGS==='undefined')return;
+        const valid=BUILDINGS.filter(b=>!b.soon&&b.games&&b.games.length>0);
+        if(!valid.length)return;
+        const b=valid[Math.floor(Math.random()*valid.length)];
+        _GARG.active=true;
+        _GARG.b=b;
+        _GARG.wx=b.ex||(b.x+b.w/2);
+        _GARG.wy=(b.ey||(b.y+b.h+20));
+        _GARG.fortune=FORTUNES[Math.floor(Math.random()*FORTUNES.length)];
+        _GARG.given=false;
+        _GARG.t=0;
+        _GARG.nextT=300+Math.random()*300;
+      }
+      if(_GARG.active){
+        _GARG.t+=dt;
+        // Player walks up
+        if(typeof P!=='undefined'){
+          const dx=P.x-_GARG.wx,dy=P.y-_GARG.wy;
+          if(Math.sqrt(dx*dx+dy*dy)<60&&!_GARG.given){
+            _GARG.given=true;_GARG.t=0;
+            _showGargFortune(_GARG.fortune);
+          }
+        }
+        // Auto-disappear after 60s if not approached, or 8s after fortune given
+        if((!_GARG.given&&_GARG.t>60)||(_GARG.given&&_GARG.t>8)){
+          _GARG.active=false;
+        }
+      }
+    }
+    function _drawGargSighting(){
+      if(!_GARG.active)return;
+      const s=w2s(_GARG.wx,_GARG.wy);
+      if(s.x<-100||s.x>ov.width+100||s.y<-100||s.y>ov.height+100)return;
+      const t=Date.now();
+      // Floating "!" exclamation above to draw attention
+      const bob=Math.sin(t/300)*4;
+      ovx.save();
+      ovx.translate(s.x,s.y+bob);
+      // Pixel-art Dr. Garg figure (small, professorial)
+      const ps=2.5;
+      // Body — beige sweater
+      ovx.fillStyle='#c8a878';
+      ovx.fillRect(-3*ps,-4*ps,6*ps,5*ps);
+      // Slacks — dark
+      ovx.fillStyle='#2a2a2a';
+      ovx.fillRect(-3*ps,1*ps,3*ps,5*ps);
+      ovx.fillRect(0,1*ps,3*ps,5*ps);
+      // Head
+      ovx.fillStyle='#d8b888';
+      ovx.fillRect(-3*ps,-9*ps,6*ps,5*ps);
+      // Glasses (white frames)
+      ovx.fillStyle='#fff';
+      ovx.fillRect(-3*ps,-7*ps,2*ps,1*ps);
+      ovx.fillRect(1*ps,-7*ps,2*ps,1*ps);
+      ovx.fillStyle='#000';
+      ovx.fillRect(-2.5*ps,-6.5*ps,1*ps,.5*ps);
+      ovx.fillRect(1.5*ps,-6.5*ps,1*ps,.5*ps);
+      // Hair (dark)
+      ovx.fillStyle='#3a2418';
+      ovx.fillRect(-3*ps,-9*ps,6*ps,2*ps);
+      // Smile
+      ovx.fillStyle='#000';
+      ovx.fillRect(-1*ps,-5*ps,2*ps,.5*ps);
+      // Glow halo (gold)
+      ovx.shadowColor='#f0c840';ovx.shadowBlur=14;
+      ovx.fillStyle='rgba(240,200,64,.18)';
+      ovx.beginPath();ovx.ellipse(0,0,18,22,0,0,Math.PI*2);ovx.fill();
+      ovx.restore();
+      // Floating "!" above
+      if(!_GARG.given){
+        ovx.save();
+        ovx.fillStyle='#f0c840';
+        ovx.font="bold 24px 'Press Start 2P',monospace";
+        ovx.textAlign='center';
+        ovx.shadowColor='#f0c840';ovx.shadowBlur=18;
+        ovx.fillText('!',s.x,s.y-50+bob);
+        ovx.restore();
+      }
+    }
+    function _showGargFortune(text){
+      const t=document.createElement('div');
+      t.className='beacon-garg-fortune';
+      t.innerHTML='<div class="bgf-icon">🥠</div>'+
+        '<div class="bgf-body">'+
+          '<div class="bgf-label">DR. GARG\'S FORTUNE</div>'+
+          '<div class="bgf-text">'+text+'</div>'+
+        '</div>';
+      document.body.appendChild(t);
+      setTimeout(()=>{try{t.remove()}catch(e){}},6000);
+    }
+
+    // ── 25. CONSTELLATION puzzle (USCUP at night) ────────────────────
+    // Drawn as 5 stars connected by lines, in upper sky, only at deep night
+    const CONST_STARS=[
+      // U
+      {sx:0.18,sy:0.15},{sx:0.18,sy:0.20},{sx:0.20,sy:0.22},{sx:0.22,sy:0.20},{sx:0.22,sy:0.15},
+      // S
+      {sx:0.30,sy:0.15},{sx:0.27,sy:0.16},{sx:0.27,sy:0.18},{sx:0.30,sy:0.18},{sx:0.30,sy:0.21},{sx:0.27,sy:0.22},
+      // C
+      {sx:0.38,sy:0.15},{sx:0.36,sy:0.17},{sx:0.36,sy:0.20},{sx:0.38,sy:0.22},
+      // U
+      {sx:0.46,sy:0.15},{sx:0.46,sy:0.20},{sx:0.48,sy:0.22},{sx:0.50,sy:0.20},{sx:0.50,sy:0.15},
+      // P
+      {sx:0.58,sy:0.22},{sx:0.58,sy:0.15},{sx:0.61,sy:0.16},{sx:0.61,sy:0.18},{sx:0.58,sy:0.19}
+    ];
+    function _drawConstellation(){
+      const cycle=(Date.now()/480000)%1;
+      let alpha=0;
+      if(cycle>0.55&&cycle<0.8)alpha=Math.sin((cycle-0.55)/0.25*Math.PI);
+      if(alpha<0.05)return;
+      const t=Date.now()/1000;
+      ovx.save();
+      // Connect stars with subtle lines
+      ovx.strokeStyle='rgba(255,224,128,'+(alpha*.4)+')';
+      ovx.lineWidth=.7;
+      const groups=[
+        [0,1,2,3,4],
+        [5,6,7,8,9,10],
+        [11,12,13,14],
+        [15,16,17,18,19],
+        [20,21,22,23,24]
+      ];
+      groups.forEach(g=>{
+        ovx.beginPath();
+        g.forEach((i,j)=>{
+          const s=CONST_STARS[i];
+          const x=s.sx*ov.width,y=s.sy*ov.height;
+          if(j===0)ovx.moveTo(x,y);else ovx.lineTo(x,y);
+        });
+        ovx.stroke();
+      });
+      // Stars
+      CONST_STARS.forEach((s,i)=>{
+        const x=s.sx*ov.width,y=s.sy*ov.height;
+        const tw=0.6+Math.sin(t*2+i)*0.4;
+        ovx.fillStyle='rgba(255,255,200,'+(alpha*tw)+')';
+        ovx.beginPath();ovx.arc(x,y,2.5,0,Math.PI*2);ovx.fill();
+        ovx.shadowColor='#ffe0a0';ovx.shadowBlur=8*tw;
+        ovx.beginPath();ovx.arc(x,y,1.2,0,Math.PI*2);ovx.fill();
+        ovx.shadowBlur=0;
+      });
+      ovx.restore();
+    }
+
+    // ── 26. SNOW FOOTPRINTS (winter only, lag behind player) ─────────
+    const SNOW_PRINTS=[];
+    let _spAcc=0,_spLastX=0,_spLastY=0;
+    function _updateSnowPrints(dt){
+      if(SEASON!=='winter'&&HOLIDAY!=='christmas')return;
+      const moving=Math.abs(P.x-_spLastX)>1||Math.abs(P.y-_spLastY)>1;
+      _spAcc+=dt;
+      if(moving&&_spAcc>0.18){
+        _spAcc=0;
+        SNOW_PRINTS.push({wx:P.x+(Math.random()-.5)*4,wy:P.y+12,life:1});
+      }
+      _spLastX=P.x;_spLastY=P.y;
+      for(let i=SNOW_PRINTS.length-1;i>=0;i--){
+        SNOW_PRINTS[i].life-=dt*0.05; // slow fade
+        if(SNOW_PRINTS[i].life<=0)SNOW_PRINTS.splice(i,1);
+      }
+      // cap
+      while(SNOW_PRINTS.length>40)SNOW_PRINTS.shift();
+    }
+    function _drawSnowPrints(){
+      SNOW_PRINTS.forEach(p=>{
+        const s=w2s(p.wx,p.wy);
+        if(s.x<-30||s.x>ov.width+30||s.y<-30||s.y>ov.height+30)return;
+        ovx.save();
+        ovx.fillStyle='rgba(40,60,80,'+(p.life*.55)+')';
+        // Two oval prints
+        ovx.beginPath();ovx.ellipse(s.x-2,s.y,2,1.2,0,0,Math.PI*2);ovx.fill();
+        ovx.beginPath();ovx.ellipse(s.x+2,s.y+1,2,1.2,0,0,Math.PI*2);ovx.fill();
+        ovx.restore();
+      });
+    }
+
+    // ── 27-28. PET DOG + SLEEPING CAT ─────────────────────────────────
+    const _PET={dog:null,cat:{wx:1300,wy:1700,zT:0}};
+    let _dogNextSpawn=120+Math.random()*180;
+    function _updatePets(dt){
+      // Dog spawns periodically, follows player ~30s, then leaves
+      _dogNextSpawn-=dt;
+      if(!_PET.dog&&_dogNextSpawn<=0){
+        _PET.dog={wx:P.x-50,wy:P.y+20,vx:0,vy:0,life:30,bark:0};
+      }
+      if(_PET.dog){
+        _PET.dog.life-=dt;
+        if(_PET.dog.life<=0){_PET.dog=null;_dogNextSpawn=180+Math.random()*240;return}
+        // Move toward player but stay 30-50px back
+        const dx=P.x-_PET.dog.wx,dy=P.y-_PET.dog.wy;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d>40){
+          _PET.dog.wx+=(dx/d)*60*dt;
+          _PET.dog.wy+=(dy/d)*60*dt;
+        }
+        _PET.dog.bark+=dt;
+      }
+      _PET.cat.zT+=dt;
+    }
+    function _drawPets(){
+      // Dog
+      if(_PET.dog){
+        const s=w2s(_PET.dog.wx,_PET.dog.wy);
+        if(s.x>-30&&s.x<ov.width+30&&s.y>-30&&s.y<ov.height+30){
+          const t=Date.now()/100;
+          const wag=Math.sin(t/2)*3;
+          ovx.save();
+          ovx.translate(s.x,s.y);
+          // Tail (wagging)
+          ovx.fillStyle='#a86028';
+          ovx.fillRect(-9-wag,-3,3,2);
+          // Body
+          ovx.fillStyle='#c8783c';
+          ovx.fillRect(-7,-2,12,4);
+          // Head
+          ovx.fillStyle='#d88848';
+          ovx.fillRect(5,-3,4,4);
+          // Ear (floppy)
+          ovx.fillStyle='#a86028';
+          ovx.fillRect(7,-4,2,2);
+          // Eye + nose
+          ovx.fillStyle='#000';
+          ovx.fillRect(7,-2,1,1);
+          ovx.fillRect(8,-1,1,1);
+          // Legs
+          ovx.fillStyle='#8a4818';
+          ovx.fillRect(-5,2,2,3);
+          ovx.fillRect(2,2,2,3);
+          ovx.restore();
+        }
+      }
+      // Cat (sleeping on bench)
+      const cs=w2s(_PET.cat.wx,_PET.cat.wy);
+      if(cs.x>-30&&cs.x<ov.width+30&&cs.y>-30&&cs.y<ov.height+30){
+        ovx.save();
+        ovx.translate(cs.x,cs.y);
+        // Bench
+        ovx.fillStyle='#5a3010';
+        ovx.fillRect(-14,2,28,3);
+        ovx.fillRect(-12,5,2,4);
+        ovx.fillRect(10,5,2,4);
+        // Curled cat body
+        ovx.fillStyle='#3a3a3a';
+        ovx.fillRect(-7,-3,12,5);
+        // Ear triangle
+        ovx.fillStyle='#2a2a2a';
+        ovx.fillRect(3,-5,2,2);
+        ovx.fillRect(6,-5,2,2);
+        // Tail curling
+        ovx.fillRect(-9,-1,2,3);
+        // Z above (purring)
+        const zPhase=(_PET.cat.zT*1)%3;
+        if(zPhase<1.5){
+          ovx.fillStyle='rgba(255,255,255,'+(0.7-zPhase*0.4)+')';
+          ovx.font="bold 9px 'Press Start 2P',monospace";
+          ovx.fillText('z',-2-zPhase*2,-9-zPhase*4);
+        }
+        ovx.restore();
+      }
+    }
+
+    // ── 29. TOUR GROUP NPCs ──────────────────────────────────────────
+    const _TOUR={leader:null,wx:0,wy:0,target:0,students:[]};
+    let _tourSpawnT=15;
+    function _updateTour(dt){
+      _tourSpawnT-=dt;
+      if(!_TOUR.leader&&_tourSpawnT<=0){
+        if(typeof BUILDINGS==='undefined')return;
+        const route=BUILDINGS.filter(b=>!b.soon).slice().sort(()=>Math.random()-.5).slice(0,5);
+        _TOUR.leader={wx:100,wy:1500,t:0};
+        _TOUR.route=route.map(b=>({x:b.x+b.w/2,y:b.y+b.h+40}));
+        _TOUR.target=0;
+        _TOUR.pause=0;
+        _TOUR.students=[];
+        for(let i=0;i<6;i++){
+          _TOUR.students.push({wx:100-i*15,wy:1500,col:['#ff6090','#90ff90','#9090ff','#ffd060','#ff9060','#c090ff'][i]});
+        }
+      }
+      if(_TOUR.leader){
+        if(_TOUR.pause>0){_TOUR.pause-=dt;return}
+        const tgt=_TOUR.route[_TOUR.target];
+        if(!tgt){
+          // Done — walk off screen
+          _TOUR.leader.wx+=20*dt;
+          if(_TOUR.leader.wx>WW+50){_TOUR.leader=null;_tourSpawnT=120+Math.random()*180;return}
+        } else {
+          const dx=tgt.x-_TOUR.leader.wx,dy=tgt.y-_TOUR.leader.wy;
+          const d=Math.sqrt(dx*dx+dy*dy);
+          if(d<10){
+            _TOUR.target++;_TOUR.pause=4; // pause and "talk"
+          } else {
+            _TOUR.leader.wx+=(dx/d)*30*dt;
+            _TOUR.leader.wy+=(dy/d)*30*dt;
+          }
+        }
+        // Students follow leader
+        _TOUR.students.forEach((s,i)=>{
+          const target=i===0?_TOUR.leader:_TOUR.students[i-1];
+          const dx=target.wx-s.wx-12,dy=target.wy-s.wy;
+          const d=Math.sqrt(dx*dx+dy*dy);
+          if(d>2){s.wx+=(dx/d)*28*dt;s.wy+=(dy/d)*28*dt}
+        });
+      }
+    }
+    function _drawTour(){
+      if(!_TOUR.leader)return;
+      // Leader (dressed in formal — gray jacket)
+      const ls=w2s(_TOUR.leader.wx,_TOUR.leader.wy);
+      if(ls.x>-30&&ls.x<ov.width+30){
+        ovx.save();
+        ovx.translate(ls.x,ls.y);
+        ovx.fillStyle='#888';ovx.fillRect(-3,-8,6,8);     // jacket
+        ovx.fillStyle='#d8b888';ovx.fillRect(-3,-12,6,4); // head
+        ovx.fillStyle='#2a2a2a';ovx.fillRect(-3,0,3,4);   // pants
+        ovx.fillRect(0,0,3,4);
+        // Megaphone
+        ovx.fillStyle='#f0c840';
+        ovx.fillRect(4,-9,4,2);ovx.fillRect(7,-10,3,4);
+        ovx.restore();
+        // "TOUR" label
+        ovx.save();
+        ovx.fillStyle='#fff';
+        ovx.font="9px 'Press Start 2P',monospace";
+        ovx.textAlign='center';
+        ovx.shadowColor='#000';ovx.shadowBlur=4;
+        ovx.fillText('★ CAMPUS TOUR',ls.x,ls.y-22);
+        ovx.restore();
+      }
+      // Students
+      _TOUR.students.forEach(s=>{
+        const ss=w2s(s.wx,s.wy);
+        if(ss.x>-30&&ss.x<ov.width+30){
+          ovx.save();
+          ovx.translate(ss.x,ss.y);
+          ovx.fillStyle=s.col;
+          ovx.fillRect(-3,-8,6,8);
+          ovx.fillStyle='#d8b888';ovx.fillRect(-3,-12,6,4);
+          ovx.fillStyle='#2a2a2a';ovx.fillRect(-3,0,3,4);ovx.fillRect(0,0,3,4);
+          ovx.restore();
+        }
+      });
+    }
+
+    // ── 30. JANITOR sweeping ─────────────────────────────────────────
+    const _JAN={wx:1700,wy:1640,sweep:0,dustT:0};
+    function _updateJanitor(dt){
+      _JAN.sweep+=dt;
+      _JAN.dustT-=dt;
+      // Move slowly back and forth
+      _JAN.wx+=Math.sin(_JAN.sweep/3)*15*dt;
+    }
+    function _drawJanitor(){
+      const s=w2s(_JAN.wx,_JAN.wy);
+      if(s.x<-30||s.x>ov.width+30||s.y<-30||s.y>ov.height+30)return;
+      const t=Date.now()/200;
+      const broom=Math.sin(t*2)*8;
+      ovx.save();
+      ovx.translate(s.x,s.y);
+      // Body — blue uniform
+      ovx.fillStyle='#3060a0';
+      ovx.fillRect(-3,-8,6,8);
+      // Cap
+      ovx.fillStyle='#2050a0';
+      ovx.fillRect(-3,-13,6,3);
+      // Head
+      ovx.fillStyle='#d8a878';
+      ovx.fillRect(-3,-10,6,3);
+      // Pants
+      ovx.fillStyle='#1a3050';
+      ovx.fillRect(-3,0,3,4);ovx.fillRect(0,0,3,4);
+      // Broom (handle at angle, bristles at end)
+      ovx.strokeStyle='#a8723c';
+      ovx.lineWidth=2;
+      ovx.beginPath();
+      ovx.moveTo(3,-4);ovx.lineTo(12+broom,8);
+      ovx.stroke();
+      ovx.fillStyle='#f0c840';
+      ovx.fillRect(11+broom,7,4,3);
+      ovx.restore();
+      // Spawn dust puff occasionally
+      if(_JAN.dustT<=0&&Math.random()<.3){
+        _JAN.dustT=0.3;
+        FOOTSTEPS.push({wx:_JAN.wx+10+broom*0.5,wy:_JAN.wy+10,life:0.8,size:3+Math.random()*2});
+      }
+    }
+
+    // ── 31. FOOD TRUCK with smoke + queue ────────────────────────────
+    const FOOD_TRUCK={wx:2150,wy:1750};
+    function _drawFoodTruck(){
+      const s=w2s(FOOD_TRUCK.wx,FOOD_TRUCK.wy);
+      if(s.x<-100||s.x>ov.width+100||s.y<-100||s.y>ov.height+100)return;
+      const t=Date.now()/500;
+      ovx.save();
+      ovx.translate(s.x,s.y);
+      // Truck body — red
+      ovx.fillStyle='#c83030';
+      ovx.fillRect(-30,-20,60,20);
+      // Cab
+      ovx.fillStyle='#a02020';
+      ovx.fillRect(-30,-12,15,12);
+      // Window
+      ovx.fillStyle='#aac8e0';
+      ovx.fillRect(-12,-18,30,8);
+      // Counter
+      ovx.fillStyle='#e8d8b0';
+      ovx.fillRect(-8,-10,28,3);
+      // Wheels
+      ovx.fillStyle='#000';
+      ovx.beginPath();ovx.arc(-22,2,5,0,Math.PI*2);ovx.fill();
+      ovx.beginPath();ovx.arc(20,2,5,0,Math.PI*2);ovx.fill();
+      // Sign
+      ovx.fillStyle='#f0c840';
+      ovx.fillRect(-24,-30,48,8);
+      ovx.fillStyle='#000';
+      ovx.font="bold 7px 'Press Start 2P',monospace";
+      ovx.textAlign='center';
+      ovx.fillText('🍕 EATS',0,-23);
+      // Smoke
+      for(let i=0;i<3;i++){
+        const phase=(t+i*0.5)%1;
+        const sx=10,sy=-32-phase*30;
+        const sa=(1-phase)*.6;
+        ovx.fillStyle='rgba(220,220,220,'+sa+')';
+        ovx.beginPath();ovx.arc(sx+Math.sin(phase*Math.PI*2)*4,sy,5+phase*5,0,Math.PI*2);ovx.fill();
+      }
+      // Queue of NPCs
+      for(let i=0;i<3;i++){
+        const qx=35+i*14;
+        ovx.fillStyle=['#ff6090','#90ff90','#9090ff'][i];
+        ovx.fillRect(qx-3,-8,6,8);
+        ovx.fillStyle='#d8b888';
+        ovx.fillRect(qx-3,-12,6,4);
+        ovx.fillStyle='#2a2a2a';
+        ovx.fillRect(qx-3,0,3,4);ovx.fillRect(qx,0,3,4);
+      }
+      ovx.restore();
+    }
+
+    // ── 32. DISTANT CAR driving by ───────────────────────────────────
+    let _CAR={wx:-200,wy:50,vx:0,active:false,nextT:30+Math.random()*60};
+    function _updateCar(dt){
+      _CAR.nextT-=dt;
+      if(!_CAR.active&&_CAR.nextT<=0){
+        _CAR.active=true;
+        _CAR.wy=50+Math.random()*20;
+        if(Math.random()<.5){_CAR.wx=-200;_CAR.vx=180}
+        else{_CAR.wx=WW+200;_CAR.vx=-180}
+        _CAR.nextT=60+Math.random()*60;
+      }
+      if(_CAR.active){
+        _CAR.wx+=_CAR.vx*dt;
+        if((_CAR.vx>0&&_CAR.wx>WW+200)||(_CAR.vx<0&&_CAR.wx<-200)){_CAR.active=false}
+      }
+    }
+    function _drawCar(){
+      if(!_CAR.active)return;
+      const s=w2s(_CAR.wx,_CAR.wy);
+      if(s.x<-100||s.x>ov.width+100)return;
+      ovx.save();
+      ovx.translate(s.x,s.y);
+      if(_CAR.vx<0)ovx.scale(-1,1);
+      // Body
+      ovx.fillStyle='#'+(['405090','905040','a04060','405040'][Math.floor(_CAR.wy)%4]||'405090');
+      ovx.fillRect(-15,-5,30,8);
+      // Roof
+      ovx.fillStyle='rgba(0,0,0,.4)';
+      ovx.fillRect(-10,-8,20,3);
+      // Windows
+      ovx.fillStyle='#aac8e0';
+      ovx.fillRect(-9,-7,8,2);
+      ovx.fillRect(2,-7,8,2);
+      // Wheels
+      ovx.fillStyle='#000';
+      ovx.fillRect(-12,3,5,2);
+      ovx.fillRect(7,3,5,2);
+      // Headlights
+      ovx.fillStyle='#fff';
+      ovx.fillRect(13,-3,2,2);
+      ovx.restore();
+    }
+
+    // ── 33-34. AUDIO: bird chirps near trees + baseball cheer ────────
+    let _audCtx=null;
+    function _audio(){
+      if(_audCtx)return _audCtx;
+      try{_audCtx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}
+      return _audCtx;
+    }
+    function _chirp(){
+      const a=_audio();if(!a)return;
+      try{
+        const o=a.createOscillator(),g=a.createGain();
+        o.type='sine';
+        const t0=a.currentTime;
+        o.frequency.setValueAtTime(2400,t0);
+        o.frequency.exponentialRampToValueAtTime(3800,t0+.05);
+        o.frequency.exponentialRampToValueAtTime(2200,t0+.12);
+        g.gain.setValueAtTime(0,t0);
+        g.gain.linearRampToValueAtTime(.04,t0+.02);
+        g.gain.exponentialRampToValueAtTime(.001,t0+.18);
+        o.connect(g);g.connect(a.destination);
+        o.start(t0);o.stop(t0+.2);
+      }catch(e){}
+    }
+    function _cheer(){
+      const a=_audio();if(!a)return;
+      try{
+        const buf=a.createBuffer(1,a.sampleRate*0.6,a.sampleRate);
+        const data=buf.getChannelData(0);
+        for(let i=0;i<data.length;i++){
+          const t=i/a.sampleRate;
+          const env=Math.exp(-t*1.8);
+          data[i]=(Math.random()*2-1)*env*.3;
+        }
+        const src=a.createBufferSource();src.buffer=buf;
+        const filter=a.createBiquadFilter();
+        filter.type='bandpass';filter.frequency.value=1200;filter.Q.value=2;
+        src.connect(filter);filter.connect(a.destination);
+        src.start();
+      }catch(e){}
+    }
+    let _chirpT=10;
+    function _updateAudio(dt){
+      _chirpT-=dt;
+      if(_chirpT<=0){
+        // Random bird chirp if player is near any tree
+        if(typeof TREES!=='undefined'&&typeof P!=='undefined'){
+          let near=false;
+          for(const tr of TREES){
+            const dx=P.x-tr.x,dy=P.y-tr.y;
+            if(dx*dx+dy*dy<25000){near=true;break}
+          }
+          if(near)_chirp();
+        }
+        _chirpT=8+Math.random()*15;
+      }
+    }
+    // Hook cheer to the goose-smash via window.dispatchEvent('beacon-goose-score')
+    window.beaconGooseScore=function(){_cheer()};
+
+    // ── 35. HOLIDAY DECORATIONS (auto by date) ──────────────────────
+    function _drawHolidayLayer(){
+      if(!HOLIDAY)return;
+      const t=Date.now();
+      if(HOLIDAY==='halloween'){
+        // Orange tint
+        ovx.save();ovx.fillStyle='rgba(255,120,0,.06)';ovx.fillRect(0,0,ov.width,ov.height);ovx.restore();
+        // Ghost particles drifting
+        for(let i=0;i<6;i++){
+          const wx=((t/40+i*400)%(WW+200))-100;
+          const wy=200+(i*250)%(WH-400)+Math.sin(t/600+i)*30;
+          const s=w2s(wx,wy);
+          if(s.x<-50||s.x>ov.width+50)continue;
+          ovx.save();
+          ovx.fillStyle='rgba(255,255,255,.5)';
+          ovx.beginPath();
+          ovx.arc(s.x,s.y,12,Math.PI,0);
+          ovx.lineTo(s.x+12,s.y+10);
+          ovx.lineTo(s.x+8,s.y+8);ovx.lineTo(s.x+4,s.y+10);ovx.lineTo(s.x,s.y+8);
+          ovx.lineTo(s.x-4,s.y+10);ovx.lineTo(s.x-8,s.y+8);ovx.lineTo(s.x-12,s.y+10);
+          ovx.closePath();ovx.fill();
+          // Eyes
+          ovx.fillStyle='#000';
+          ovx.fillRect(s.x-5,s.y-3,2,3);
+          ovx.fillRect(s.x+3,s.y-3,2,3);
+          ovx.restore();
+        }
+      } else if(HOLIDAY==='christmas'){
+        // String lights on each building (red/green/yellow alternating)
+        if(typeof BUILDINGS!=='undefined'){
+          BUILDINGS.forEach((b,bi)=>{
+            const sTop=w2s(b.x,b.y);
+            const sTopR=w2s(b.x+b.w,b.y);
+            if(sTop.x>ov.width+50||sTopR.x<-50)return;
+            const cols=['#ff4040','#40ff40','#fff060','#40a0ff'];
+            const lights=10;
+            for(let i=0;i<lights;i++){
+              const lx=sTop.x+(sTopR.x-sTop.x)*(i/(lights-1));
+              const ly=sTop.y+Math.sin(t/600+i+bi)*3-4;
+              const c=cols[i%4];
+              const flick=0.7+Math.sin(t/200+i+bi*2)*.3;
+              ovx.save();
+              ovx.fillStyle=c;
+              ovx.shadowColor=c;ovx.shadowBlur=10*flick;
+              ovx.beginPath();ovx.arc(lx,ly,3*flick,0,Math.PI*2);ovx.fill();
+              ovx.restore();
+            }
+          });
+        }
+      } else if(HOLIDAY==='valentine'){
+        // Pink tint + heart particles
+        ovx.save();ovx.fillStyle='rgba(255,150,200,.05)';ovx.fillRect(0,0,ov.width,ov.height);ovx.restore();
+        for(let i=0;i<8;i++){
+          const wx=((t/30+i*350)%WW);
+          const wy=((t/40+i*200)%WH);
+          const s=w2s(wx,wy);
+          if(s.x<-30||s.x>ov.width+30)continue;
+          ovx.save();
+          ovx.fillStyle='#ff6090';
+          ovx.translate(s.x,s.y);
+          ovx.fillRect(-3,-2,3,3);ovx.fillRect(0,-2,3,3);
+          ovx.fillRect(-3,1,6,2);ovx.fillRect(-2,3,4,1);
+          ovx.restore();
+        }
+      } else if(HOLIDAY==='spring'){
+        // Cherry blossom petals (denser than normal leaves)
+        for(let i=0;i<20;i++){
+          const wx=((t/25+i*250)%WW);
+          const wy=((t/30+i*180)%WH);
+          const s=w2s(wx,wy);
+          if(s.x<-30||s.x>ov.width+30||s.y<-30||s.y>ov.height+30)continue;
+          ovx.save();
+          ovx.fillStyle=['#ffc0d0','#ffe0e0','#ffd0e0'][i%3];
+          ovx.translate(s.x,s.y);
+          ovx.rotate(t/300+i);
+          // 5-petal flower
+          for(let p=0;p<5;p++){
+            ovx.rotate(Math.PI*2/5);
+            ovx.fillRect(0,-2,4,2);
+          }
+          ovx.restore();
+        }
+      } else if(HOLIDAY==='independence'){
+        // Fireworks at night
+        const cycle=(t/480000)%1;
+        if(cycle>0.55&&cycle<0.85){
+          for(let i=0;i<3;i++){
+            const phase=((t/2000)+i*0.3)%1;
+            if(phase<0.4){
+              const fx=ov.width*(0.2+i*0.3);
+              const fy=ov.height*0.3;
+              const r=phase*120;
+              const a=1-phase*2;
+              ovx.save();
+              ovx.strokeStyle=['#ff4040','#ffffff','#4080ff'][i];
+              ovx.lineWidth=2;
+              for(let p=0;p<12;p++){
+                const ang=p*Math.PI/6;
+                ovx.globalAlpha=a;
+                ovx.beginPath();
+                ovx.moveTo(fx+Math.cos(ang)*r*0.7,fy+Math.sin(ang)*r*0.7);
+                ovx.lineTo(fx+Math.cos(ang)*r,fy+Math.sin(ang)*r);
+                ovx.stroke();
+              }
+              ovx.restore();
+            }
+          }
+        }
+      } else if(HOLIDAY==='firstday'){
+        // Welcome balloons floating up
+        for(let i=0;i<6;i++){
+          const wy=WH-((t/30+i*400)%(WH+200));
+          const wx=200+i*400+Math.sin(t/500+i)*30;
+          const s=w2s(wx,wy);
+          if(s.x<-30||s.x>ov.width+30)continue;
+          const c=['#ff4060','#40c0ff','#ffd060','#40ff80','#c060ff','#ff8040'][i];
+          ovx.save();
+          ovx.fillStyle=c;
+          ovx.beginPath();ovx.ellipse(s.x,s.y,8,10,0,0,Math.PI*2);ovx.fill();
+          // String
+          ovx.strokeStyle='rgba(255,255,255,.5)';
+          ovx.lineWidth=.5;
+          ovx.beginPath();ovx.moveTo(s.x,s.y+10);ovx.lineTo(s.x+Math.sin(t/300+i)*4,s.y+25);
+          ovx.stroke();
+          ovx.restore();
+        }
+      }
+    }
+    // Banner overlay for first-day-of-school
+    if(HOLIDAY==='firstday'){
+      const banner=document.createElement('div');
+      banner.style.cssText='position:fixed;top:90px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#ff6090,#ffd060,#40ff80,#40c0ff);padding:14px 28px;border-radius:8px;font-family:\'Cinzel Decorative\',serif;font-weight:900;font-size:24px;color:#1a0202;z-index:90;box-shadow:0 8px 24px rgba(0,0,0,.5);animation:pulse 2s infinite';
+      banner.textContent='🎓 WELCOME · DAY ONE 🎓';
+      setTimeout(()=>{document.body.appendChild(banner);setTimeout(()=>banner.remove(),20000)},6000);
+    }
+
+    // ── Master overlay loop ──────────────────────────────────────────
+    let _lastT=performance.now();
+    function _loop(){
+      const now=performance.now();
+      const dt=Math.min(0.1,(now-_lastT)/1000);
+      _lastT=now;
+      // Don't draw while title screen is up
+      const title=document.getElementById('title');
+      const hideOverlay=title&&!title.classList.contains('hide');
+      if(!hideOverlay){
+        ovx.clearRect(0,0,ov.width,ov.height);
+        // Updates
+        _updateLeaves(dt);
+        _updateBirds(dt);
+        _updateFootsteps(dt);
+        _updateConfetti(dt);
+        _updateDecors(dt);
+        _tickDecors(dt);
+        _updateSquirrels(dt);
+        _updatePathDust(dt);
+        _updateSnow(dt);
+        _updateSplashes(dt);
+        _updateStudentBubbles(dt);
+        _updateCoin(dt);
+        _updateBench(dt);
+        _updateGargSighting(dt);
+        _updateSnowPrints(dt);
+        _updatePets(dt);
+        _updateTour(dt);
+        _updateJanitor(dt);
+        _updateCar(dt);
+        _updateAudio(dt);
+        // Draws (back-to-front)
+        _drawDayNight();
+        _drawStars();
+        _drawConstellation();
+        _drawWindowLights();
+        _drawLampGlows();
+        _drawBirds();
+        _drawCar();
+        _drawFoodTruck();
+        _drawDecors();
+        _drawLeaves();
+        _drawSnow();
+        _drawSnowPrints();
+        _drawHolidayLayer();
+        _drawSquirrels();
+        _drawPets();
+        _drawTour();
+        _drawJanitor();
+        _drawBench();
+        _drawGargSighting();
+        _drawPlayerGlow();
+        _drawSplashes();
+        _drawFootsteps();
+        _drawPathDust();
+        _drawCoin();
+        _drawBuildingAuras();
+        _drawBuildingBanners();
+        _drawStudentBubbles();
+        _drawClickTarget();
+        _drawConfetti();
+        _drawMiniRadar();
+      } else {
+        ovx.clearRect(0,0,ov.width,ov.height);
+      }
+      requestAnimationFrame(_loop);
+    }
+    _loop();
+  }
+  if(document.readyState==='complete')_waitInit();
+  else window.addEventListener('load',_waitInit);
+})();
+
+// =====================================================================
+// GLOBAL KEYBOARD EASTER EGGS (Konami / /HELP / institution-name)
+// =====================================================================
+
+// ── KONAMI CODE: ↑↑↓↓←→←→BA → confetti celebration + dev unlock ──
+(function(){
+  const KONAMI=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let _kIdx=0;
+  document.addEventListener('keydown',e=>{
+    const want=KONAMI[_kIdx];
+    if(e.key===want||e.key.toLowerCase()===want.toLowerCase()){
+      _kIdx++;
+      if(_kIdx>=KONAMI.length){
+        _kIdx=0;
+        _showKonamiUnlock();
+      }
+    } else if(e.key===KONAMI[0]){
+      _kIdx=1;
+    } else {
+      _kIdx=0;
+    }
+  });
+  function _showKonamiUnlock(){
+    document.querySelectorAll('.beacon-konami').forEach(el=>el.remove());
+    const el=document.createElement('div');
+    el.className='beacon-konami';
+    el.innerHTML='<div class="bk-text">★ KONAMI UNLOCKED ★</div>'+
+      '<div class="bk-sub">+30 GOLD · DEV CHEAT VIEW · CHEAT MODE ENABLED</div>';
+    document.body.appendChild(el);
+    // Confetti shower
+    if(typeof window.beaconBurstConfetti==='function')window.beaconBurstConfetti();
+    if(typeof window.beaconBurstConfetti==='function')setTimeout(window.beaconBurstConfetti,300);
+    if(typeof window.beaconBurstConfetti==='function')setTimeout(window.beaconBurstConfetti,600);
+    setTimeout(()=>{try{el.remove()}catch(e){}},5000);
+  }
+})();
+
+// ── /HELP OVERLAY: cheat sheet of controls + easter eggs ──
+(function(){
+  let _typeBuf='';
+  document.addEventListener('keydown',e=>{
+    if(e.key==='/')_typeBuf='/';
+    else if(_typeBuf){
+      if(e.key.length===1){
+        _typeBuf+=e.key.toLowerCase();
+        if(_typeBuf.length>15)_typeBuf=_typeBuf.slice(-15);
+        if(_typeBuf.endsWith('/help')){_typeBuf='';showBeaconHelp()}
+        if(_typeBuf.endsWith('/'+(BEACON_THEME.shortCode||'').toLowerCase())){_typeBuf='';_showInstitutionUnlock()}
+      } else if(e.key==='Backspace'){_typeBuf=_typeBuf.slice(0,-1)}
+      else if(e.key==='Escape'){_typeBuf=''}
+    }
+  });
+  function showBeaconHelp(){
+    document.querySelectorAll('.beacon-help').forEach(el=>el.remove());
+    const ov=document.createElement('div');
+    ov.className='beacon-help';
+    ov.innerHTML=
+      '<div class="bh-shade" onclick="this.parentElement.remove()"></div>'+
+      '<div class="bh-card">'+
+        '<button class="bh-close" onclick="this.parentElement.parentElement.remove()">✕</button>'+
+        '<div class="bh-title">⌨ CHEAT SHEET</div>'+
+        '<div class="bh-sub">'+BEACON_THEME.institution+' · BEACON CONTROLS</div>'+
+        '<div class="bh-grid">'+
+          '<div class="bh-section"><h4>MOVEMENT</h4>'+
+            '<div class="bh-row"><kbd>W A S D</kbd><span>Walk in any direction</span></div>'+
+            '<div class="bh-row"><kbd>↑ ↓ ← →</kbd><span>Walk (alternate)</span></div>'+
+            '<div class="bh-row"><kbd>Click</kbd><span>Walk to that spot</span></div>'+
+          '</div>'+
+          '<div class="bh-section"><h4>ACTIONS</h4>'+
+            '<div class="bh-row"><kbd>E</kbd><span>Enter the nearest building</span></div>'+
+            '<div class="bh-row"><kbd>Esc</kbd><span>Close any modal</span></div>'+
+            '<div class="bh-row"><kbd>Click fountain</kbd><span>Toss a coin · make a wish</span></div>'+
+          '</div>'+
+          '<div class="bh-section"><h4>SECRETS</h4>'+
+            '<div class="bh-row"><kbd>/HELP</kbd><span>This cheat sheet</span></div>'+
+            '<div class="bh-row"><kbd>/'+(BEACON_THEME.shortCode||'').toUpperCase()+'</kbd><span>Institution code surprise</span></div>'+
+            '<div class="bh-row"><kbd>↑↑↓↓←→←→BA</kbd><span>Konami unlock</span></div>'+
+            '<div class="bh-row"><kbd>Walk south</kbd><span>Hidden bench with Garg wisdom</span></div>'+
+            '<div class="bh-row"><kbd>Wait 5+ min</kbd><span>Dr. Garg may appear at random</span></div>'+
+            '<div class="bh-row"><kbd>Look up at night</kbd><span>USCUP constellation</span></div>'+
+          '</div>'+
+        '</div>'+
+        '<button class="bh-action" onclick="this.parentElement.parentElement.remove()">CLOSE</button>'+
+      '</div>';
+    document.body.appendChild(ov);
+  }
+  window.showBeaconHelp=showBeaconHelp;
+  function _showInstitutionUnlock(){
+    document.querySelectorAll('.beacon-inst-unlock').forEach(el=>el.remove());
+    const el=document.createElement('div');
+    el.className='beacon-inst-unlock';
+    el.innerHTML='<div class="biu-banner">🎉 GO '+(BEACON_THEME.mascot||'SPARTANS').toUpperCase()+'S! 🎉</div>'+
+      '<div class="biu-sub">'+BEACON_THEME.fullName+'</div>'+
+      '<div class="biu-motto">"'+BEACON_THEME.motto+'"</div>';
+    document.body.appendChild(el);
+    // Confetti barrage
+    if(typeof window.beaconBurstConfetti==='function'){
+      for(let i=0;i<5;i++)setTimeout(window.beaconBurstConfetti,i*250);
+    }
+    setTimeout(()=>{try{el.remove()}catch(e){}},5500);
+  }
+})();
+
+// =====================================================================
+// 12. ALWAYS-VISIBLE WELCOME BANNER (top center, shows current building)
+// =====================================================================
+(function(){
+  function _init(){
+    if(document.querySelector('.beacon-live-banner'))return;
+    const banner=document.createElement('div');
+    banner.className='beacon-live-banner';
+    banner.innerHTML=
+      '<div class="blb-icon">'+BEACON_THEME.mascotIcon+'</div>'+
+      '<div class="blb-body">'+
+        '<div class="blb-title">'+BEACON_THEME.institution+'</div>'+
+        '<div class="blb-sub" id="blb-sub">EXPLORING CAMPUS</div>'+
+      '</div>'+
+      '<div class="blb-stats">'+
+        '<div class="blb-stat"><div class="blb-stat-num" id="blb-buildings">17</div><div class="blb-stat-lbl">BLDGS</div></div>'+
+        '<div class="blb-stat"><div class="blb-stat-num" id="blb-games">9</div><div class="blb-stat-lbl">GAMES</div></div>'+
+        '<div class="blb-stat"><div class="blb-stat-num" id="blb-questions">2,269</div><div class="blb-stat-lbl">QUESTIONS</div></div>'+
+      '</div>';
+    document.body.appendChild(banner);
+    // Auto-hide on title screen, show after entry
+    function _checkVis(){
+      const title=document.getElementById('title');
+      const hidden=title&&!title.classList.contains('hide');
+      banner.style.opacity=hidden?'0':'1';
+      banner.style.pointerEvents=hidden?'none':'auto';
+    }
+    setInterval(_checkVis,300);
+    // Update sub on building approach
+    setInterval(()=>{
+      if(typeof BUILDINGS==='undefined'||typeof P==='undefined')return;
+      let nearest=null,d=999999;
+      BUILDINGS.forEach(b=>{
+        const cxp=b.x+b.w/2,cyp=b.y+b.h/2;
+        const dx=P.x-cxp,dy=P.y-cyp;
+        const dd=Math.sqrt(dx*dx+dy*dy);
+        if(dd<d){d=dd;nearest=b}
+      });
+      const sub=document.getElementById('blb-sub');
+      if(sub){
+        if(nearest&&d<200){
+          const games=nearest.games?nearest.games.length:0;
+          sub.innerHTML='NEAR <strong style="color:#fff">'+nearest.label.split('\\n')[0]+'</strong>'+(games?' · '+games+' GAMES INSIDE':'');
+        } else {
+          sub.innerHTML='EXPLORE THE CAMPUS · WALK NEAR ANY BUILDING';
+        }
+      }
+    },400);
+  }
+  if(document.readyState==='complete')setTimeout(_init,800);
+  else document.addEventListener('DOMContentLoaded',()=>setTimeout(_init,800));
+})();
+
 </script>
 
 <!-- UNIVERSAL BUILDING INTERIOR OVERLAY -->
@@ -7727,18 +11232,5 @@ function drawCrossGameBadges(MX,MY,scX,scY) {
   </div>
 </div>
 
-
-<div id="anatomy-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:#0a1f0f;flex-direction:column">
-  <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:#00833E;border-bottom:2px solid #00B189">
-    <img src="https://uscupstate.edu/wp-content/uploads/2023/09/cropped-uscupstate-logo.png" alt="USC Upstate" style="height:36px;filter:brightness(0) invert(1)">
-    <span style="color:#fff;font-weight:700;font-size:15px;letter-spacing:1px">DR. GARG'S INNOVATION LAB — Virtual Anatomy Classroom</span>
-    <button id="anatomy-close-btn" onclick="closeAnatomyOverlay()" style="margin-left:auto;background:#fff;color:#00833E;border:none;padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">← Back to Campus</button>
-  </div>
-  <iframe id="anatomy-iframe" src="" style="flex:1;width:100%;border:none" allowfullscreen></iframe>
-</div>
-<script>
-function showAnatomyOverlay(url){var ov=document.getElementById('anatomy-overlay');document.getElementById('anatomy-iframe').src=url;ov.style.display='flex';document.body.style.overflow='hidden';}
-function closeAnatomyOverlay(){document.getElementById('anatomy-overlay').style.display='none';document.getElementById('anatomy-iframe').src='';document.body.style.overflow='';}
-</script>
 </body>
 </html>
